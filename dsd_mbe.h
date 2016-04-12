@@ -14,10 +14,10 @@
 // along with this program. If not, see <http://www.gnu.org/licenses/>.          //
 ///////////////////////////////////////////////////////////////////////////////////
 
-#ifndef DSDPLUS_DSD_MBE_H_
-#define DSDPLUS_DSD_MBE_H_
+#ifndef DSDCC_DSD_MBE_H_
+#define DSDCC_DSD_MBE_H_
 
-namespace DSDplus
+namespace DSDcc
 {
 
 class DSDDecoder;
@@ -42,4 +42,4 @@ private:
 
 }
 
-#endif /* DSDPLUS_DSD_MBE_H_ */
+#endif /* DSDCC_DSD_MBE_H_ */

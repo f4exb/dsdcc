@@ -51,7 +51,7 @@
 #include <string.h>
 #include "descramble.h"
 
-namespace DSDplus
+namespace DSDcc
 {
 
 const int Descramble::SCRAMBLER_TABLE_BITS[] = {
@@ -345,6 +345,6 @@ void Descramble::scramble (int * in,int * out)
     }; // end for
 }
 
-} // namespace DSDplus
+} // namespace DSDcc
 
 

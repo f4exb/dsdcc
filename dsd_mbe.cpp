@@ -23,7 +23,7 @@ extern "C" {
 #include <mbelib.h>
 }
 
-namespace DSDplus
+namespace DSDcc
 {
 
 DSDMBEDecoder::DSDMBEDecoder(DSDDecoder *dsdDecoder) :

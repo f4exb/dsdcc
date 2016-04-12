@@ -16,7 +16,7 @@
 
 #include "dsd_opts.h"
 
-namespace DSDplus
+namespace DSDcc
 {
 
 DSDOpts::DSDOpts()
@@ -63,5 +63,5 @@ DSDOpts::~DSDOpts()
 {
 }
 
-} // namespace dsdplus
+} // namespace dsdcc
 

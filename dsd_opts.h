@@ -14,10 +14,10 @@
 // along with this program. If not, see <http://www.gnu.org/licenses/>.          //
 ///////////////////////////////////////////////////////////////////////////////////
 
-#ifndef DSDPLUS_DSD_OPTS_H_
-#define DSDPLUS_DSD_OPTS_H_
+#ifndef DSDCC_DSD_OPTS_H_
+#define DSDCC_DSD_OPTS_H_
 
-namespace DSDplus
+namespace DSDcc
 {
 
 class DSDOpts
@@ -64,6 +64,6 @@ public:
     int stereo;   //!< double each audio sample to produce L+R channels
 };
 
-} // namespace dsdplus
+} // namespace dsdcc
 
-#endif /* DSDPLUS_DSD_OPTS_H_ */
+#endif /* DSDCC_DSD_OPTS_H_ */

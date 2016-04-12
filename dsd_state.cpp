@@ -16,7 +16,7 @@
 
 #include "dsd_state.h"
 
-namespace DSDplus
+namespace DSDcc
 {
 
 DSDState::DSDState()
@@ -137,4 +137,4 @@ DSDState::~DSDState()
     free(dibit_buf);
 }
 
-} // namespace dsdplus
+} // namespace dsdcc

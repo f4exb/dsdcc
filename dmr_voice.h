@@ -41,10 +41,10 @@
  *
  */
 
-#ifndef DSDPLUS_DMR_VOICE_H_
-#define DSDPLUS_DMR_VOICE_H_
+#ifndef DSDCC_DMR_VOICE_H_
+#define DSDCC_DMR_VOICE_H_
 
-namespace DSDplus
+namespace DSDcc
 {
 
 class DSDDecoder;
@@ -163,4 +163,4 @@ private:
 
 }
 
-#endif /* DSDPLUS_DMR_VOICE_H_ */
+#endif /* DSDCC_DMR_VOICE_H_ */

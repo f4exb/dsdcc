@@ -14,18 +14,15 @@
 // along with this program. If not, see <http://www.gnu.org/licenses/>.          //
 ///////////////////////////////////////////////////////////////////////////////////
 
-#ifndef DSDPLUS_DESCRAMBLE_H_
-#define DSDPLUS_DESCRAMBLE_H_
+#ifndef DSDCC_DESCRAMBLE_H_
+#define DSDCC_DESCRAMBLE_H_
 
-namespace DSDplus
+namespace DSDcc
 {
 
 class Descramble
 {
 public:
-//    Descramble();
-//    ~Descramble();
-
     static void scramble (int * in,int * out);
     static void deinterleave (int * in, int * out);
     static int FECdecoder (int * in, int * out);
@@ -39,6 +36,6 @@ private:
 };
 
 
-} // namespace DSDplus
+} // namespace DSDcc
 
-#endif /* DSDPLUS_DESCRAMBLE_H_ */
+#endif /* DSDCC_DESCRAMBLE_H_ */

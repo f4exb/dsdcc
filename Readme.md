@@ -1,4 +1,4 @@
-**DSDplus** is a complete rewrite from the original [DSD (Digital Speech Decoder)](https://github.com/szechyjs/dsd) project.
+**DSDcc** is a complete rewrite from the original [DSD (Digital Speech Decoder)](https://github.com/szechyjs/dsd) project.
 
 It is rewritten along the following lines:
 
@@ -20,13 +20,13 @@ These points have been retained from the original:
 
 <h1>Possible copyright issues with mbelib</h1>
 
-While DSDplus is intended to be patent-free, `mbelib` that it uses describes functions that may be covered by one or more U.S. patents owned by DVSI Inc. The source code itself should not be infringing as it merely describes possible methods of implementation. Compiling or using `mbelib` may infringe on patents rights in your jurisdiction and/or require licensing. It is unknown if DVSI will sell licenses for software that uses `mbelib`.
+While DSDcc is intended to be patent-free, `mbelib` that it uses describes functions that may be covered by one or more U.S. patents owned by DVSI Inc. The source code itself should not be infringing as it merely describes possible methods of implementation. Compiling or using `mbelib` may infringe on patents rights in your jurisdiction and/or require licensing. It is unknown if DVSI will sell licenses for software that uses `mbelib`.
 
 If you are not comfortable with this just do not compile or use this software.
 
 <h1>Supported formats</h1>
 
-These are only a subset of the ones covered by the original DSD project so in that respect DSDplus is rather DSDminus :-). Migration from original DSD is not easy and will be done little by little and also depends on the test material available. For now we have:
+These are only a subset of the ones covered by the original DSD project so in that respect DSDcc is rather DSDminus :-). Migration from original DSD is not easy and will be done little by little and also depends on the test material available. For now we have:
 
   - DMR/MOTOTRBO: European two slot TDMA standard. MOTOTRBO is a popular implementation of this standard.
   - D-Star: developed and promoted by Icom for Amateur Radio customers.
@@ -46,7 +46,7 @@ As usual with projects based on cmake create a `build` directory at the root of 
 
 You will need [mbelib](https://github.com/szechyjs/mbelib) installed in your system. If you use custom installation paths like `/opt/install/mbelib` for example you will need to add the include and library locations to the cmake command line with these directives: `-DLIBMBE_INCLUDE_DIR=/opt/install/mbelib/include -DLIBMBE_LIBRARY=/opt/install/mbelib/lib/libmbe.so`
 
-So the full cmake command with a custom installation directory will look like: `cmake -Wno-dev -DCMAKE_INSTALL_PREFIX=/opt/install/dsdplus -DLIBMBE_INCLUDE_DIR=/opt/install/mbelib/include -DLIBMBE_LIBRARY=/opt/install/mbelib/lib/libmbe.so ..`
+So the full cmake command with a custom installation directory will look like: `cmake -Wno-dev -DCMAKE_INSTALL_PREFIX=/opt/install/dsdcc -DLIBMBE_INCLUDE_DIR=/opt/install/mbelib/include -DLIBMBE_LIBRARY=/opt/install/mbelib/lib/libmbe.so ..`
 
 Then:
 
@@ -55,16 +55,16 @@ Then:
 
 <h1>Running</h1>
 
-A binary `dsdplus` is produced and gets installed in the `bin` subdirectory of your installation directory. A typical usage is to pipe in the input from a UDP source of discriminator output samples with `socat` and pipe out to `sox` `play` utility to produce some sound:
+A binary `dsdcc` is produced and gets installed in the `bin` subdirectory of your installation directory. A typical usage is to pipe in the input from a UDP source of discriminator output samples with `socat` and pipe out to `sox` `play` utility to produce some sound:
 ``
 
-For more details refer to the online help with the `-h` option: `dsdplus -h`
+For more details refer to the online help with the `-h` option: `dsdcc -h`
 
 <h1>Developpers notes</h1>
 
 <h2>Structure overview</h2>
 
-  - Everything lives in the `DSDplus` namespace
+  - Everything lives in the `DSDcc` namespace
   - The `DSDDecoder` object handles the core functions of synchronization and global orchestration of the decoding. It also hosts the options and state objects. It collaborates with specialized objects that have full access to the decoder public and private areas using the C++ `friend` directive.
   - The options and state objects are the following:
     - The `DSDOpts` object handles the options configuring the behaviour of the decoder
@@ -80,7 +80,7 @@ For more details refer to the online help with the `-h` option: `dsdplus -h`
 
 <h2>Typical integration</h2>
 
-You can look at the source of the `dsdplus` binary to get an idea. Basically it involves the following steps:
+You can look at the source of the `dsdcc` binary to get an idea. Basically it involves the following steps:
 
   1. Allocate a new `DSDDecoder` object (stack or heap)
   2. Set the options. You actually get full access with the `getOpts` method of `DSDDecoder`.

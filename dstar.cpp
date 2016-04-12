@@ -19,7 +19,7 @@
 #include "dsd_decoder.h"
 #include "descramble.h"
 
-namespace DSDplus
+namespace DSDcc
 {
 
 const int DSDDstar::dW[72] = {
@@ -389,4 +389,4 @@ void DSDDstar::dstar_header_decode()
     //}; // end else - if
 }
 
-} // namespace DSDplus
+} // namespace DSDcc

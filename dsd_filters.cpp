@@ -16,7 +16,7 @@
 
 #include "dsd_filters.h"
 
-namespace DSDplus
+namespace DSDcc
 {
 
 // DMR filter
@@ -141,5 +141,5 @@ short DSDFilters::dsd_input_filter(short sample, int mode)
     return sum / ngain; // filtered sample out
 }
 
-} // namespace dsdplus
+} // namespace dsdcc
 

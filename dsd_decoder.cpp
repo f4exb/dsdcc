@@ -17,7 +17,7 @@
 #include <stdlib.h>
 #include "dsd_decoder.h"
 
-namespace DSDplus
+namespace DSDcc
 {
 
 DSDDecoder::DSDDecoder() :
@@ -1684,4 +1684,4 @@ void DSDDecoder::processFrame()
     }
 }
 
-} // namespace dsdplus
+} // namespace dsdcc

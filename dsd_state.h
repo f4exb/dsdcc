@@ -14,8 +14,8 @@
 // along with this program. If not, see <http://www.gnu.org/licenses/>.          //
 ///////////////////////////////////////////////////////////////////////////////////
 
-#ifndef DSDPLUS_DSD_STATE_H_
-#define DSDPLUS_DSD_STATE_H_
+#ifndef DSDCC_DSD_STATE_H_
+#define DSDCC_DSD_STATE_H_
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -25,7 +25,7 @@ extern "C" {
 #include <mbelib.h>
 }
 
-namespace DSDplus
+namespace DSDcc
 {
 
 class DSDState
@@ -107,6 +107,6 @@ public:
     int output_finished;
 };
 
-} // namespace dsdplus
+} // namespace dsdcc
 
-#endif /* DSDPLUS_DSD_STATE_H_ */
+#endif /* DSDCC_DSD_STATE_H_ */

@@ -17,7 +17,7 @@
 #include "dmr_voice.h"
 #include "dsd_decoder.h"
 
-namespace DSDplus
+namespace DSDcc
 {
 
 /*
@@ -485,4 +485,4 @@ void DSDDMRVoice::processSlot9(int symbolIndex) // Slot9 is a 24 symbol slot
     }
 }
 
-} // namespace dsdplus
+} // namespace dsdcc

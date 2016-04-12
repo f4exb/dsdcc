@@ -14,14 +14,14 @@
 // along with this program. If not, see <http://www.gnu.org/licenses/>.          //
 ///////////////////////////////////////////////////////////////////////////////////
 
-#ifndef DSDPLUS_DSD_FILTERS_H_
-#define DSDPLUS_DSD_FILTERS_H_
+#ifndef DSDCC_DSD_FILTERS_H_
+#define DSDCC_DSD_FILTERS_H_
 
 #define NZEROS 60
 #define NXZEROS 134
 
 
-namespace DSDplus
+namespace DSDcc
 {
 
 class DSDFilters
@@ -46,4 +46,4 @@ private:
 
 }
 
-#endif /* DSDPLUS_DSD_FILTERS_H_ */
+#endif /* DSDCC_DSD_FILTERS_H_ */

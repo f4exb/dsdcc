@@ -1,10 +1,10 @@
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules)
 
-project(dsdplus)
+project(dsdcc)
 
 find_package(LibMbe REQUIRED)
 
-set(dsdplus_SOURCES
+set(dsdcc_SOURCES
     descramble.cpp
     dmr_data.cpp
     dmr_voice.cpp
@@ -16,7 +16,7 @@ set(dsdplus_SOURCES
     dstar.cpp
 )
 
-set(dsdplus_HEADERS
+set(dsdcc_HEADERS
     descramble.h
     dmr_data.h
     dmr_voice.h
@@ -34,10 +34,10 @@ include_directories(
     ${LIBMBE_INCLUDE_DIR}
 )
 
-add_library(dsdplus SHARED
-    ${dsdplus_SOURCES}
+add_library(dsdcc SHARED
+    ${dsdcc_SOURCES}
 )
 
-target_link_libraries(dsdplus ${LIBMBE_LIBRARY})
+target_link_libraries(dsdcc ${LIBMBE_LIBRARY})
 
-install(TARGETS dsdplus DESTINATION lib)
+install(TARGETS dsdcc DESTINATION lib)

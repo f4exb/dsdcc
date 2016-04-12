@@ -14,10 +14,10 @@
 // along with this program. If not, see <http://www.gnu.org/licenses/>.          //
 ///////////////////////////////////////////////////////////////////////////////////
 
-#ifndef DSDPLUS_DMR_DATA_H_
-#define DSDPLUS_DMR_DATA_H_
+#ifndef DSDCC_DMR_DATA_H_
+#define DSDCC_DMR_DATA_H_
 
-namespace DSDplus
+namespace DSDcc
 {
 
 class DSDDecoder;
@@ -46,4 +46,4 @@ private:
 
 }
 
-#endif /* DSDPLUS_DMR_DATA_H_ */
+#endif /* DSDCC_DMR_DATA_H_ */

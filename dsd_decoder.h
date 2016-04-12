@@ -14,8 +14,8 @@
 // along with this program. If not, see <http://www.gnu.org/licenses/>.          //
 ///////////////////////////////////////////////////////////////////////////////////
 
-#ifndef DSDPLUS_DSD_DECODER_H_
-#define DSDPLUS_DSD_DECODER_H_
+#ifndef DSDCC_DSD_DECODER_H_
+#define DSDCC_DSD_DECODER_H_
 
 #include "dsd_opts.h"
 #include "dsd_state.h"
@@ -60,7 +60,7 @@
 #define INV_PROVOICE_EA_SYNC "13313133113113333311313133133311"
 #define PROVOICE_EA_SYNC     "31131311331331111133131311311133"
 
-namespace DSDplus
+namespace DSDcc
 {
 
 class DSDDecoder
@@ -152,6 +152,6 @@ private:
     DSDDstar m_dsdDstar;
 };
 
-} // namespace dsdplus
+} // namespace dsdcc
 
-#endif /* DSDPLUS_DSD_DECODER_H_ */
+#endif /* DSDCC_DSD_DECODER_H_ */

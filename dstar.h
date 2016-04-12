@@ -14,10 +14,10 @@
 // along with this program. If not, see <http://www.gnu.org/licenses/>.          //
 ///////////////////////////////////////////////////////////////////////////////////
 
-#ifndef DSDPLUS_DSTAR_H_
-#define DSDPLUS_DSTAR_H_
+#ifndef DSDCC_DSTAR_H_
+#define DSDCC_DSTAR_H_
 
-namespace DSDplus
+namespace DSDcc
 {
 
 class DSDDecoder;
@@ -63,6 +63,6 @@ private:
     static const int dX[72];
 };
 
-} // namespace DSDplus
+} // namespace DSDcc
 
-#endif /* DSDPLUS_DSTAR_H_ */
+#endif /* DSDCC_DSTAR_H_ */

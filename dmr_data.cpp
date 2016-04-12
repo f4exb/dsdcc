@@ -17,7 +17,7 @@
 #include "dmr_data.h"
 #include "dsd_decoder.h"
 
-namespace DSDplus
+namespace DSDcc
 {
 
 DSDDMRData::DSDDMRData(DSDDecoder *dsdDecoder) :
@@ -228,4 +228,4 @@ void DSDDMRData::process()
     m_symbolIndex++;
 }
 
-} // namespace DSDplus
+} // namespace DSDcc
