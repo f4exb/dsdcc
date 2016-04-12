@@ -55,10 +55,10 @@ Then:
 
 <h1>Running</h1>
 
-A binary `dsdcc` is produced and gets installed in the `bin` subdirectory of your installation directory. A typical usage is to pipe in the input from a UDP source of discriminator output samples with `socat` and pipe out to `sox` `play` utility to produce some sound:
-``
+A binary `dsdccx` is produced and gets installed in the `bin` subdirectory of your installation directory. A typical usage is to pipe in the input from a UDP source of discriminator output samples with `socat` and pipe out to `sox` `play` utility to produce some sound:
+`socat stdout udp-listen:9999 | /opt/install/dsdcc/bin/dsdccx -i - -fa -o - | play -q -t s16 -r 8k -c 1 -`
 
-For more details refer to the online help with the `-h` option: `dsdcc -h`
+For more details refer to the online help with the `-h` option: `dsdccx -h`
 
 <h1>Developpers notes</h1>
 
@@ -80,7 +80,7 @@ For more details refer to the online help with the `-h` option: `dsdcc -h`
 
 <h2>Typical integration</h2>
 
-You can look at the source of the `dsdcc` binary to get an idea. Basically it involves the following steps:
+You can look at the source of the `dsdccx` binary to get an idea. Basically it involves the following steps:
 
   1. Allocate a new `DSDDecoder` object (stack or heap)
   2. Set the options. You actually get full access with the `getOpts` method of `DSDDecoder`.

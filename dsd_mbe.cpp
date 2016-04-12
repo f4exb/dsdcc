@@ -27,7 +27,8 @@ namespace DSDcc
 {
 
 DSDMBEDecoder::DSDMBEDecoder(DSDDecoder *dsdDecoder) :
-        m_dsdDecoder(dsdDecoder)
+        m_dsdDecoder(dsdDecoder),
+        m_upsamplerLastValue(0.0f)
 {
 }
 
@@ -229,8 +230,6 @@ void DSDMBEDecoder::processAudio()
             m_dsdDecoder->m_state.audio_out_nb_samples++;
             m_dsdDecoder->m_state.audio_out_float_buf_p++;
         }
-
-        m_dsdDecoder->m_state.audio_out_float_buf_p += m_dsdDecoder->m_opts.playoffset;
     }
     else // leave at 8k
     {
@@ -238,6 +237,8 @@ void DSDMBEDecoder::processAudio()
         {
             m_dsdDecoder->resetAudio();
         }
+
+        m_dsdDecoder->m_state.audio_out_float_buf_p = m_dsdDecoder->m_state.audio_out_float_buf;
 
         for (n = 0; n < 160; n++)
         {
@@ -273,11 +274,12 @@ void DSDMBEDecoder::upsample(float invalue)
     float *outbuf1, c, d;
 
     outbuf1 = m_dsdDecoder->m_state.audio_out_float_buf_p;
-    outbuf1--;
-    c = *outbuf1;
+//    outbuf1--;
+//    c = *outbuf1;
+    c = m_upsamplerLastValue;
     d = invalue;
     // basic triangle interpolation
-    outbuf1++;
+//    outbuf1++;
     *outbuf1 = ((invalue * (float) 0.166) + (c * (float) 0.834));
     outbuf1++;
     *outbuf1 = ((invalue * (float) 0.332) + (c * (float) 0.668));
@@ -289,30 +291,35 @@ void DSDMBEDecoder::upsample(float invalue)
     *outbuf1 = ((invalue * (float) 0.834) + (c * (float) 0.166));
     outbuf1++;
     *outbuf1 = d;
+    m_upsamplerLastValue = d;
     outbuf1++;
 
-    if (m_dsdDecoder->m_state.audio_out_idx2 > 24)
-    {
-        // smoothing
-        outbuf1 -= 16;
-        for (j = 0; j < 4; j++)
-        {
-            for (i = 0; i < 6; i++)
-            {
-                sum = 0;
-                outbuf1 -= 2;
-                sum += *outbuf1;
-                outbuf1 += 2;
-                sum += *outbuf1;
-                outbuf1 += 2;
-                sum += *outbuf1;
-                outbuf1 -= 2;
-                *outbuf1 = (sum / (float) 3);
-                outbuf1++;
-            }
-            outbuf1 -= 8;
-        }
-    }
+    outbuf1 -= 6;
+
+    // FIXME: this is all wrong! Now at least it does not corrupt audio_out_float_buf
+
+//    if (m_dsdDecoder->m_state.audio_out_idx2 > 24)
+//    {
+//        // smoothing
+//        outbuf1 -= 16;
+//        for (j = 0; j < 4; j++)
+//        {
+//            for (i = 0; i < 6; i++)
+//            {
+//                sum = 0;
+//                outbuf1 -= 2;
+//                sum += *outbuf1;
+//                outbuf1 += 2;
+//                sum += *outbuf1;
+//                outbuf1 += 2;
+//                sum += *outbuf1;
+//                outbuf1 -= 2;
+//                *outbuf1 = (sum / (float) 3);
+//                outbuf1++;
+//            }
+//            outbuf1 -= 8;
+//        }
+//    }
 }
 
 
