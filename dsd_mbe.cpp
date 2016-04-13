@@ -186,7 +186,7 @@ void DSDMBEDecoder::processAudio()
     // copy audio data to output buffer and upsample if necessary
     m_dsdDecoder->m_state.audio_out_temp_buf_p = m_dsdDecoder->m_state.audio_out_temp_buf;
 
-    if ((m_dsdDecoder->m_opts.split == 0) || (m_dsdDecoder->m_opts.upsample != 0)) // upsampling to 48k
+    if (m_dsdDecoder->m_opts.upsample != 0) // upsampling to 48k
     {
         if (m_dsdDecoder->m_state.audio_out_nb_samples + 960 >= m_dsdDecoder->m_state.audio_out_buf_size)
         {

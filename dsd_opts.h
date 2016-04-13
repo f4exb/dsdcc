@@ -36,7 +36,6 @@ public:
     int p25status;
     int p25tg;
     int scoperate;
-    int split;
     int playoffset;
     float audio_gain;
     int audio_out;

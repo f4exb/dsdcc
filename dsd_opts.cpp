@@ -31,7 +31,6 @@ DSDOpts::DSDOpts()
     p25status = 0;
     p25tg = 0;
     scoperate = 15;
-    split = 0;
     playoffset = 0;
     audio_gain = 0;
     audio_out = 1;

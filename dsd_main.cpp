@@ -449,7 +449,7 @@ int main(int argc, char **argv)
 
     if (strncmp(out_file, (const char *) "-", 1) == 0)
     {
-        out_file_fd = STDIN_FILENO;
+        out_file_fd = STDOUT_FILENO;
     }
     else
     {
@@ -487,16 +487,18 @@ int main(int argc, char **argv)
         dsdDecoder.run(sample);
         audioSamples = dsdDecoder.getAudio(nbAudioSamples);
 
-//        if (nbAudioSamples > 0)
-//        {
-//            result = write(out_file_fd, (const void *) audioSamples, sizeof(short) * nbAudioSamples);
-//
-//            if (result == -1) {
-//                fprintf(stderr, "Error writing to output\n");
-//            } else if (result != nbAudioSamples) {
-//                fprintf(stderr, "Written %d out of %d audio samples\n", result, nbAudioSamples);
-//            }
-//        }
+        if (nbAudioSamples > 0)
+        {
+            result = write(out_file_fd, (const void *) audioSamples, sizeof(short) * nbAudioSamples);
+
+            if (result == -1) {
+                fprintf(stderr, "Error writing to output\n");
+            } else if (result != sizeof(short) * nbAudioSamples) {
+                fprintf(stderr, "Written %d out of %d audio samples\n", result/2, nbAudioSamples);
+            }
+
+            dsdDecoder.resetAudio();
+        }
     }
 
     fprintf(stderr, "End of process\n");
