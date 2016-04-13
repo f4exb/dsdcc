@@ -234,7 +234,7 @@ void DSDDMRData::process()
             }
         }
 
-        m_dsdDecoder->m_fsmState = DSDDecoder::DSDLookForSync; // go back to search sync state
+        m_dsdDecoder->resetFrameSync(); // get ready for next sync
     }
 
     m_symbolIndex++;

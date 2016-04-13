@@ -179,13 +179,16 @@ void DSDDMRVoice::postProcess(int symbolIndex)
     if (symbolIndex == 54+12+54-1) // very last symbol -> go back to search sync state
     {
         fprintf(stderr, "DSDDMRVoice::postProcess: end of frame\n");
-        m_dsdDecoder->m_fsmState = DSDDecoder::DSDLookForSync;
+        m_dsdDecoder->resetFrameSync(); // get ready for next sync
     }
 }
 
 void DSDDMRVoice::processSlot0(int symbolIndex) // Slot0 is a 54 symbol slot
 {
-    m_dsdDecoder->getDibit(); // get dibit from symbol but do nothing with it
+    if (m_majorBlock > 0) // 0:0 reads from 144 in memory dibits. Handled by upper layer.
+    {
+    	m_dsdDecoder->getDibit(); // get dibit from symbol but do nothing with it
+    }
 }
 
 void DSDDMRVoice::processSlot8(int symbolIndex) // Slot8 is a 54 symbol slot

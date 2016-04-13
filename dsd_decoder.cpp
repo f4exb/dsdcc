@@ -59,7 +59,7 @@ void DSDDecoder::run(short sample)
                 if (m_state.synctype > -1) // 0 and above means a sync has been found
                 {
                     m_hasSync = 1;
-                    processFrame(); // process the frame which sync has been found. This will change FSM state
+                    processFrameInit();   // initiate the process of the frame which sync has been found. This will change FSM state
                 }
                 else // no sync has been found after searching -> call noCarrier() and go back searching (same FSM state)
                 {
@@ -1692,7 +1692,7 @@ int DSDDecoder::comp(const void *a, const void *b)
         return 1;
 }
 
-void DSDDecoder::processFrame()
+void DSDDecoder::processFrameInit()
 {
     if (m_state.rf_mod == 1)
     {
@@ -1723,13 +1723,15 @@ void DSDDecoder::processFrame()
         if ((m_state.synctype == 11) || (m_state.synctype == 12))
         {
             sprintf(m_state.fsubtype, " VOICE        ");
-            m_dsdDMRVoice.init();
+            m_dsdDMRVoice.init();    // initializations not consuming a live symbol
+            m_dsdDMRVoice.process(); // process current symbol first
             m_fsmState = DSDprocessDMRvoice;
         }
         else
         {
             m_state.err_str[0] = 0;
-            m_dsdDMRData.init();
+            m_dsdDMRData.init();    // initializations not consuming a live symbol
+            m_dsdDMRData.process(); // process current symbol first
             m_fsmState = DSDprocessDMRdata;
         }
     }

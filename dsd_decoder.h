@@ -122,7 +122,7 @@ private:
     void printFrameSync(const char *frametype, int offset, char *modulation);
     void noCarrier();
     void printFrameInfo();
-    void processFrame();
+    void processFrameInit();
     static int comp(const void *a, const void *b);
 
     DSDOpts m_opts;
