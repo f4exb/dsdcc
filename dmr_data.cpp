@@ -222,6 +222,18 @@ void DSDDMRData::process()
 
     if (m_symbolIndex == 120 -1) // last dibit to skip
     {
+        if (m_dsdDecoder->m_opts.errorbars == 1)
+        {
+            if (strcmp(m_dsdDecoder->m_state.fsubtype, "              ") == 0)
+            {
+                fprintf(stderr, " Unknown burst type: %s\n", bursttype);
+            }
+            else
+            {
+                fprintf(stderr, "%s\n", m_dsdDecoder->m_state.fsubtype);
+            }
+        }
+
         m_dsdDecoder->m_fsmState = DSDDecoder::DSDLookForSync; // go back to search sync state
     }
 
