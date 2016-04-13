@@ -15,6 +15,7 @@
 ///////////////////////////////////////////////////////////////////////////////////
 
 #include <stdlib.h>
+#include <assert.h>
 #include "dsd_decoder.h"
 
 namespace DSDcc
@@ -308,19 +309,31 @@ bool DSDDecoder::pushSample(short sample, int have_sync)
     }
 }
 
-int DSDDecoder::getDibit()
+int DSDDecoder::get_dibit_and_analog_signal(int* out_analog_signal)
 {
-    // returns one dibit value
-    int i, j, o, symbol;
-    int sbuf2[128];
-    int spectrum[64];
-    char modulation[8];
-    int lmin, lmax, lsum;
+    int symbol;
+    int dibit;
 
     m_state.numflips = 0;
-
     symbol = m_symbol;
-    m_state.sbuf[m_state.sidx] = m_symbol;
+    m_state[m_state.sidx] = symbol;
+
+    if (out_analog_signal != 0) {
+        *out_analog_signal = symbol;
+    }
+
+    use_symbol(symbol);
+
+    dibit = digitize(symbol);
+
+    return dibit;
+}
+
+void DSDDecoder::use_symbol(int symbol)
+{
+    int i;
+    int sbuf2[128];
+    int lmin, lmax, lsum;
 
     for (i = 0; i < m_opts.ssize; i++)
     {
@@ -328,6 +341,7 @@ int DSDDecoder::getDibit()
     }
 
     qsort(sbuf2, m_opts.ssize, sizeof(int), comp);
+
     // continuous update of min/max in rf_mod=1 (QPSK) mode
     // in c4fm min/max must only be updated during sync
     if (m_state.rf_mod == 1)
@@ -336,7 +350,6 @@ int DSDDecoder::getDibit()
         lmax = (sbuf2[(m_opts.ssize - 1)] + sbuf2[(m_opts.ssize - 2)]) / 2;
         m_state.minbuf[m_state.midx] = lmin;
         m_state.maxbuf[m_state.midx] = lmax;
-
         if (m_state.midx == (m_opts.msize - 1))
         {
             m_state.midx = 0;
@@ -345,28 +358,23 @@ int DSDDecoder::getDibit()
         {
             m_state.midx++;
         }
-
         lsum = 0;
-
         for (i = 0; i < m_opts.msize; i++)
         {
             lsum += m_state.minbuf[i];
         }
-
         m_state.min = lsum / m_opts.msize;
         lsum = 0;
-
         for (i = 0; i < m_opts.msize; i++)
         {
             lsum += m_state.maxbuf[i];
         }
-
         m_state.max = lsum / m_opts.msize;
         m_state.center = ((m_state.max) + (m_state.min)) / 2;
         m_state.umid = (((m_state.max) - m_state.center) * 5 / 8) + m_state.center;
         m_state.lmid = (((m_state.min) - m_state.center) * 5 / 8) + m_state.center;
-        m_state.maxref = ((m_state.max) * 0.80);
-        m_state.minref = ((m_state.min) * 0.80);
+        m_state.maxref = (int) ((m_state.max) * 0.80F);
+        m_state.minref = (int) ((m_state.min) * 0.80F);
     }
     else
     {
@@ -374,111 +382,14 @@ int DSDDecoder::getDibit()
         m_state.minref = m_state.min;
     }
 
+    // Increase sidx
     if (m_state.sidx == (m_opts.ssize - 1))
     {
         m_state.sidx = 0;
 
         if (m_opts.datascope == 1)
         {
-            if (m_state.rf_mod == 0)
-            {
-                sprintf(modulation, "C4FM");
-            }
-            else if (m_state.rf_mod == 1)
-            {
-                sprintf(modulation, "QPSK");
-            }
-            else if (m_state.rf_mod == 2)
-            {
-                sprintf(modulation, "GFSK");
-            }
-
-            for (i = 0; i < 64; i++)
-            {
-                spectrum[i] = 0;
-            }
-            for (i = 0; i < m_opts.ssize; i++)
-            {
-                o = (sbuf2[i] + 32768) / 1024;
-                spectrum[o]++;
-            }
-            if (m_state.symbolcnt > (4800 / m_opts.scoperate))
-            {
-                m_state.symbolcnt = 0;
-                fprintf(stderr, "\n");
-                fprintf(stderr,
-                        "Demod mode:     %s                Nac:                     %4X\n",
-                        modulation, m_state.nac);
-                fprintf(stderr,
-                        "Frame Type:    %s        Talkgroup:            %7i\n",
-                        m_state.ftype, m_state.lasttg);
-                fprintf(stderr,
-                        "Frame Subtype: %s       Source:          %12i\n",
-                        m_state.fsubtype, m_state.lastsrc);
-                fprintf(stderr,
-                        "TDMA activity:  %s %s     Voice errors: %s\n",
-                        m_state.slot0light, m_state.slot1light, m_state.err_str);
-                fprintf(stderr,
-                        "+----------------------------------------------------------------+\n");
-
-                for (i = 0; i < 10; i++)
-                {
-                    fprintf(stderr, "|");
-
-                    for (j = 0; j < 64; j++)
-                    {
-                        if (i == 0)
-                        {
-                            if ((j == ((m_state.min) + 32768) / 1024)
-                                    || (j == ((m_state.max) + 32768) / 1024))
-                            {
-                                fprintf(stderr, "#");
-                            }
-                            else if ((j == ((m_state.lmid) + 32768) / 1024)
-                                    || (j == ((m_state.umid) + 32768) / 1024))
-                            {
-                                fprintf(stderr, "^");
-                            }
-                            else if (j == (m_state.center + 32768) / 1024)
-                            {
-                                fprintf(stderr, "!");
-                            }
-                            else
-                            {
-                                if (j == 32)
-                                {
-                                    fprintf(stderr, "|");
-                                }
-                                else
-                                {
-                                    fprintf(stderr, " ");
-                                }
-                            }
-                        }
-                        else
-                        {
-                            if (spectrum[j] > 9 - i)
-                            {
-                                fprintf(stderr, "*");
-                            }
-                            else
-                            {
-                                if (j == 32)
-                                {
-                                    fprintf(stderr, "|");
-                                }
-                                else
-                                {
-                                    fprintf(stderr, " ");
-                                }
-                            }
-                        }
-                    }
-                    fprintf(stderr, "|\n");
-                }
-                fprintf(stderr,
-                        "+----------------------------------------------------------------+\n");
-            }
+            print_datascope(opts, state, sbuf2);
         }
     }
     else
@@ -490,108 +401,293 @@ int DSDDecoder::getDibit()
     {
         m_state.dibit_buf_p = m_state.dibit_buf + 200;
     }
+}
 
+int DSDDecoder::digitize(int symbol)
+{
     // determine dibit state
     if ((m_state.synctype == 6) || (m_state.synctype == 14)
             || (m_state.synctype == 18))
     {
-        if (m_symbol > m_state.center)
+        //  6 +D-STAR
+        // 14 +ProVoice
+        // 18 +D-STAR_HD
+
+        if (symbol > m_state.center)
         {
             *m_state.dibit_buf_p = 1;
             m_state.dibit_buf_p++;
-            return (0);
+            return (0);               // +1
         }
         else
         {
             *m_state.dibit_buf_p = 3;
             m_state.dibit_buf_p++;
-            return (1);
+            return (1);               // +3
         }
     }
     else if ((m_state.synctype == 7) || (m_state.synctype == 15)
             || (m_state.synctype == 19))
     {
-        if (m_symbol > m_state.center)
+        //  7 -D-STAR
+        // 15 -ProVoice
+        // 19 -D-STAR_HD
+
+        if (symbol > m_state.center)
         {
             *m_state.dibit_buf_p = 1;
             m_state.dibit_buf_p++;
-            return (1);
+            return (1);               // +3
         }
         else
         {
             *m_state.dibit_buf_p = 3;
             m_state.dibit_buf_p++;
-            return (0);
+            return (0);               // +1
         }
     }
     else if ((m_state.synctype == 1) || (m_state.synctype == 3)
             || (m_state.synctype == 5) || (m_state.synctype == 9)
-            || (m_state.synctype == 11) || (m_state.synctype == 13))
+            || (m_state.synctype == 11) || (m_state.synctype == 13)
+            || (m_state.synctype == 17))
     {
-        if (m_symbol > m_state.center)
+        //  1 -P25p1
+        //  3 -X2-TDMA (inverted signal voice frame)
+        //  5 -X2-TDMA (inverted signal data frame)
+        //  9 -NXDN (inverted voice frame)
+        // 11 -DMR (inverted signal voice frame)
+        // 13 -DMR (inverted signal data frame)
+        // 17 -NXDN (inverted data frame)
+
+        int valid;
+        int dibit;
+
+        valid = 0;
+
+        if (m_state.synctype == 1)
         {
-            if (m_symbol > m_state.umid)
+            // Use the P25 heuristics if available
+            valid = estimate_symbol(m_state.rf_mod, &(m_state.inv_p25_heuristics),
+                    m_state.last_dibit, symbol, &dibit);
+        }
+
+        if (valid == 0)
+        {
+            // Revert to the original approach: choose the symbol according to the regions delimited
+            // by center, umid and lmid
+            if (symbol > m_state.center)
             {
-                *m_state.dibit_buf_p = 1; // store non-inverted values in dibit_buf
-                m_state.dibit_buf_p++;
-                return (3);
+                if (symbol > m_state.umid)
+                {
+                    dibit = 3;               // -3
+                }
+                else
+                {
+                    dibit = 2;               // -1
+                }
             }
             else
             {
-                *m_state.dibit_buf_p = 0;
-                m_state.dibit_buf_p++;
-                return (2);
+                if (symbol < m_state.lmid)
+                {
+                    dibit = 1;               // +3
+                }
+                else
+                {
+                    dibit = 0;               // +2
+                }
             }
         }
-        else
-        {
-            if (m_symbol < m_state.lmid)
-            {
-                *m_state.dibit_buf_p = 3;
-                m_state.dibit_buf_p++;
-                return (1);
-            }
-            else
-            {
-                *m_state.dibit_buf_p = 2;
-                m_state.dibit_buf_p++;
-                return (0);
-            }
-        }
+
+        m_state.last_dibit = dibit;
+
+        // store non-inverted values in dibit_buf
+        *m_state.dibit_buf_p = invert_dibit(dibit);
+        m_state.dibit_buf_p++;
+        return dibit;
     }
     else
     {
-        if (m_symbol > m_state.center)
+        //  0 +P25p1
+        //  2 +X2-TDMA (non inverted signal data frame)
+        //  4 +X2-TDMA (non inverted signal voice frame)
+        //  8 +NXDN (non inverted voice frame)
+        // 10 +DMR (non inverted signal data frame)
+        // 12 +DMR (non inverted signal voice frame)
+        // 16 +NXDN (non inverted data frame)
+
+        int valid;
+        int dibit;
+
+        valid = 0;
+
+        if (m_state.synctype == 0)
         {
-            if (m_symbol > m_state.umid)
+            // Use the P25 heuristics if available
+            valid = estimate_symbol(m_state.rf_mod, &(m_state.p25_heuristics),
+                    m_state.last_dibit, symbol, &dibit);
+        }
+
+        if (valid == 0)
+        {
+            // Revert to the original approach: choose the symbol according to the regions delimited
+            // by center, umid and lmid
+            if (symbol > m_state.center)
             {
-                *m_state.dibit_buf_p = 1;
-                m_state.dibit_buf_p++;
-                return (1);
+                if (symbol > m_state.umid)
+                {
+                    dibit = 1;               // +3
+                }
+                else
+                {
+                    dibit = 0;               // +1
+                }
             }
             else
             {
-                *m_state.dibit_buf_p = 0;
-                m_state.dibit_buf_p++;
-                return (0);
+                if (symbol < m_state.lmid)
+                {
+                    dibit = 3;               // -3
+                }
+                else
+                {
+                    dibit = 2;               // -1
+                }
             }
         }
-        else
-        {
-            if (m_symbol < m_state.lmid)
-            {
-                *m_state.dibit_buf_p = 3;
-                m_state.dibit_buf_p++;
-                return (3);
-            }
-            else
-            {
-                *m_state.dibit_buf_p = 2;
-                m_state.dibit_buf_p++;
-                return (2);
-            }
-        }
+
+        m_state.last_dibit = dibit;
+
+        *m_state.dibit_buf_p = dibit;
+        m_state.dibit_buf_p++;
+        return dibit;
     }
+}
+
+int DSDDecoder::invert_dibit(int dibit)
+{
+    switch (dibit)
+    {
+    case 0:
+        return 2;
+    case 1:
+        return 3;
+    case 2:
+        return 0;
+    case 3:
+        return 1;
+    }
+
+    // Error, shouldn't be here
+    assert(0);
+    return -1;
+}
+
+void DSDDecoder::print_datascope(int* sbuf2)
+{
+    int i, j, o;
+    char modulation[8];
+    int spectrum[64];
+
+    if (m_state.rf_mod == 0)
+    {
+        sprintf(modulation, "C4FM");
+    }
+    else if (m_state.rf_mod == 1)
+    {
+        sprintf(modulation, "QPSK");
+    }
+    else if (m_state.rf_mod == 2)
+    {
+        sprintf(modulation, "GFSK");
+    }
+
+    for (i = 0; i < 64; i++)
+    {
+        spectrum[i] = 0;
+    }
+    for (i = 0; i < m_opts.ssize; i++)
+    {
+        o = (sbuf2[i] + 32768) / 1024;
+        spectrum[o]++;
+    }
+    if (m_state.symbolcnt > (4800 / m_opts.scoperate))
+    {
+        m_state.symbolcnt = 0;
+        fprintf(stderr, "\n");
+        fprintf(stderr,
+                "Demod mode:     %s                Nac:                     %4X\n",
+                modulation, m_state.nac);
+        fprintf(stderr, "Frame Type:    %s        Talkgroup:            %7i\n",
+                m_state.ftype, m_state.lasttg);
+        fprintf(stderr, "Frame Subtype: %s       Source:          %12i\n",
+                m_state.fsubtype, m_state.lastsrc);
+        fprintf(stderr, "TDMA activity:  %s %s     Voice errors: %s\n",
+                m_state.slot0light, m_state.slot1light, m_state.err_str);
+        fprintf(stderr,
+                "+----------------------------------------------------------------+\n");
+        for (i = 0; i < 10; i++)
+        {
+            fprintf(stderr, "|");
+            for (j = 0; j < 64; j++)
+            {
+                if (i == 0)
+                {
+                    if ((j == ((m_state.min) + 32768) / 1024)
+                            || (j == ((m_state.max) + 32768) / 1024))
+                    {
+                        fprintf(stderr, "#");
+                    }
+                    else if ((j == ((m_state.lmid) + 32768) / 1024)
+                            || (j == ((m_state.umid) + 32768) / 1024))
+                    {
+                        fprintf(stderr, "^");
+                    }
+                    else if (j == (m_state.center + 32768) / 1024)
+                    {
+                        fprintf(stderr, "!");
+                    }
+                    else
+                    {
+                        if (j == 32)
+                        {
+                            fprintf(stderr, "|");
+                        }
+                        else
+                        {
+                            fprintf(stderr, " ");
+                        }
+                    }
+                }
+                else
+                {
+                    if (spectrum[j] > 9 - i)
+                    {
+                        fprintf(stderr, "*");
+                    }
+                    else
+                    {
+                        if (j == 32)
+                        {
+                            fprintf(stderr, "|");
+                        }
+                        else
+                        {
+                            fprintf(stderr, " ");
+                        }
+                    }
+                }
+            }
+            fprintf(stderr, "|\n");
+        }
+        fprintf(stderr,
+                "+----------------------------------------------------------------+\n");
+    }
+}
+
+int DSDDecoder::getDibit()
+{
+    return get_dibit_and_analog_signal(0);
 }
 
 void DSDDecoder::resetFrameSync()

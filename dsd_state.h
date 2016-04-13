@@ -25,6 +25,8 @@ extern "C" {
 #include <mbelib.h>
 }
 
+#include "p25p1_heuristics.h"
+
 namespace DSDcc
 {
 
@@ -98,6 +100,9 @@ public:
     mbe_parms *prev_mp;
     mbe_parms *prev_mp_enhanced;
     int p25kid;
+    int last_dibit;                                     //!< Last dibit read
+    DSDP25Heuristics::P25Heuristics p25_heuristics;     //!< Heuristics state data for +P5 signals
+    DSDP25Heuristics::P25Heuristics inv_p25_heuristics; //!< Heuristics state data for -P5 signals
 
     short *output_buffer;
     int output_offset;
