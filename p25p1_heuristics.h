@@ -129,7 +129,7 @@ public:
      * Initializes the heuristics state.
      * \param heuristics The P25Heuristics structure to initialize.
      */
-    void initialize_p25_heuristics(P25Heuristics* heuristics);
+    static void initialize_p25_heuristics(P25Heuristics* heuristics);
 
     /**
      * Important method that estimates the most likely symbol for a given analog signal value and previous dibit.
@@ -143,13 +143,13 @@ public:
      * to estimate it is because we don't have enough information to model the Gaussians (not enough data
      * has been passed to contribute_to_heuristics).
      */
-    int estimate_symbol(int rf_mod, P25Heuristics* heuristics, int previous_dibit,
+    static int estimate_symbol(int rf_mod, P25Heuristics* heuristics, int previous_dibit,
             int analog_value, int* dibit);
 
     /**
      * Log some useful information on the heuristics state.
      */
-    void debug_print_heuristics(P25Heuristics* heuristics);
+    static void debug_print_heuristics(P25Heuristics* heuristics);
 
     /**
      * This method contributes valuable information from dibits whose value we are confident is correct. We take
@@ -160,7 +160,7 @@ public:
      * \param analog_signal_array Sequence of AnalogSignal which contain the cleared dibits and analog values.
      * \param count number of cleared dibits passed (= number of elements to use from analog_signal_array).
      */
-    void contribute_to_heuristics(int rf_mod, P25Heuristics* heuristics,
+    static void contribute_to_heuristics(int rf_mod, P25Heuristics* heuristics,
             AnalogSignal* analog_signal_array, int count);
 
     /**
@@ -171,7 +171,7 @@ public:
      * \param bits The number of bits we have read.
      * \param errors The number of errors we estimate in those bits.
      */
-    void update_error_stats(P25Heuristics* heuristics, int bits, int errors);
+    static void update_error_stats(P25Heuristics* heuristics, int bits, int errors);
 
     /**
      * Returns the estimate for the BER (bit error rate).
@@ -180,9 +180,14 @@ public:
     float get_P25_BER_estimate(P25Heuristics* heuristics);
 
 private:
-    int use_previous_dibit(int rf_mod);
-    void update_p25_heuristics(P25Heuristics* heuristics, int previous_dibit,
-            int original_dibit, int dibit, int analog_value)
+    static int use_previous_dibit(int rf_mod);
+    static void update_p25_heuristics(P25Heuristics* heuristics, int previous_dibit,
+            int original_dibit, int dibit, int analog_value);
+    static void initialize_symbol_heuristics(SymbolHeuristics* sh);
+    static float evaluate_pdf(SymbolHeuristics* se, int value);
+    static void debug_log_pdf(P25Heuristics* heuristics, int previous_dibit, int analog_value);
+    static void debug_print_symbol_heuristics(int previous_dibit, int dibit,
+            SymbolHeuristics* sh);
 };
 
 }

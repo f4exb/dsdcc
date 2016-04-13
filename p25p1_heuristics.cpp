@@ -14,6 +14,8 @@
 // along with this program. If not, see <http://www.gnu.org/licenses/>.          //
 ///////////////////////////////////////////////////////////////////////////////////
 
+#include <stdio.h>
+#include <math.h>
 #include "p25p1_heuristics.h"
 
 namespace DSDcc
@@ -111,7 +113,7 @@ void DSDP25Heuristics::update_p25_heuristics(P25Heuristics* heuristics, int prev
             * (((float) analog_value) - mean);
 }
 
-void contribute_to_heuristics(int rf_mod, P25Heuristics* heuristics,
+void DSDP25Heuristics::contribute_to_heuristics(int rf_mod, P25Heuristics* heuristics,
         AnalogSignal* analog_signal_array, int count)
 {
     int i;
@@ -163,7 +165,7 @@ void contribute_to_heuristics(int rf_mod, P25Heuristics* heuristics,
  * Initializes the symbol's heuristics state.
  * \param sh The SymbolHeuristics structure to initialize.
  */
-static void initialize_symbol_heuristics(SymbolHeuristics* sh)
+void DSDP25Heuristics::initialize_symbol_heuristics(SymbolHeuristics* sh)
 {
     sh->count = 0;
     sh->index = 0;
@@ -171,7 +173,7 @@ static void initialize_symbol_heuristics(SymbolHeuristics* sh)
     sh->var_sum = 0;
 }
 
-void initialize_p25_heuristics(P25Heuristics* heuristics)
+void DSDP25Heuristics::initialize_p25_heuristics(P25Heuristics* heuristics)
 {
     int i, j;
     for (i = 0; i < 4; i++)
@@ -191,7 +193,7 @@ void initialize_p25_heuristics(P25Heuristics* heuristics)
  * simplify very much. We don't really need to know the actual PDF value, just which Gaussian's got the
  * highest PDF, which is a simpler problem.
  */
-static float evaluate_pdf(SymbolHeuristics* se, int value)
+float DSDP25Heuristics::evaluate_pdf(SymbolHeuristics* se, int value)
 {
     float x = (se->count * ((float) value) - se->sum);
     float y = -0.5F * x * x / (se->count * se->var_sum);
@@ -204,7 +206,7 @@ static float evaluate_pdf(SymbolHeuristics* se, int value)
 /**
  * Logging of the internal PDF values for a given analog value and previous dibit.
  */
-static void debug_log_pdf(P25Heuristics* heuristics, int previous_dibit,
+void DSDP25Heuristics::debug_log_pdf(P25Heuristics* heuristics, int previous_dibit,
         int analog_value)
 {
     int i;
@@ -220,7 +222,7 @@ static void debug_log_pdf(P25Heuristics* heuristics, int previous_dibit,
             pdfs[2], pdfs[3]);
 }
 
-int estimate_symbol(int rf_mod, P25Heuristics* heuristics, int previous_dibit,
+int DSDP25Heuristics::estimate_symbol(int rf_mod, P25Heuristics* heuristics, int previous_dibit,
         int analog_value, int* dibit)
 {
     int valid;
@@ -289,7 +291,7 @@ int estimate_symbol(int rf_mod, P25Heuristics* heuristics, int previous_dibit,
 /**
  * Logs the internal state of the heuristic's state. Good for debugging.
  */
-static void debug_print_symbol_heuristics(int previous_dibit, int dibit,
+void DSDP25Heuristics::debug_print_symbol_heuristics(int previous_dibit, int dibit,
         SymbolHeuristics* sh)
 {
     float mean, sd;
@@ -325,7 +327,7 @@ static void debug_print_symbol_heuristics(int previous_dibit, int dibit,
 
 }
 
-void debug_print_heuristics(P25Heuristics* heuristics)
+void DSDP25Heuristics::debug_print_heuristics(P25Heuristics* heuristics)
 {
     int i, j;
 
@@ -340,7 +342,7 @@ void debug_print_heuristics(P25Heuristics* heuristics)
     }
 }
 
-void update_error_stats(P25Heuristics* heuristics, int bits, int errors)
+void DSDP25Heuristics::update_error_stats(P25Heuristics* heuristics, int bits, int errors)
 {
     heuristics->bit_count += bits;
     heuristics->bit_error_count += errors;
@@ -355,7 +357,7 @@ void update_error_stats(P25Heuristics* heuristics, int bits, int errors)
     }
 }
 
-float get_P25_BER_estimate(P25Heuristics* heuristics)
+float DSDP25Heuristics::get_P25_BER_estimate(P25Heuristics* heuristics)
 {
     float ber;
     if (heuristics->bit_count == 0)

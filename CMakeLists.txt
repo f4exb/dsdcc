@@ -27,6 +27,7 @@ set(dsdcc_SOURCES
     dsd_opts.cpp
     dsd_state.cpp
     dstar.cpp
+    p25p1_heuristics.cpp
 )
 
 set(dsdcc_HEADERS
@@ -39,6 +40,7 @@ set(dsdcc_HEADERS
     dsd_opts.h
     dsd_state.h
     dstar.h
+    p25p1_heuristics.h
 )
 
 include_directories(

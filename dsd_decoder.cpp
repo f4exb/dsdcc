@@ -316,7 +316,7 @@ int DSDDecoder::get_dibit_and_analog_signal(int* out_analog_signal)
 
     m_state.numflips = 0;
     symbol = m_symbol;
-    m_state[m_state.sidx] = symbol;
+    m_state.sbuf[m_state.sidx] = symbol;
 
     if (out_analog_signal != 0) {
         *out_analog_signal = symbol;
@@ -389,7 +389,7 @@ void DSDDecoder::use_symbol(int symbol)
 
         if (m_opts.datascope == 1)
         {
-            print_datascope(opts, state, sbuf2);
+            print_datascope(sbuf2);
         }
     }
     else
@@ -467,7 +467,7 @@ int DSDDecoder::digitize(int symbol)
         if (m_state.synctype == 1)
         {
             // Use the P25 heuristics if available
-            valid = estimate_symbol(m_state.rf_mod, &(m_state.inv_p25_heuristics),
+            valid = DSDP25Heuristics::estimate_symbol(m_state.rf_mod, &(m_state.inv_p25_heuristics),
                     m_state.last_dibit, symbol, &dibit);
         }
 
@@ -524,7 +524,7 @@ int DSDDecoder::digitize(int symbol)
         if (m_state.synctype == 0)
         {
             // Use the P25 heuristics if available
-            valid = estimate_symbol(m_state.rf_mod, &(m_state.p25_heuristics),
+            valid = DSDP25Heuristics::estimate_symbol(m_state.rf_mod, &(m_state.p25_heuristics),
                     m_state.last_dibit, symbol, &dibit);
         }
 
