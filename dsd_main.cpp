@@ -108,9 +108,9 @@ int main(int argc, char **argv)
     DSDcc::DSDDecoder dsdDecoder;
     DSDcc::DSDOpts *opts = dsdDecoder.getOpts();
     DSDcc::DSDState *state = dsdDecoder.getState();
-    char in_file[1024];
+    char in_file[1023];
     int  in_file_fd = -1;
-    char out_file[1024];
+    char out_file[1023];
     int  out_file_fd = -1;
 
     fprintf(stderr, "Digital Speech Decoder DSDcc\n");
@@ -188,11 +188,11 @@ int main(int argc, char **argv)
             break;
         case 'i':
             strncpy(in_file, (const char *) optarg, 1023);
-            in_file[1024] = '\0';
+            in_file[1023] = '\0';
             break;
         case 'o':
             strncpy(out_file, (const char *) optarg, 1023);
-            out_file[1024] = '\0';
+            out_file[1023] = '\0';
             break;
         case 'g':
             sscanf(optarg, "%f", &opts->audio_gain);
