@@ -26,6 +26,7 @@ set(dsdcc_SOURCES
     dsd_mbe.cpp
     dsd_opts.cpp
     dsd_state.cpp
+    dsd_symbol.cpp
     dstar.cpp
     p25p1_heuristics.cpp
 )
@@ -39,6 +40,7 @@ set(dsdcc_HEADERS
     dsd_mbe.h
     dsd_opts.h
     dsd_state.h
+    dsd_symbol.h
     dstar.h
     p25p1_heuristics.h
 )

@@ -21,7 +21,8 @@ namespace DSDcc
 {
 
 DSDDMRData::DSDDMRData(DSDDecoder *dsdDecoder) :
-        m_dsdDecoder(dsdDecoder)
+        m_dsdDecoder(dsdDecoder),
+        m_symbolIndex(0)
 {
 }
 
@@ -218,7 +219,7 @@ void DSDDMRData::preProcess()
 
 void DSDDMRData::process()
 {
-    m_dsdDecoder->getDibit(); // get dibit from symbol but do nothing with it
+    m_dsdDecoder->m_dsdSymbol.getDibit(); // get dibit from symbol but do nothing with it
 
     if (m_symbolIndex == 120 -1) // last dibit to skip
     {

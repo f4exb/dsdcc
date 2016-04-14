@@ -19,7 +19,7 @@
 
 #include "dsd_opts.h"
 #include "dsd_state.h"
-#include "dsd_filters.h"
+#include "dsd_symbol.h"
 #include "dsd_mbe.h"
 #include "dmr_voice.h"
 #include "dmr_data.h"
@@ -65,6 +65,7 @@ namespace DSDcc
 
 class DSDDecoder
 {
+    friend class DSDSymbol;
     friend class DSDMBEDecoder;
     friend class DSDDMRVoice;
     friend class DSDDMRData;
@@ -108,16 +109,7 @@ public:
     DSDState *getState() { return &m_state; }
 
 private:
-    bool pushSample(short sample, int have_sync); //!< push a new sample into the decoder. Returns true if a new symbol is available
-    int getDibit(); //!< from the last retrieved symbol Returns either the bit (0,1) or the dibit value (0,1,2,3)
-    int get_dibit_and_analog_signal(int* out_analog_signal);
-    void use_symbol(int symbol);
-    int digitize(int symbol);
-    int invert_dibit(int dibit);
-    void print_datascope(int* sbuf2);
-
     int getFrameSync();
-    void resetSymbol();
     void resetFrameSync();
     void printFrameSync(const char *frametype, int offset, char *modulation);
     void noCarrier();
@@ -128,11 +120,6 @@ private:
     DSDOpts m_opts;
     DSDState m_state;
     DSDFSMState m_fsmState;
-    // symbol engine
-    int m_symbol;      //!< the last retrieved symbol
-    int m_sampleIndex; //!< the current sample index for the symbol in progress
-    int m_sum;
-    int m_count;
     // sync engine:
     int m_sync; //!< The current sync type
     int m_dibit, m_synctest_pos, m_lastt;
@@ -148,8 +135,8 @@ private:
     char m_spectrum[64];
     int m_t;
     int m_hasSync; //!< tells whether we are in synced phase
-    // Other
-    DSDFilters m_dsdFilters;
+    // Symbol extraction and operations
+    DSDSymbol m_dsdSymbol;
     // MBE decoder
     DSDMBEDecoder m_mbeDecoder;
     // Frame decoders

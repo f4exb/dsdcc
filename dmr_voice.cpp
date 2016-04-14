@@ -174,7 +174,7 @@ void DSDDMRVoice::preProcess()
 void DSDDMRVoice::postProcess(int symbolIndex)
 {
     //fprintf(stderr, "DSDDMRVoice::postProcess: m_symbolIndex: %d", m_symbolIndex);
-    m_dsdDecoder->getDibit(); // get dibit from symbol but do nothing with it
+    m_dsdDecoder->m_dsdSymbol.getDibit(); // get dibit from symbol but do nothing with it
 
     if (symbolIndex == 54+12+54-1) // very last symbol -> go back to search sync state
     {
@@ -187,20 +187,20 @@ void DSDDMRVoice::processSlot0(int symbolIndex) // Slot0 is a 54 symbol slot
 {
     if (m_majorBlock > 0) // 0:0 reads from 144 in memory dibits. Handled by upper layer.
     {
-    	m_dsdDecoder->getDibit(); // get dibit from symbol but do nothing with it
+    	m_dsdDecoder->m_dsdSymbol.getDibit(); // get dibit from symbol but do nothing with it
     }
 }
 
 void DSDDMRVoice::processSlot8(int symbolIndex) // Slot8 is a 54 symbol slot
 {
-    m_dsdDecoder->getDibit(); // get dibit from symbol but do nothing with it
+    m_dsdDecoder->m_dsdSymbol.getDibit(); // get dibit from symbol but do nothing with it
 }
 
 void DSDDMRVoice::processSlot1(int symbolIndex) // Slot1 is a 12 symbol slot
 {
     if (m_majorBlock > 0) // 0:1 reads from 144 in memory dibits. Handled by upper layer.
     {
-        int dibit = m_dsdDecoder->getDibit(); // get dibit from symbol and store it in cache
+        int dibit = m_dsdDecoder->m_dsdSymbol.getDibit(); // get dibit from symbol and store it in cache
         m_dibitCache[m_dibitIndex] = dibit;
     }
 
@@ -242,7 +242,7 @@ void DSDDMRVoice::processSlot2(int symbolIndex) // Slot2 is a 36 symbol slot
 {
     if (m_majorBlock > 0) // 0:2 reads from 144 in memory dibits. Handled by upper layer.
     {
-        int dibit = m_dsdDecoder->getDibit(); // get dibit from symbol and store it in cache
+        int dibit = m_dsdDecoder->m_dsdSymbol.getDibit(); // get dibit from symbol and store it in cache
         m_dibitCache[m_dibitIndex] = dibit;
     }
 
@@ -273,7 +273,7 @@ void DSDDMRVoice::processSlot3(int symbolIndex) // Slot3 is a 18 symbol slot
 {
     if (m_majorBlock > 0) // 0:3 reads from 144 in memory dibits. Handled by upper layer.
     {
-        int dibit = m_dsdDecoder->getDibit(); // get dibit from symbol and store it in cache
+        int dibit = m_dsdDecoder->m_dsdSymbol.getDibit(); // get dibit from symbol and store it in cache
         m_dibitCache[m_dibitIndex] = dibit;
     }
 
@@ -304,7 +304,7 @@ void DSDDMRVoice::processSlot4(int symbolIndex) // Slot4 is a 24 symbol slot
 {
     if (m_majorBlock > 0) // 0:3 reads from 144 in memory dibits. Handled by upper layer.
     {
-        int dibit = m_dsdDecoder->getDibit(); // get dibit from symbol and store it in cache
+        int dibit = m_dsdDecoder->m_dsdSymbol.getDibit(); // get dibit from symbol and store it in cache
         m_dibitCache[m_dibitIndex] = dibit;
     }
 
@@ -364,7 +364,7 @@ void DSDDMRVoice::processSlot4(int symbolIndex) // Slot4 is a 24 symbol slot
 
 void DSDDMRVoice::processSlot5(int symbolIndex) // Slot5 is a 18 symbol slot
 {
-    int dibit = m_dsdDecoder->getDibit(); // get dibit from symbol and store it in cache
+    int dibit = m_dsdDecoder->m_dsdSymbol.getDibit(); // get dibit from symbol and store it in cache
     m_dibitCache[m_dibitIndex] = dibit;
 
     if (symbolIndex == 18-1) // last symbol -> launch process
@@ -411,7 +411,7 @@ void DSDDMRVoice::processSlot5(int symbolIndex) // Slot5 is a 18 symbol slot
 
 void DSDDMRVoice::processSlot6(int symbolIndex) // Slot6 is a 36 symbol slot
 {
-    int dibit = m_dsdDecoder->getDibit(); // get dibit from symbol and store it in cache
+    int dibit = m_dsdDecoder->m_dsdSymbol.getDibit(); // get dibit from symbol and store it in cache
     m_dibitCache[m_dibitIndex] = dibit;
 
     if (symbolIndex == 36-1) // last symbol -> launch process
@@ -449,7 +449,7 @@ void DSDDMRVoice::processSlot6(int symbolIndex) // Slot6 is a 36 symbol slot
 
 void DSDDMRVoice::processSlot7(int symbolIndex) // Slot7 is a 12 symbol slot
 {
-    int dibit = m_dsdDecoder->getDibit(); // get dibit from symbol and store it in cache
+    int dibit = m_dsdDecoder->m_dsdSymbol.getDibit(); // get dibit from symbol and store it in cache
     m_dibitCache[m_dibitIndex] = dibit;
 
     if (symbolIndex == 12-1) // last symbol -> launch process
@@ -468,7 +468,7 @@ void DSDDMRVoice::processSlot7(int symbolIndex) // Slot7 is a 12 symbol slot
 
 void DSDDMRVoice::processSlot9(int symbolIndex) // Slot9 is a 24 symbol slot
 {
-    int dibit = m_dsdDecoder->getDibit(); // get dibit from symbol and store it in cache
+    int dibit = m_dsdDecoder->m_dsdSymbol.getDibit(); // get dibit from symbol and store it in cache
     m_dibitCache[m_dibitIndex] = dibit;
 
     if (symbolIndex == 24-1) // last symbol -> launch process

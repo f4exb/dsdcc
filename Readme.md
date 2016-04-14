@@ -69,6 +69,7 @@ For more details refer to the online help with the `-h` option: `dsdccx -h`
   - The options and state objects are the following:
     - The `DSDOpts` object handles the options configuring the behaviour of the decoder
     - The `DSDState` object handles the run time data and data related to the current state of the decoder
+  - The `DSDSymbol` object is responsible for symbol and dibit processing. It receives a new sample with its `pushSample()` method. It processes it and when enough samples have been receives it can produce a new symbol that it stores internally.
   - The `DSDMBEDecoder` object is responsible of taking in AMBE frames and producing the final audio output at 8 kS/s. It is a wrapper around the `mbelib` library. It also handles the optional upsampling of audio to 48 kS/s.
   - The objects specialized in the decoding of the various formats are:
     - The `DSDDMRVoice` object is responsible of handling the processing of DMR voice frames. It uses the service of `DSDMBEDecoder` to produce the final audio output.

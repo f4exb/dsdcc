@@ -194,7 +194,7 @@ void DSDDstar::process()
 
 void DSDDstar::processHD()
 {
-    int dibit = m_dsdDecoder->getDibit(); // get dibit from symbol and store it in HD cache
+    int dibit = m_dsdDecoder->m_dsdSymbol.getDibit(); // get dibit from symbol and store it in HD cache
     radioheaderbuffer[m_symbolIndexHD] = dibit;
 
     if (m_symbolIndexHD == 660-1)
@@ -208,7 +208,7 @@ void DSDDstar::processHD()
 
 void DSDDstar::processVoice()
 {
-    int dibit = m_dsdDecoder->getDibit(); // get dibit from symbol and store it in cache
+    int dibit = m_dsdDecoder->m_dsdSymbol.getDibit(); // get dibit from symbol and store it in cache
     m_dibitCache[m_symbolIndex] = dibit;
 
     if (m_symbolIndex == 72-1) // last dibit in voice frame
@@ -247,7 +247,7 @@ void DSDDstar::processVoice()
 void DSDDstar::processData()
 {
     bool terminate = false;
-    int dibit = m_dsdDecoder->getDibit(); // get dibit from symbol and store it in cache
+    int dibit = m_dsdDecoder->m_dsdSymbol.getDibit(); // get dibit from symbol and store it in cache
     m_dibitCache[m_symbolIndex] = dibit;
 
     if (m_symbolIndex == 97-1) // last dibit in data frame
