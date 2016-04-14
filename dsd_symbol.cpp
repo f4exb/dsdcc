@@ -43,6 +43,7 @@ void DSDSymbol::resetSymbol()
 
 bool DSDSymbol::pushSample(short sample, int have_sync)
 {
+    short inSample = sample;
     // timing control
     if ((m_sampleIndex == 0) && (have_sync == 0))
     {
@@ -216,15 +217,43 @@ bool DSDSymbol::pushSample(short sample, int have_sync)
     }
     else
     {
-        if (((m_sampleIndex >= m_dsdDecoder->m_state.symbolCenter - 1)
-          && (m_sampleIndex <= m_dsdDecoder->m_state.symbolCenter + 2)
-          && (m_dsdDecoder->m_state.rf_mod == 0))
-        || (((m_sampleIndex == m_dsdDecoder->m_state.symbolCenter)
-          || (m_sampleIndex == m_dsdDecoder->m_state.symbolCenter + 1))
-          && (m_dsdDecoder->m_state.rf_mod != 0)))
+        // gr-dsd:
+//        if (((m_sampleIndex >= m_dsdDecoder->m_state.symbolCenter - 1)
+//          && (m_sampleIndex <= m_dsdDecoder->m_state.symbolCenter + 2)
+//          && (m_dsdDecoder->m_state.rf_mod == 0))
+//        || (((m_sampleIndex == m_dsdDecoder->m_state.symbolCenter)
+//          || (m_sampleIndex == m_dsdDecoder->m_state.symbolCenter + 1))
+//          && (m_dsdDecoder->m_state.rf_mod != 0)))
+//        {
+//            m_sum += sample;
+//            m_count++;
+//        }
+        if (m_dsdDecoder->m_state.rf_mod == 0)
         {
-            m_sum += sample;
-            m_count++;
+            // 0: C4FM modulation
+            if ((m_sampleIndex >= m_dsdDecoder->m_state.symbolCenter - 1)
+             && (m_sampleIndex <= m_dsdDecoder->m_state.symbolCenter + 2))
+            {
+                m_sum += sample;
+                m_count++;
+            }
+        }
+        else
+        {
+            // 1: QPSK modulation
+            // 2: GFSK modulation
+            // Note: this has been changed to use an additional symbol to the left
+            // On the p25_raw_unencrypted.flac it is evident that the timing
+            // comes one sample too late.
+            // This change makes a significant improvement in the BER, at least for
+            // this file.
+            //if ((i == state->symbolCenter) || (i == state->symbolCenter + 1))
+            if ((m_sampleIndex == m_dsdDecoder->m_state.symbolCenter - 1)
+             || (m_sampleIndex == m_dsdDecoder->m_state.symbolCenter + 1))
+            {
+                m_sum += sample;
+                m_count++;
+            }
         }
     }
 
@@ -247,6 +276,12 @@ bool DSDSymbol::pushSample(short sample, int have_sync)
         }
 
         m_dsdDecoder->m_state.symbolcnt++;
+
+        // Symbol debugging
+//        if ((m_dsdDecoder->m_state.symbolcnt > 580) && (m_dsdDecoder->m_state.symbolcnt < 590))  { // sampling
+//            fprintf(stderr, "DSDSymbol::pushSample: symbol %d (%d:%d) in:%d\n", m_dsdDecoder->m_state.symbolcnt, m_symbol, sample, inSample);
+//        }
+
         resetSymbol();
         return true; // new symbol available
     }
