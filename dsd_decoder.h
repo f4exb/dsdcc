@@ -121,7 +121,7 @@ private:
     DSDState m_state;
     DSDFSMState m_fsmState;
     // sync engine:
-    int m_sync; //!< The current sync type
+    int m_sync; //!< The current internal sync type
     int m_dibit, m_synctest_pos, m_lastt;
     char m_synctest[25];
     char m_synctest18[19];

@@ -46,10 +46,11 @@ void DSDDecoder::run(short sample)
         {
         case DSDLookForSync:
             m_hasSync = 0;
-            m_state.synctype = getFrameSync(); // -> -2: still looking, -1 not found, 0 and above: sync found
+            m_sync = getFrameSync(); // -> -2: still looking, -1 not found, 0 and above: sync found
 
-            if (m_state.synctype > -2) // -1 and above means syncing has been processed (sync found or not but not searching)
+            if (m_sync > -2) // -1 and above means syncing has been processed (sync found or not but not searching)
             {
+                m_state.synctype  = m_sync;
                 // recalibrate center/umid/lmid
                 m_state.center = ((m_state.max) + (m_state.min)) / 2;
                 m_state.umid = (((m_state.max) - m_state.center) * 5 / 8) + m_state.center;
@@ -57,6 +58,7 @@ void DSDDecoder::run(short sample)
 
                 if (m_state.synctype > -1) // 0 and above means a sync has been found
                 {
+                    fprintf(stderr, "DSDDecoder::run: before processFrameInit: symbol %d (%d)\n", m_state.symbolcnt, m_dsdSymbol.getSymbol());
                     m_hasSync = 1;
                     processFrameInit();   // initiate the process of the frame which sync has been found. This will change FSM state
                 }
@@ -1055,6 +1057,8 @@ int DSDDecoder::getFrameSync()
 
 void DSDDecoder::resetFrameSync()
 {
+    fprintf(stderr, "DSDDecoder::resetFrameSync: symbol %d (%d)\n", m_state.symbolcnt, m_dsdSymbol.getSymbol());
+
     for (int i = 18; i < 24; i++)
     {
         m_lbuf[i] = 0;
@@ -1073,7 +1077,7 @@ void DSDDecoder::resetFrameSync()
     m_lidx = 0;
     m_lastt = 0;
     m_state.numflips = 0;
-    m_sync = -2; // make in progress
+    m_sync = -2; // mark in progress
 
     if ((m_opts.symboltiming == 1) && (m_state.carrier == 1))
     {

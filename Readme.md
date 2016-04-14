@@ -26,12 +26,12 @@ If you are not comfortable with this just do not compile or use this software.
 
 <h1>Supported formats</h1>
 
-These are only a subset of the ones covered by the original DSD project so in that respect DSDcc is rather DSDminus :-). Migration from original DSD is not easy and will be done little by little and also depends on the test material available. For now we have:
+These are only a subset of the ones covered by the original DSD project. Migration from original DSD is not easy and will be done little by little and also depends on the test material available. For now we have:
 
   - DMR/MOTOTRBO: European two slot TDMA standard. MOTOTRBO is a popular implementation of this standard.
   - D-Star: developed and promoted by Icom for Amateur Radio customers.
 
-Next we might want to add YSF (Yaesu Sound Fusion a.k.a. C4FM) as a newly supported format and cover all AMBE codec based commercial formats used at present by Amateur Radio.
+Next we might want to add YSF (Yaesu Sound Fusion a.k.a. C4FM) as a newly supported format to cover all AMBE codec based commercial formats used at present by Amateur Radio.
 
 <h1>Source code</h1>
 
@@ -84,7 +84,7 @@ For more details refer to the online help with the `-h` option: `dsdccx -h`
 You can look at the source of the `dsdccx` binary to get an idea. Basically it involves the following steps:
 
   1. Allocate a new `DSDDecoder` object (stack or heap)
-  2. Set the options. You actually get full access with the `getOpts` method of `DSDDecoder`.
+  2. Set the options. You get full access to it with the `getOpts` method of `DSDDecoder`.
   3. Do some initilizations in the state object. You get full access to it with the `getState` method of `DSDDecoder`.
   4. Prepare the input (open file or stream)
   5. Get a new sample from the stream
