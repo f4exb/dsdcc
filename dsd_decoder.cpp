@@ -40,12 +40,11 @@ DSDDecoder::~DSDDecoder()
 
 void DSDDecoder::run(short sample)
 {
-    if (m_dsdSymbol.pushSample(sample, 0)) // a symbol is retrieved
+    if (m_dsdSymbol.pushSample(sample, m_hasSync)) // a symbol is retrieved
     {
         switch (m_fsmState)
         {
         case DSDLookForSync:
-            m_hasSync = 0;
             m_sync = getFrameSync(); // -> -2: still looking, -1 not found, 0 and above: sync found
 
             if (m_sync > -2) // -1 and above means syncing has been processed (sync found or not but not searching)
@@ -1077,7 +1076,9 @@ void DSDDecoder::resetFrameSync()
     m_lidx = 0;
     m_lastt = 0;
     m_state.numflips = 0;
-    m_sync = -2; // mark in progress
+
+    m_sync = -2;   // mark in progress
+    m_hasSync = 0; // for DSDSymbol::pushSample method
 
     if ((m_opts.symboltiming == 1) && (m_state.carrier == 1))
     {

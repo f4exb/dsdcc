@@ -138,7 +138,7 @@ short DSDFilters::dsd_input_filter(short sample, int mode)
         sum += (coeffs[i] * v[i]);
     }
 
-    return sum / ngain; // filtered sample out
+    return (short) (sum / ngain); // filtered sample out
 }
 
 } // namespace dsdcc
