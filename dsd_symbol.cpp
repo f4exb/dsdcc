@@ -278,7 +278,7 @@ bool DSDSymbol::pushSample(short sample, int have_sync)
         m_dsdDecoder->m_state.symbolcnt++;
 
         // Symbol debugging
-//        if ((m_dsdDecoder->m_state.symbolcnt > 580) && (m_dsdDecoder->m_state.symbolcnt < 590))  { // sampling
+//        if ((m_dsdDecoder->m_state.symbolcnt > 1160) && (m_dsdDecoder->m_state.symbolcnt < 1200))  { // sampling
 //            fprintf(stderr, "DSDSymbol::pushSample: symbol %d (%d:%d) in:%d\n", m_dsdDecoder->m_state.symbolcnt, m_symbol, sample, inSample);
 //        }
 

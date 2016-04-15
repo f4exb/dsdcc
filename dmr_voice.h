@@ -80,42 +80,42 @@ private:
         else if (symbolInMajorBlockIndex < 54+12+36)
         {
             m_slotIndex = 2;
-            return symbolInMajorBlockIndex - 54+12;
+            return symbolInMajorBlockIndex - (54+12);
         }
         else if (symbolInMajorBlockIndex < 54+12+36+18)
         {
             m_slotIndex = 3;
-            return symbolInMajorBlockIndex - 54+12+36;
+            return symbolInMajorBlockIndex - (54+12+36);
         }
         else if (symbolInMajorBlockIndex < 54+12+36+18+24)
         {
             m_slotIndex = 4;
-            return symbolInMajorBlockIndex - 54+12+36+18;
+            return symbolInMajorBlockIndex - (54+12+36+18);
         }
         else if (symbolInMajorBlockIndex < 54+12+36+18+24+18)
         {
             m_slotIndex = 5;
-            return symbolInMajorBlockIndex - 54+12+36+18+24;
+            return symbolInMajorBlockIndex - (54+12+36+18+24);
         }
         else if (symbolInMajorBlockIndex < 54+12+36+18+24+18+36)
         {
             m_slotIndex = 6;
-            return symbolInMajorBlockIndex - 54+12+36+18+24+18;
+            return symbolInMajorBlockIndex - (54+12+36+18+24+18);
         }
         else if (symbolInMajorBlockIndex < 54+12+36+18+24+18+36+12)
         {
             m_slotIndex = 7;
-            return symbolInMajorBlockIndex - 54+12+36+18+24+18+36;
+            return symbolInMajorBlockIndex - (54+12+36+18+24+18+36);
         }
         else if (symbolInMajorBlockIndex < 54+12+36+18+24+18+36+12+54)
         {
             m_slotIndex = 8;
-            return symbolInMajorBlockIndex - 54+12+36+18+24+18+36+12;
+            return symbolInMajorBlockIndex - (54+12+36+18+24+18+36+12);
         }
         else if (symbolInMajorBlockIndex < 54+12+36+18+24+18+36+12+54+24)
         {
             m_slotIndex = 9;
-            return symbolInMajorBlockIndex - 54+12+36+18+24+18+36+12+54;
+            return symbolInMajorBlockIndex - (54+12+36+18+24+18+36+12+54);
         }
         else // cannot go there if using this function in its valid context (input is a remainder of division by 288)
         {

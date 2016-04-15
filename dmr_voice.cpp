@@ -91,6 +91,10 @@ void DSDDMRVoice::process()
     m_dibitIndex = m_symbolIndex % 288;           // index of symbol in frame
     int symbolIndex = getSlotIndex(m_dibitIndex); // returns symbol index in current slot. Updates m_slotIndex.
 
+//    fprintf(stderr, "DSDDMRVoice::process: m_symbolIndex: %d m_majorBlock: %d m_dibitIndex: %d m_slotIndex: %d symbolIndex: %d\n",
+//            m_symbolIndex, m_majorBlock, m_dibitIndex, m_slotIndex, symbolIndex
+//            );
+
     switch(m_slotIndex)
     {
     case 0:
@@ -153,21 +157,6 @@ void DSDDMRVoice::preProcess()
     m_dibitIndex += 24; // advance cache pointer
     processSlot4(24-1);
 
-    m_dibitIndex += 18; // advance cache pointer
-    processSlot5(18-1);
-
-    m_dibitIndex += 36; // advance cache pointer
-    processSlot6(36-1);
-
-    m_dibitIndex += 12; // advance cache pointer
-    processSlot7(12-1);
-
-    m_dibitIndex += 54; // advance cache pointer - skip slot 8
-
-    processSlot9(24-1);
-    m_dibitIndex += 24; // advance cache pointer
-    processSlot9(24-1);
-
     m_symbolIndex = 144; // advance the main symbol index
 }
 
@@ -189,11 +178,23 @@ void DSDDMRVoice::processSlot0(int symbolIndex) // Slot0 is a 54 symbol slot
     {
     	m_dsdDecoder->m_dsdSymbol.getDibit(); // get dibit from symbol but do nothing with it
     }
+
+//    if (symbolIndex == 54 -1) {
+//        fprintf(stderr, "DSDDMRVoice::processSlot0: m_majorBlock: %d m_dibitIndex: %d symbolIndex: %d\n",
+//                m_majorBlock, m_dibitIndex, symbolIndex
+//                );
+//    }
 }
 
 void DSDDMRVoice::processSlot8(int symbolIndex) // Slot8 is a 54 symbol slot
 {
     m_dsdDecoder->m_dsdSymbol.getDibit(); // get dibit from symbol but do nothing with it
+
+//    if (symbolIndex == 54 -1) {
+//        fprintf(stderr, "DSDDMRVoice::processSlot8: m_majorBlock: %d m_dibitIndex: %d symbolIndex: %d\n",
+//                m_majorBlock, m_dibitIndex, symbolIndex
+//                );
+//    }
 }
 
 void DSDDMRVoice::processSlot1(int symbolIndex) // Slot1 is a 12 symbol slot
@@ -206,6 +207,10 @@ void DSDDMRVoice::processSlot1(int symbolIndex) // Slot1 is a 12 symbol slot
 
     if (symbolIndex == 12-1) // last symbol -> launch process
     {
+//        fprintf(stderr, "DSDDMRVoice::processSlot1: m_majorBlock: %d m_dibitIndex: %d symbolIndex: %d\n",
+//                m_majorBlock, m_dibitIndex, symbolIndex
+//                );
+
         int *dibitCache = &m_dibitCache[m_dibitIndex - symbolIndex]; // move back to start of corresponding cache section
         // CACH
         for (int i = 0; i < 12; i++)
@@ -248,6 +253,10 @@ void DSDDMRVoice::processSlot2(int symbolIndex) // Slot2 is a 36 symbol slot
 
     if (symbolIndex == 36-1) // last symbol -> launch process
     {
+//        fprintf(stderr, "DSDDMRVoice::processSlot2: m_majorBlock: %d m_dibitIndex: %d symbolIndex: %d\n",
+//                m_majorBlock, m_dibitIndex, symbolIndex
+//                );
+
         int *dibitCache = &m_dibitCache[m_dibitIndex - symbolIndex]; // move back to start of corresponding cache section
 
         w = rW;
@@ -279,6 +288,10 @@ void DSDDMRVoice::processSlot3(int symbolIndex) // Slot3 is a 18 symbol slot
 
     if (symbolIndex == 18-1) // last symbol -> launch process
     {
+//        fprintf(stderr, "DSDDMRVoice::processSlot3: m_majorBlock: %d m_dibitIndex: %d symbolIndex: %d\n",
+//                m_majorBlock, m_dibitIndex, symbolIndex
+//                );
+
         int *dibitCache = &m_dibitCache[m_dibitIndex - symbolIndex]; // move back to start of corresponding cache section
 
         w = rW;
@@ -310,6 +323,10 @@ void DSDDMRVoice::processSlot4(int symbolIndex) // Slot4 is a 24 symbol slot
 
     if (symbolIndex == 24-1) // last symbol -> launch process
     {
+//        fprintf(stderr, "DSDDMRVoice::processSlot4: m_majorBlock: %d m_dibitIndex: %d symbolIndex: %d\n",
+//                m_majorBlock, m_dibitIndex, symbolIndex
+//                );
+
         int *dibitCache = &m_dibitCache[m_dibitIndex - symbolIndex]; // move back to start of corresponding cache section
 
         for (int i = 0; i < 24; i++)
@@ -369,6 +386,12 @@ void DSDDMRVoice::processSlot5(int symbolIndex) // Slot5 is a 18 symbol slot
 
     if (symbolIndex == 18-1) // last symbol -> launch process
     {
+//        fprintf(stderr, "DSDDMRVoice::processSlot5: m_majorBlock: %d m_dibitIndex: %d symbolIndex: %d\n",
+//                m_majorBlock, m_dibitIndex, symbolIndex
+//                );
+        fprintf(stderr, "DSDDMRVoice::processSlot5: symbol %d: %d:%d\n",
+                m_dsdDecoder->m_state.symbolcnt, m_dsdDecoder->m_dsdSymbol.getSymbol(), m_dsdDecoder->m_state.lastsample);
+
         int *dibitCache = &m_dibitCache[m_dibitIndex - symbolIndex]; // move back to start of corresponding cache section
 
         for (int i = 0; i < 18; i++)
@@ -387,7 +410,7 @@ void DSDDMRVoice::processSlot5(int symbolIndex) // Slot5 is a 18 symbol slot
         {
             if (m_dsdDecoder->m_state.firstframe == 1)
             { // we don't know if anything received before the first sync after no carrier is valid
-                m_dsdDecoder->m_state.firstframe = 0;
+                //m_dsdDecoder->m_state.firstframe = 0; not consumed yet
             }
             else
             {
@@ -416,6 +439,10 @@ void DSDDMRVoice::processSlot6(int symbolIndex) // Slot6 is a 36 symbol slot
 
     if (symbolIndex == 36-1) // last symbol -> launch process
     {
+//        fprintf(stderr, "DSDDMRVoice::processSlot6: m_majorBlock: %d m_dibitIndex: %d symbolIndex: %d\n",
+//                m_majorBlock, m_dibitIndex, symbolIndex
+//                );
+
         int *dibitCache = &m_dibitCache[m_dibitIndex - symbolIndex]; // move back to start of corresponding cache section
 
         // current slot frame 3
@@ -438,10 +465,17 @@ void DSDDMRVoice::processSlot6(int symbolIndex) // Slot6 is a 36 symbol slot
 
         if (mutecurrentslot == 0)
         {
-            m_dsdDecoder->m_mbeDecoder.processFrame(0, ambe_fr3, 0);
+            if (m_dsdDecoder->m_state.firstframe == 1)
+            { // we don't know if anything received before the first sync after no carrier is valid
+                m_dsdDecoder->m_state.firstframe = 0; // now consumed
+            }
+            else
+            {
+                m_dsdDecoder->m_mbeDecoder.processFrame(0, ambe_fr3, 0);
 
-            if (m_dsdDecoder->m_opts.errorbars == 1) {
-                fprintf(stderr, "\n");
+                if (m_dsdDecoder->m_opts.errorbars == 1) {
+                    fprintf(stderr, "\n");
+                }
             }
         }
     }
@@ -454,6 +488,10 @@ void DSDDMRVoice::processSlot7(int symbolIndex) // Slot7 is a 12 symbol slot
 
     if (symbolIndex == 12-1) // last symbol -> launch process
     {
+//        fprintf(stderr, "DSDDMRVoice::processSlot7: m_majorBlock: %d m_dibitIndex: %d symbolIndex: %d\n",
+//                m_majorBlock, m_dibitIndex, symbolIndex
+//                );
+
         int *dibitCache = &m_dibitCache[m_dibitIndex - symbolIndex]; // move back to start of corresponding cache section
         // CACH
         for (int i = 0; i < 12; i++)
@@ -473,6 +511,10 @@ void DSDDMRVoice::processSlot9(int symbolIndex) // Slot9 is a 24 symbol slot
 
     if (symbolIndex == 24-1) // last symbol -> launch process
     {
+//        fprintf(stderr, "DSDDMRVoice::processSlot9: m_majorBlock: %d m_dibitIndex: %d symbolIndex: %d\n",
+//                m_majorBlock, m_dibitIndex, symbolIndex
+//                );
+
         int *dibitCache = &m_dibitCache[m_dibitIndex - symbolIndex]; // move back to start of corresponding cache section
 
         for (int i = 0; i < 24; i++)
