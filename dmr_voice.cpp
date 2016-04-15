@@ -156,8 +156,6 @@ void DSDDMRVoice::preProcess()
 
     m_dibitIndex += 24; // advance cache pointer
     processSlot4(24-1);
-
-    m_symbolIndex = 144; // advance the main symbol index
 }
 
 void DSDDMRVoice::postProcess(int symbolIndex)
@@ -389,14 +387,15 @@ void DSDDMRVoice::processSlot5(int symbolIndex) // Slot5 is a 18 symbol slot
 //        fprintf(stderr, "DSDDMRVoice::processSlot5: m_majorBlock: %d m_dibitIndex: %d symbolIndex: %d\n",
 //                m_majorBlock, m_dibitIndex, symbolIndex
 //                );
-        fprintf(stderr, "DSDDMRVoice::processSlot5: symbol %d: %d:%d\n",
-                m_dsdDecoder->m_state.symbolcnt, m_dsdDecoder->m_dsdSymbol.getSymbol(), m_dsdDecoder->m_state.lastsample);
+        fprintf(stderr, "DSDDMRVoice::processSlot5: m_majorBlock: %d m_dibitIndex: %d symbol %d: %d:%d\n",
+        		m_majorBlock, m_dibitIndex, m_dsdDecoder->m_state.symbolcnt, m_dsdDecoder->m_dsdSymbol.getSymbol(), m_dsdDecoder->m_state.lastsample);
 
         int *dibitCache = &m_dibitCache[m_dibitIndex - symbolIndex]; // move back to start of corresponding cache section
 
         for (int i = 0; i < 18; i++)
         {
             int dibit = dibitCache[i];
+            fprintf(stderr, "DSDDMRVoice::processSlot5: dibit[%d]: %d\n", i, dibit);
 
             ambe_fr2[*w][*x] = (1 & (dibit >> 1)); // bit 1
             ambe_fr2[*y][*z] = (1 & dibit);        // bit 0

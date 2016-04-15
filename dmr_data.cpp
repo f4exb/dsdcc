@@ -221,7 +221,7 @@ void DSDDMRData::process()
 {
     m_dsdDecoder->m_dsdSymbol.getDibit(); // get dibit from symbol but do nothing with it
 
-    if (m_symbolIndex == 120-1) // last dibit to skip
+    if (m_symbolIndex == 120) // last dibit to skip is passed
     {
         if (m_dsdDecoder->m_opts.errorbars == 1)
         {
