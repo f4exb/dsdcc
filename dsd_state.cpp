@@ -29,8 +29,8 @@ DSDState::DSDState()
     memset(dibit_buf, 0, sizeof(int) * 200);
     dibit_buf_p = dibit_buf + 200;
 
-    audio_out_float_buf = (float *) malloc(sizeof(float) * 960); // 1 frame of 160 samples upampled 6 times
-    memset(audio_out_float_buf, 0, sizeof(float) * 960);
+    audio_out_float_buf = (float *) malloc(sizeof(float) * 1120); // 1 frame of 160 samples upampled up to 7 times
+    memset(audio_out_float_buf, 0, sizeof(float) * 1120);
     audio_out_float_buf_p = audio_out_float_buf;
 
     audio_out_buf = (short *) malloc(sizeof(short) * 2 * 48000); // 1s of L+R S16LE samples

@@ -188,7 +188,7 @@ void DSDMBEDecoder::processAudio()
 
     if (m_dsdDecoder->m_opts.upsample != 0) // upsampling to 48k
     {
-        if (m_dsdDecoder->m_state.audio_out_nb_samples + 960 >= m_dsdDecoder->m_state.audio_out_buf_size)
+        if (m_dsdDecoder->m_state.audio_out_nb_samples + (160*m_upsampling) >= m_dsdDecoder->m_state.audio_out_buf_size)
         {
             m_dsdDecoder->resetAudio();
         }
@@ -199,15 +199,15 @@ void DSDMBEDecoder::processAudio()
         {
             upsample(*m_dsdDecoder->m_state.audio_out_temp_buf_p);
             m_dsdDecoder->m_state.audio_out_temp_buf_p++;
-            m_dsdDecoder->m_state.audio_out_float_buf_p += 6;
-            m_dsdDecoder->m_state.audio_out_idx += 6;
-            m_dsdDecoder->m_state.audio_out_idx2 += 6;
+            m_dsdDecoder->m_state.audio_out_float_buf_p += m_upsampling;
+            m_dsdDecoder->m_state.audio_out_idx += m_upsampling;
+            m_dsdDecoder->m_state.audio_out_idx2 += m_upsampling;
         }
 
         m_dsdDecoder->m_state.audio_out_float_buf_p = m_dsdDecoder->m_state.audio_out_float_buf;
 
         // copy to output (short) buffer
-        for (n = 0; n < 960; n++)
+        for (n = 0; n < (160*m_upsampling); n++)
         {
             if (*m_dsdDecoder->m_state.audio_out_float_buf_p > (float) 32760)
             {
@@ -280,21 +280,42 @@ void DSDMBEDecoder::upsample(float invalue)
     d = invalue;
     // basic triangle interpolation
 //    outbuf1++;
-    *outbuf1 = ((invalue * (float) 0.166) + (c * (float) 0.834));
-    outbuf1++;
-    *outbuf1 = ((invalue * (float) 0.332) + (c * (float) 0.668));
-    outbuf1++;
-    *outbuf1 = ((invalue * (float) 0.5) + (c * (float) 0.5));
-    outbuf1++;
-    *outbuf1 = ((invalue * (float) 0.668) + (c * (float) 0.332));
-    outbuf1++;
-    *outbuf1 = ((invalue * (float) 0.834) + (c * (float) 0.166));
-    outbuf1++;
-    *outbuf1 = d;
-    m_upsamplerLastValue = d;
-    outbuf1++;
+    if (m_upsampling == 6)
+    {
+        *outbuf1 = ((invalue * (float) 0.166) + (c * (float) 0.834));
+        outbuf1++;
+        *outbuf1 = ((invalue * (float) 0.332) + (c * (float) 0.668));
+        outbuf1++;
+        *outbuf1 = ((invalue * (float) 0.5) + (c * (float) 0.5));
+        outbuf1++;
+        *outbuf1 = ((invalue * (float) 0.668) + (c * (float) 0.332));
+        outbuf1++;
+        *outbuf1 = ((invalue * (float) 0.834) + (c * (float) 0.166));
+        outbuf1++;
+        *outbuf1 = d;
+        m_upsamplerLastValue = d;
+        outbuf1++;
+    }
+    else if (m_upsampling == 7)
+    {
+        *outbuf1 = ((invalue * (float) 0.142) + (c * (float) 0.857));
+        outbuf1++;
+        *outbuf1 = ((invalue * (float) 0.286) + (c * (float) 0.714));
+        outbuf1++;
+        *outbuf1 = ((invalue * (float) 0.429) + (c * (float) 0.571));
+        outbuf1++;
+        *outbuf1 = ((invalue * (float) 0.571) + (c * (float) 0.429));
+        outbuf1++;
+        *outbuf1 = ((invalue * (float) 0.714) + (c * (float) 0.286));
+        outbuf1++;
+        *outbuf1 = ((invalue * (float) 0.857) + (c * (float) 0.142));
+        outbuf1++;
+        *outbuf1 = d;
+        m_upsamplerLastValue = d;
+        outbuf1++;
+    }
 
-    outbuf1 -= 6;
+    outbuf1 -= m_upsampling;
 
     // FIXME: this is all wrong! Now at least it does not corrupt audio_out_float_buf
 
@@ -304,7 +325,7 @@ void DSDMBEDecoder::upsample(float invalue)
 //        outbuf1 -= 16;
 //        for (j = 0; j < 4; j++)
 //        {
-//            for (i = 0; i < 6; i++)
+//            for (i = 0; i < m_upsampling; i++)
 //            {
 //                sum = 0;
 //                outbuf1 -= 2;
@@ -317,7 +338,7 @@ void DSDMBEDecoder::upsample(float invalue)
 //                *outbuf1 = (sum / (float) 3);
 //                outbuf1++;
 //            }
-//            outbuf1 -= 8;
+//            outbuf1 -= m_upsampling + 2;
 //        }
 //    }
 }

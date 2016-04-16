@@ -38,6 +38,7 @@ private:
     char imbe_d[88];
     char ambe_d[49];
     float m_upsamplerLastValue;
+    static const int m_upsampling = 6;
 };
 
 }
