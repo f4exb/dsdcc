@@ -19,6 +19,7 @@
 
 #include "dsd_opts.h"
 #include "dsd_state.h"
+#include "dsd_logger.h"
 #include "dsd_symbol.h"
 #include "dsd_mbe.h"
 #include "dmr_voice.h"
@@ -108,6 +109,10 @@ public:
     DSDOpts *getOpts() { return &m_opts; }
     DSDState *getState() { return &m_state; }
 
+    void setLogVerbosity(int verbosity) { m_dsdLogger.setVerbosity(verbosity); }
+    void setLogFile(const char *filename) { m_dsdLogger.setFile(filename); }
+    const DSDLogger& getLogger() const { return m_dsdLogger; }
+
 private:
     int getFrameSync();
     void resetFrameSync();
@@ -119,6 +124,7 @@ private:
 
     DSDOpts m_opts;
     DSDState m_state;
+    DSDLogger m_dsdLogger;
     DSDFSMState m_fsmState;
     // sync engine:
     int m_sync; //!< The current internal sync type

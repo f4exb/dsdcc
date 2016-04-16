@@ -213,7 +213,7 @@ void DSDDMRData::preProcess()
 
     if (m_dsdDecoder->m_opts.errorbars == 1)
     {
-        fprintf(stderr, "%s %s\n", m_dsdDecoder->m_state.slot0light, m_dsdDecoder->m_state.slot1light);
+        m_dsdDecoder->getLogger().log("%s %s\n", m_dsdDecoder->m_state.slot0light, m_dsdDecoder->m_state.slot1light);
     }
 }
 
@@ -227,11 +227,11 @@ void DSDDMRData::process()
         {
             if (strcmp(m_dsdDecoder->m_state.fsubtype, "              ") == 0)
             {
-                fprintf(stderr, " Unknown burst type: %s\n", bursttype);
+                m_dsdDecoder->getLogger().log(" Unknown burst type: %s\n", bursttype);
             }
             else
             {
-                fprintf(stderr, "%s\n", m_dsdDecoder->m_state.fsubtype);
+                m_dsdDecoder->getLogger().log("%s\n", m_dsdDecoder->m_state.fsubtype);
             }
         }
 

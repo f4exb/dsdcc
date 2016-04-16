@@ -136,7 +136,7 @@ DSDDstar::~DSDDstar()
 void DSDDstar::init()
 {
     if (m_dsdDecoder->m_opts.errorbars == 1) {
-        fprintf(stderr, "e:");
+        m_dsdDecoder->getLogger().log( "e:");
     }
 
     if (m_dsdDecoder->m_state.synctype == 18) {
@@ -226,7 +226,7 @@ void DSDDstar::processVoice()
             if ((bitbuffer & 0x00FFFFFF) == 0x00AAB468)
             {
                 // we're slipping bits
-                fprintf(stderr, "sync in voice after i=%d, restarting\n", i);
+                m_dsdDecoder->getLogger().log( "sync in voice after i=%d, restarting\n", i);
                 //ugh just start over
                 i = 0;
                 w = dW;
@@ -267,7 +267,7 @@ void DSDDstar::processData()
                 // looking if we're slipping bits
                 if (i != 96)
                 {
-                    fprintf(stderr, "sync after i=%d\n", i);
+                    m_dsdDecoder->getLogger().log( "sync after i=%d\n", i);
                     break;
                 }
             }

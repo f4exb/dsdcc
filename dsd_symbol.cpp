@@ -144,7 +144,7 @@ bool DSDSymbol::pushSample(short sample, int have_sync)
             if ((m_dsdDecoder->m_opts.symboltiming == 1) && (have_sync == 0)
              && (m_dsdDecoder->m_state.lastsynctype != -1))
             {
-                fprintf(stderr, "O");
+                m_dsdDecoder->getLogger().log("O");
             }
         }
         else
@@ -152,7 +152,7 @@ bool DSDSymbol::pushSample(short sample, int have_sync)
             if ((m_dsdDecoder->m_opts.symboltiming == 1) && (have_sync == 0)
              && (m_dsdDecoder->m_state.lastsynctype != -1))
             {
-                fprintf(stderr, "+");
+                m_dsdDecoder->getLogger().log("+");
             }
             if ((m_dsdDecoder->m_state.jitter < 0)
              && (m_dsdDecoder->m_state.lastsample < m_dsdDecoder->m_state.center)
@@ -181,7 +181,7 @@ bool DSDSymbol::pushSample(short sample, int have_sync)
             if ((m_dsdDecoder->m_opts.symboltiming == 1) && (have_sync == 0)
              && (m_dsdDecoder->m_state.lastsynctype != -1))
             {
-                fprintf(stderr, "X");
+                m_dsdDecoder->getLogger().log("X");
             }
         }
         else
@@ -189,7 +189,7 @@ bool DSDSymbol::pushSample(short sample, int have_sync)
             if ((m_dsdDecoder->m_opts.symboltiming == 1) && (have_sync == 0)
              && (m_dsdDecoder->m_state.lastsynctype != -1))
             {
-                fprintf(stderr, "-");
+                m_dsdDecoder->getLogger().log("-");
             }
             if ((m_dsdDecoder->m_state.jitter < 0)
              && (m_dsdDecoder->m_state.lastsample > m_dsdDecoder->m_state.center)
@@ -267,11 +267,11 @@ bool DSDSymbol::pushSample(short sample, int have_sync)
         {
             if (m_dsdDecoder->m_state.jitter >= 0)
             {
-                fprintf(stderr, " %i\n", m_dsdDecoder->m_state.jitter);
+                m_dsdDecoder->getLogger().log(" %i\n", m_dsdDecoder->m_state.jitter);
             }
             else
             {
-                fprintf(stderr, "\n");
+                m_dsdDecoder->getLogger().log("\n");
             }
         }
 
@@ -279,7 +279,7 @@ bool DSDSymbol::pushSample(short sample, int have_sync)
 
         // Symbol debugging
 //        if ((m_dsdDecoder->m_state.symbolcnt > 1160) && (m_dsdDecoder->m_state.symbolcnt < 1200))  { // sampling
-//            fprintf(stderr, "DSDSymbol::pushSample: symbol %d (%d:%d) in:%d\n", m_dsdDecoder->m_state.symbolcnt, m_symbol, sample, inSample);
+//            m_dsdDecoder->getLogger().log("DSDSymbol::pushSample: symbol %d (%d:%d) in:%d\n", m_dsdDecoder->m_state.symbolcnt, m_symbol, sample, inSample);
 //        }
 
         resetSymbol();
@@ -597,21 +597,21 @@ void DSDSymbol::print_datascope(int* sbuf2)
     if (m_dsdDecoder->m_state.symbolcnt > (4800 / m_dsdDecoder->m_opts.scoperate))
     {
         m_dsdDecoder->m_state.symbolcnt = 0;
-        fprintf(stderr, "\n");
-        fprintf(stderr,
+        m_dsdDecoder->getLogger().log("\n");
+        m_dsdDecoder->getLogger().log(
                 "Demod mode:     %s                Nac:                     %4X\n",
                 modulation, m_dsdDecoder->m_state.nac);
-        fprintf(stderr, "Frame Type:    %s        Talkgroup:            %7i\n",
+        m_dsdDecoder->getLogger().log("Frame Type:    %s        Talkgroup:            %7i\n",
                 m_dsdDecoder->m_state.ftype, m_dsdDecoder->m_state.lasttg);
-        fprintf(stderr, "Frame Subtype: %s       Source:          %12i\n",
+        m_dsdDecoder->getLogger().log("Frame Subtype: %s       Source:          %12i\n",
                 m_dsdDecoder->m_state.fsubtype, m_dsdDecoder->m_state.lastsrc);
-        fprintf(stderr, "TDMA activity:  %s %s     Voice errors: %s\n",
+        m_dsdDecoder->getLogger().log("TDMA activity:  %s %s     Voice errors: %s\n",
                 m_dsdDecoder->m_state.slot0light, m_dsdDecoder->m_state.slot1light, m_dsdDecoder->m_state.err_str);
-        fprintf(stderr,
+        m_dsdDecoder->getLogger().log(
                 "+----------------------------------------------------------------+\n");
         for (i = 0; i < 10; i++)
         {
-            fprintf(stderr, "|");
+            m_dsdDecoder->getLogger().log("|");
             for (j = 0; j < 64; j++)
             {
                 if (i == 0)
@@ -619,26 +619,26 @@ void DSDSymbol::print_datascope(int* sbuf2)
                     if ((j == ((m_dsdDecoder->m_state.min) + 32768) / 1024)
                             || (j == ((m_dsdDecoder->m_state.max) + 32768) / 1024))
                     {
-                        fprintf(stderr, "#");
+                        m_dsdDecoder->getLogger().log("#");
                     }
                     else if ((j == ((m_dsdDecoder->m_state.lmid) + 32768) / 1024)
                             || (j == ((m_dsdDecoder->m_state.umid) + 32768) / 1024))
                     {
-                        fprintf(stderr, "^");
+                        m_dsdDecoder->getLogger().log("^");
                     }
                     else if (j == (m_dsdDecoder->m_state.center + 32768) / 1024)
                     {
-                        fprintf(stderr, "!");
+                        m_dsdDecoder->getLogger().log("!");
                     }
                     else
                     {
                         if (j == 32)
                         {
-                            fprintf(stderr, "|");
+                            m_dsdDecoder->getLogger().log("|");
                         }
                         else
                         {
-                            fprintf(stderr, " ");
+                            m_dsdDecoder->getLogger().log(" ");
                         }
                     }
                 }
@@ -646,24 +646,24 @@ void DSDSymbol::print_datascope(int* sbuf2)
                 {
                     if (spectrum[j] > 9 - i)
                     {
-                        fprintf(stderr, "*");
+                        m_dsdDecoder->getLogger().log("*");
                     }
                     else
                     {
                         if (j == 32)
                         {
-                            fprintf(stderr, "|");
+                            m_dsdDecoder->getLogger().log("|");
                         }
                         else
                         {
-                            fprintf(stderr, " ");
+                            m_dsdDecoder->getLogger().log(" ");
                         }
                     }
                 }
             }
-            fprintf(stderr, "|\n");
+            m_dsdDecoder->getLogger().log("|\n");
         }
-        fprintf(stderr,
+        m_dsdDecoder->getLogger().log(
                 "+----------------------------------------------------------------+\n");
     }
 }

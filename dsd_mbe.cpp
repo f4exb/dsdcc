@@ -72,7 +72,7 @@ void DSDMBEDecoder::processFrame(char imbe_fr[8][23], char ambe_fr[4][24], char 
 
     if (m_dsdDecoder->m_opts.errorbars == 1)
     {
-        fprintf(stderr, "%s", m_dsdDecoder->m_state.err_str);
+        m_dsdDecoder->getLogger().log("%s", m_dsdDecoder->m_state.err_str);
     }
 
     processAudio();

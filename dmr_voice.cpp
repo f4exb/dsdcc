@@ -91,7 +91,7 @@ void DSDDMRVoice::process()
     m_dibitIndex = m_symbolIndex % 288;           // index of symbol in frame
     int symbolIndex = getSlotIndex(m_dibitIndex); // returns symbol index in current slot. Updates m_slotIndex.
 
-//    fprintf(stderr, "DSDDMRVoice::process: m_symbolIndex: %d m_majorBlock: %d m_dibitIndex: %d m_slotIndex: %d symbolIndex: %d\n",
+//    m_dsdDecoder->getLogger().log("DSDDMRVoice::process: m_symbolIndex: %d m_majorBlock: %d m_dibitIndex: %d m_slotIndex: %d symbolIndex: %d\n",
 //            m_symbolIndex, m_majorBlock, m_dibitIndex, m_slotIndex, symbolIndex
 //            );
 
@@ -160,12 +160,12 @@ void DSDDMRVoice::preProcess()
 
 void DSDDMRVoice::postProcess(int symbolIndex)
 {
-    //fprintf(stderr, "DSDDMRVoice::postProcess: m_symbolIndex: %d", m_symbolIndex);
+    //m_dsdDecoder->getLogger().log("DSDDMRVoice::postProcess: m_symbolIndex: %d", m_symbolIndex);
     m_dsdDecoder->m_dsdSymbol.getDibit(); // get dibit from symbol but do nothing with it
 
     if (symbolIndex == 54+12+54-1) // very last symbol -> go back to search sync state
     {
-        fprintf(stderr, "DSDDMRVoice::postProcess: end of frame\n");
+        m_dsdDecoder->getLogger().log("DSDDMRVoice::postProcess: end of frame\n");
         m_dsdDecoder->resetFrameSync(); // get ready for next sync
     }
 }
@@ -178,7 +178,7 @@ void DSDDMRVoice::processSlot0(int symbolIndex) // Slot0 is a 54 symbol slot
     }
 
 //    if (symbolIndex == 54 -1) {
-//        fprintf(stderr, "DSDDMRVoice::processSlot0: m_majorBlock: %d m_dibitIndex: %d symbolIndex: %d\n",
+//        m_dsdDecoder->getLogger().log("DSDDMRVoice::processSlot0: m_majorBlock: %d m_dibitIndex: %d symbolIndex: %d\n",
 //                m_majorBlock, m_dibitIndex, symbolIndex
 //                );
 //    }
@@ -189,7 +189,7 @@ void DSDDMRVoice::processSlot8(int symbolIndex) // Slot8 is a 54 symbol slot
     m_dsdDecoder->m_dsdSymbol.getDibit(); // get dibit from symbol but do nothing with it
 
 //    if (symbolIndex == 54 -1) {
-//        fprintf(stderr, "DSDDMRVoice::processSlot8: m_majorBlock: %d m_dibitIndex: %d symbolIndex: %d\n",
+//        m_dsdDecoder->getLogger().log("DSDDMRVoice::processSlot8: m_majorBlock: %d m_dibitIndex: %d symbolIndex: %d\n",
 //                m_majorBlock, m_dibitIndex, symbolIndex
 //                );
 //    }
@@ -205,7 +205,7 @@ void DSDDMRVoice::processSlot1(int symbolIndex) // Slot1 is a 12 symbol slot
 
     if (symbolIndex == 12-1) // last symbol -> launch process
     {
-//        fprintf(stderr, "DSDDMRVoice::processSlot1: m_majorBlock: %d m_dibitIndex: %d symbolIndex: %d\n",
+//        m_dsdDecoder->getLogger().log("DSDDMRVoice::processSlot1: m_majorBlock: %d m_dibitIndex: %d symbolIndex: %d\n",
 //                m_majorBlock, m_dibitIndex, symbolIndex
 //                );
 
@@ -251,7 +251,7 @@ void DSDDMRVoice::processSlot2(int symbolIndex) // Slot2 is a 36 symbol slot
 
     if (symbolIndex == 36-1) // last symbol -> launch process
     {
-//        fprintf(stderr, "DSDDMRVoice::processSlot2: m_majorBlock: %d m_dibitIndex: %d symbolIndex: %d\n",
+//        m_dsdDecoder->getLogger().log("DSDDMRVoice::processSlot2: m_majorBlock: %d m_dibitIndex: %d symbolIndex: %d\n",
 //                m_majorBlock, m_dibitIndex, symbolIndex
 //                );
 
@@ -286,7 +286,7 @@ void DSDDMRVoice::processSlot3(int symbolIndex) // Slot3 is a 18 symbol slot
 
     if (symbolIndex == 18-1) // last symbol -> launch process
     {
-//        fprintf(stderr, "DSDDMRVoice::processSlot3: m_majorBlock: %d m_dibitIndex: %d symbolIndex: %d\n",
+//        m_dsdDecoder->getLogger().log("DSDDMRVoice::processSlot3: m_majorBlock: %d m_dibitIndex: %d symbolIndex: %d\n",
 //                m_majorBlock, m_dibitIndex, symbolIndex
 //                );
 
@@ -321,7 +321,7 @@ void DSDDMRVoice::processSlot4(int symbolIndex) // Slot4 is a 24 symbol slot
 
     if (symbolIndex == 24-1) // last symbol -> launch process
     {
-//        fprintf(stderr, "DSDDMRVoice::processSlot4: m_majorBlock: %d m_dibitIndex: %d symbolIndex: %d\n",
+//        m_dsdDecoder->getLogger().log("DSDDMRVoice::processSlot4: m_majorBlock: %d m_dibitIndex: %d symbolIndex: %d\n",
 //                m_majorBlock, m_dibitIndex, symbolIndex
 //                );
 
@@ -372,7 +372,7 @@ void DSDDMRVoice::processSlot4(int symbolIndex) // Slot4 is a 24 symbol slot
 
         if ((m_majorBlock == 0) && (m_dsdDecoder->m_opts.errorbars == 1))
         {
-            fprintf(stderr, "%s %s  VOICE e:", m_dsdDecoder->m_state.slot0light, m_dsdDecoder->m_state.slot1light);
+            m_dsdDecoder->getLogger().log("%s %s  VOICE e:", m_dsdDecoder->m_state.slot0light, m_dsdDecoder->m_state.slot1light);
         }
     }
 }
@@ -384,7 +384,7 @@ void DSDDMRVoice::processSlot5(int symbolIndex) // Slot5 is a 18 symbol slot
 
     if (symbolIndex == 18-1) // last symbol -> launch process
     {
-//        fprintf(stderr, "DSDDMRVoice::processSlot5: m_majorBlock: %d m_dibitIndex: %d symbol %d: %d:%d\n",
+//        m_dsdDecoder->getLogger().log("DSDDMRVoice::processSlot5: m_majorBlock: %d m_dibitIndex: %d symbol %d: %d:%d\n",
 //        		m_majorBlock, m_dibitIndex, m_dsdDecoder->m_state.symbolcnt, m_dsdDecoder->m_dsdSymbol.getSymbol(), m_dsdDecoder->m_state.lastsample);
 
         int *dibitCache = &m_dibitCache[m_dibitIndex - symbolIndex]; // move back to start of corresponding cache section
@@ -392,7 +392,7 @@ void DSDDMRVoice::processSlot5(int symbolIndex) // Slot5 is a 18 symbol slot
         for (int i = 0; i < 18; i++)
         {
             int dibit = dibitCache[i];
-            //fprintf(stderr, "DSDDMRVoice::processSlot5: dibit[%d]: %d\n", i, dibit);
+            //m_dsdDecoder->getLogger().log("DSDDMRVoice::processSlot5: dibit[%d]: %d\n", i, dibit);
 
             ambe_fr2[*w][*x] = (1 & (dibit >> 1)); // bit 1
             ambe_fr2[*y][*z] = (1 & dibit);        // bit 0
@@ -411,17 +411,17 @@ void DSDDMRVoice::processSlot5(int symbolIndex) // Slot5 is a 18 symbol slot
             else
             {
                 if (m_dsdDecoder->m_opts.errorbars == 1) {
-                    fprintf(stderr, "\nMBE: ");
+                    m_dsdDecoder->getLogger().log("\nMBE: ");
                 }
 
                 m_dsdDecoder->m_mbeDecoder.processFrame(0, ambe_fr, 0);
                 if (m_dsdDecoder->m_opts.errorbars == 1) {
-                    fprintf(stderr, ".");
+                    m_dsdDecoder->getLogger().log(".");
                 }
 
                 m_dsdDecoder->m_mbeDecoder.processFrame(0, ambe_fr2, 0);
                 if (m_dsdDecoder->m_opts.errorbars == 1) {
-                    fprintf(stderr, ".");
+                    m_dsdDecoder->getLogger().log(".");
                 }
             }
         }
@@ -435,7 +435,7 @@ void DSDDMRVoice::processSlot6(int symbolIndex) // Slot6 is a 36 symbol slot
 
     if (symbolIndex == 36-1) // last symbol -> launch process
     {
-//        fprintf(stderr, "DSDDMRVoice::processSlot6: m_majorBlock: %d m_dibitIndex: %d symbolIndex: %d\n",
+//        m_dsdDecoder->getLogger().log("DSDDMRVoice::processSlot6: m_majorBlock: %d m_dibitIndex: %d symbolIndex: %d\n",
 //                m_majorBlock, m_dibitIndex, symbolIndex
 //                );
 
@@ -470,7 +470,7 @@ void DSDDMRVoice::processSlot6(int symbolIndex) // Slot6 is a 36 symbol slot
                 m_dsdDecoder->m_mbeDecoder.processFrame(0, ambe_fr3, 0);
 
                 if (m_dsdDecoder->m_opts.errorbars == 1) {
-                    fprintf(stderr, "\n");
+                    m_dsdDecoder->getLogger().log("\n");
                 }
             }
         }
@@ -484,7 +484,7 @@ void DSDDMRVoice::processSlot7(int symbolIndex) // Slot7 is a 12 symbol slot
 
     if (symbolIndex == 12-1) // last symbol -> launch process
     {
-//        fprintf(stderr, "DSDDMRVoice::processSlot7: m_majorBlock: %d m_dibitIndex: %d symbolIndex: %d\n",
+//        m_dsdDecoder->getLogger().log("DSDDMRVoice::processSlot7: m_majorBlock: %d m_dibitIndex: %d symbolIndex: %d\n",
 //                m_majorBlock, m_dibitIndex, symbolIndex
 //                );
 
@@ -507,7 +507,7 @@ void DSDDMRVoice::processSlot9(int symbolIndex) // Slot9 is a 24 symbol slot
 
     if (symbolIndex == 24-1) // last symbol -> launch process
     {
-//        fprintf(stderr, "DSDDMRVoice::processSlot9: m_majorBlock: %d m_dibitIndex: %d symbolIndex: %d\n",
+//        m_dsdDecoder->getLogger().log("DSDDMRVoice::processSlot9: m_majorBlock: %d m_dibitIndex: %d symbolIndex: %d\n",
 //                m_majorBlock, m_dibitIndex, symbolIndex
 //                );
 

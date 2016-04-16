@@ -23,6 +23,7 @@ set(dsdcc_SOURCES
     dmr_voice.cpp
     dsd_decoder.cpp
     dsd_filters.cpp
+    dsd_logger.cpp
     dsd_mbe.cpp
     dsd_opts.cpp
     dsd_state.cpp
@@ -37,6 +38,7 @@ set(dsdcc_HEADERS
     dmr_voice.h
     dsd_decoder.h
     dsd_filters.h
+    dsd_logger.h
     dsd_mbe.h
     dsd_opts.h
     dsd_state.h

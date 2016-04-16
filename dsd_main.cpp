@@ -51,11 +51,11 @@ void usage()
     fprintf(stderr,
             "  -i <device>   Audio input device (default is /dev/audio, - for piped stdin)\n");
     fprintf(stderr, "  -o <device>   Audio output device (default is /dev/audio, - for stdout)\n");
-    fprintf(stderr,
-            "  -g <num>      Audio output gain (default = 0 = auto, disable = -1)\n");
+    fprintf(stderr, "  -g <num>      Audio output gain (default = 0 = auto, disable = -1)\n");
     fprintf(stderr, "  -U            Force upsampling to 48kHz on audio output\n");
-    fprintf(stderr,
-            "  -n            Do not send synthesized speech to audio output device\n");
+    fprintf(stderr, "  -n            Do not send synthesized speech to audio output device\n");
+    fprintf(stderr, "  -L <filename> Log messages to file with file name <filename>. Default is stderr\n");
+    fprintf(stderr, "                If file name is invalid messages will go to stderr\n");
     fprintf(stderr, "\n");
     fprintf(stderr, "Scanner control options:\n");
     fprintf(stderr,
@@ -112,6 +112,7 @@ int main(int argc, char **argv)
     int  in_file_fd = -1;
     char out_file[1023];
     int  out_file_fd = -1;
+    char log_file[1023];
 
     fprintf(stderr, "Digital Speech Decoder DSDcc\n");
 
@@ -119,7 +120,7 @@ int main(int argc, char **argv)
     signal(SIGINT, sigfun);
 
     while ((c = getopt(argc, argv,
-            "hep:qstv:z:i:o:g:nR:f:m:u:Ux:A:S:M:l")) != -1)
+            "hep:qstv:z:i:o:g:nR:f:m:u:Ux:A:S:M:lL:")) != -1)
     {
         opterr = 0;
         switch (c)
@@ -156,6 +157,7 @@ int main(int argc, char **argv)
         case 'q':
             opts->errorbars = 0;
             opts->verbose = 0;
+            dsdDecoder.setLogVerbosity(0);
             break;
         case 's':
             opts->errorbars = 0;
@@ -173,6 +175,7 @@ int main(int argc, char **argv)
             break;
         case 'v':
             sscanf(optarg, "%d", &opts->verbose);
+            dsdDecoder.setLogVerbosity(opts->verbose);
             break;
         case 'z':
             sscanf(optarg, "%d", &opts->scoperate);
@@ -185,6 +188,11 @@ int main(int argc, char **argv)
             opts->symboltiming = 0;
             fprintf(stderr, "Setting datascope frame rate to %i frame per second.\n",
                     opts->scoperate);
+            break;
+        case 'L':
+            strncpy(log_file, (const char *) optarg, 1023);
+            log_file[1023] = '\0';
+            dsdDecoder.setLogFile(log_file);
             break;
         case 'i':
             strncpy(in_file, (const char *) optarg, 1023);
