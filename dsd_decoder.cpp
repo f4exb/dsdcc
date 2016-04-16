@@ -49,24 +49,27 @@ void DSDDecoder::run(short sample)
 
             if (m_sync > -2) // -1 and above means syncing has been processed (sync found or not but not searching)
             {
-                m_state.synctype  = m_sync;
                 // recalibrate center/umid/lmid
                 m_state.center = ((m_state.max) + (m_state.min)) / 2;
                 m_state.umid = (((m_state.max) - m_state.center) * 5 / 8) + m_state.center;
                 m_state.lmid = (((m_state.min) - m_state.center) * 5 / 8) + m_state.center;
-
-                if (m_state.synctype > -1) // 0 and above means a sync has been found
-                {
-                    fprintf(stderr, "DSDDecoder::run: before processFrameInit: symbol %d (%d)\n", m_state.symbolcnt, m_dsdSymbol.getSymbol());
-                    m_hasSync = 1;
-                    processFrameInit();   // initiate the process of the frame which sync has been found. This will change FSM state
-                }
-                else // no sync has been found after searching -> call noCarrier() and go back searching (same FSM state)
-                {
-                    noCarrier();
-                }
+                m_fsmState = DSDSyncFound; // go to processing state next time
             }
             // still searching -> no change in FSM state
+            break;
+        case DSDSyncFound:
+            m_state.synctype  = m_sync;
+            if (m_state.synctype > -1) // 0 and above means a sync has been found
+            {
+                //fprintf(stderr, "DSDDecoder::run: before processFrameInit: symbol %d (%d)\n", m_state.symbolcnt, m_dsdSymbol.getSymbol());
+                m_hasSync = 1;
+                processFrameInit();   // initiate the process of the frame which sync has been found. This will change FSM state
+            }
+            else // no sync has been found after searching -> call noCarrier() and go back searching
+            {
+                noCarrier();
+                m_fsmState = DSDLookForSync;
+            }
             break;
         case DSDprocessDMRvoice:
             m_dsdDMRVoice.process();
@@ -1056,7 +1059,7 @@ int DSDDecoder::getFrameSync()
 
 void DSDDecoder::resetFrameSync()
 {
-    fprintf(stderr, "DSDDecoder::resetFrameSync: symbol %d (%d)\n", m_state.symbolcnt, m_dsdSymbol.getSymbol());
+    //fprintf(stderr, "DSDDecoder::resetFrameSync: symbol %d (%d)\n", m_state.symbolcnt, m_dsdSymbol.getSymbol());
 
     for (int i = 18; i < 24; i++)
     {

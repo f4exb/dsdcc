@@ -74,7 +74,7 @@ public:
     typedef enum
     {
         DSDLookForSync,
-        DSDNoSync,
+        DSDSyncFound,
         DSDprocessFrame,
         DSDprocessNXDNVoice,
         DSDprocessNXDNData,
