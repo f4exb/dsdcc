@@ -59,7 +59,7 @@ public:
     int delay;
     int use_cosine_filter;
     int unmute_encrypted_p25;
-    int upsample; //!< force audio upsampling to 48k
+    int upsample; //!< upsampling value: 0, or 7 else defaults to 0
     int stereo;   //!< double each audio sample to produce L+R channels
 };
 

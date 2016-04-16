@@ -52,7 +52,10 @@ void usage()
             "  -i <device>   Audio input device (default is /dev/audio, - for piped stdin)\n");
     fprintf(stderr, "  -o <device>   Audio output device (default is /dev/audio, - for stdout)\n");
     fprintf(stderr, "  -g <num>      Audio output gain (default = 0 = auto, disable = -1)\n");
-    fprintf(stderr, "  -U            Force upsampling to 48kHz on audio output\n");
+    fprintf(stderr, "  -U <num>      Audio output upsampling\n");
+    fprintf(stderr, "                0: no upsampling (8k) default\n");
+    fprintf(stderr, "                6: normal upsampling to 48k\n");
+    fprintf(stderr, "                7: 7x upsampling to trade audio drops against bad audio quality\n");
     fprintf(stderr, "  -n            Do not send synthesized speech to audio output device\n");
     fprintf(stderr, "  -L <filename> Log messages to file with file name <filename>. Default is stderr\n");
     fprintf(stderr, "                If file name is invalid messages will go to stderr\n");
@@ -120,7 +123,7 @@ int main(int argc, char **argv)
     signal(SIGINT, sigfun);
 
     while ((c = getopt(argc, argv,
-            "hep:qstv:z:i:o:g:nR:f:m:u:Ux:A:S:M:lL:")) != -1)
+            "hep:qstv:z:i:o:g:nR:f:m:u:U:x:A:S:M:lL:")) != -1)
     {
         opterr = 0;
         switch (c)
@@ -384,7 +387,11 @@ int main(int argc, char **argv)
                     opts->uvquality);
             break;
         case 'U':
-            opts->upsample = 1;
+            sscanf(optarg, "%d", &opts->upsample);
+            if ((opts->upsample != 6) && (opts->upsample != 7)) {
+                opts->upsample = 0;
+            }
+            fprintf(stderr, "Setting upsampling to x%d\n", (opts->upsample == 0 ? 1 : opts->upsample));
             break;
         case 'x':
             if (optarg[0] == 'x')
