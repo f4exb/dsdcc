@@ -404,11 +404,11 @@ void DSDDMRVoice::processSlot5(int symbolIndex) // Slot5 is a 18 symbol slot
 
         if (mutecurrentslot == 0)
         {
-            if (m_dsdDecoder->m_state.firstframe == 1)
-            { // we don't know if anything received before the first sync after no carrier is valid
-                //m_dsdDecoder->m_state.firstframe = 0; not consumed yet
-            }
-            else
+//            if (m_dsdDecoder->m_state.firstframe == 1)
+//            { // we don't know if anything received before the first sync after no carrier is valid
+//                //m_dsdDecoder->m_state.firstframe = 0; not consumed yet
+//            }
+//            else
             {
                 if (m_dsdDecoder->m_opts.errorbars == 1) {
                     m_dsdDecoder->getLogger().log("\nMBE: ");
@@ -461,11 +461,11 @@ void DSDDMRVoice::processSlot6(int symbolIndex) // Slot6 is a 36 symbol slot
 
         if (mutecurrentslot == 0)
         {
-            if (m_dsdDecoder->m_state.firstframe == 1)
-            { // we don't know if anything received before the first sync after no carrier is valid
-                m_dsdDecoder->m_state.firstframe = 0; // now consumed
-            }
-            else
+//            if (m_dsdDecoder->m_state.firstframe == 1)
+//            { // we don't know if anything received before the first sync after no carrier is valid
+//                m_dsdDecoder->m_state.firstframe = 0; // now consumed
+//            }
+//            else
             {
                 m_dsdDecoder->m_mbeDecoder.processFrame(0, ambe_fr3, 0);
 
