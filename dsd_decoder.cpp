@@ -38,6 +38,247 @@ DSDDecoder::~DSDDecoder()
 {
 }
 
+void DSDDecoder::setQuiet()
+{
+    m_opts.errorbars = 0;
+    m_opts.verbose = 0;
+    m_dsdLogger.setVerbosity(0);
+}
+
+void DSDDecoder::setVerbosity(int verbosity)
+{
+    m_opts.verbose = verbosity;
+    m_dsdLogger.setVerbosity(verbosity);
+}
+
+void DSDDecoder::showDatascope()
+{
+    m_opts.errorbars = 0;
+    m_opts.p25enc = 0;
+    m_opts.p25lc = 0;
+    m_opts.p25status = 0;
+    m_opts.p25tg = 0;
+    m_opts.datascope = 1;
+    m_opts.symboltiming = 0;
+}
+
+void DSDDecoder::setDatascopeFrameRate(int frameRate)
+{
+    m_opts.errorbars = 0;
+    m_opts.p25enc = 0;
+    m_opts.p25lc = 0;
+    m_opts.p25status = 0;
+    m_opts.p25tg = 0;
+    m_opts.datascope = 1;
+    m_opts.symboltiming = 0;
+    m_opts.scoperate = frameRate;
+    m_dsdLogger.log("Setting datascope frame rate to %i frame per second.\n", frameRate);
+}
+
+void DSDDecoder::showErrorBars()
+{
+    m_opts.errorbars = 1;
+    m_opts.datascope = 0;
+}
+
+void DSDDecoder::showSymbolTiming()
+{
+    m_opts.symboltiming = 1;
+    m_opts.errorbars = 1;
+    m_opts.datascope = 0;
+}
+
+void DSDDecoder::setP25DisplayOptions(DSDShowP25 mode, bool on)
+{
+    switch(mode)
+    {
+    case DSDShowP25EncryptionSyncBits:
+        m_opts.p25enc = (on ? 1 : 0);
+        break;
+    case DSDShowP25LinkControlBits:
+        m_opts.p25lc = (on ? 1 : 0);
+        break;
+    case DSDShowP25StatusBitsAndLowSpeedData:
+        m_opts.p25status = (on ? 1 : 0);
+        break;
+    case DSDShowP25TalkGroupInfo:
+        m_opts.p25tg = (on ? 1 : 0);
+        break;
+    default:
+        break;
+    }
+}
+
+void DSDDecoder::muteEncryptedP25(bool on)
+{
+    m_opts.unmute_encrypted_p25 = (on ? 0 : 1);
+}
+
+void DSDDecoder::setDecodeMode(DSDDecodeMode mode, bool on)
+{
+    switch(mode) // retain only supported modes
+    {
+    case DSDDecodeDMR:
+        m_opts.frame_dmr = (on ? 1 : 0);
+        m_dsdLogger.log("%s the decoding of DMR/MOTOTRBO frames.\n", (on ? "Enabling" : "Disabling"));
+        break;
+    case DSDDecodeAuto:
+        m_opts.frame_dstar = (on ? 1 : 0);
+        m_opts.frame_x2tdma = (on ? 1 : 0);
+        m_opts.frame_p25p1 = (on ? 1 : 0);
+        m_opts.frame_nxdn48 = (on ? 1 : 0);
+        m_opts.frame_nxdn96 = (on ? 1 : 0);
+        m_opts.frame_dmr = (on ? 1 : 0);
+        m_opts.frame_provoice = (on ? 1 : 0);
+        break;
+    default:
+        break;
+    }
+}
+
+void DSDDecoder::setModulationOptimizations(DSDModulationOptim mode)
+{
+    switch (mode)
+    {
+    case DSDModulationOptimAuto:
+        m_opts.mod_c4fm = 1;
+        m_opts.mod_qpsk = 1;
+        m_opts.mod_gfsk = 1;
+        m_state.rf_mod = 0;
+        m_dsdLogger.log("Enabling Auto modulation optimizations.\n");
+        break;
+    case DSDModulationOptimGFSK:
+        m_opts.mod_c4fm = 0;
+        m_opts.mod_qpsk = 0;
+        m_opts.mod_gfsk = 1;
+        m_state.rf_mod = 2;
+        m_dsdLogger.log("Enabling only GFSK modulation optimizations.\n");
+        break;
+    case DSDModulationOptimQPSK:
+        m_opts.mod_c4fm = 0;
+        m_opts.mod_qpsk = 1;
+        m_opts.mod_gfsk = 0;
+        m_state.rf_mod = 1;
+        m_dsdLogger.log("Enabling only QPSK modulation optimizations.\n");
+        break;
+    case DSDModulationOptimC4FM:
+        m_opts.mod_c4fm = 1;
+        m_opts.mod_qpsk = 0;
+        m_opts.mod_gfsk = 0;
+        m_state.rf_mod = 0;
+        m_dsdLogger.log("Enabling only C4FM modulation optimizations.\n");
+        break;
+    default:
+        break;
+    }
+}
+
+void DSDDecoder::setAudioGain(float gain)
+{
+    m_opts.audio_gain = gain;
+
+    if (m_opts.audio_gain < 0.0f)
+    {
+        m_dsdLogger.log("Disabling audio out gain setting\n");
+    }
+    else if (m_opts.audio_gain == 0.0f)
+    {
+        m_opts.audio_gain = 0.0f;
+        m_dsdLogger.log("Enabling audio out auto-gain\n");
+    }
+    else
+    {
+        m_dsdLogger.log("Setting audio out gain to %f\n", m_opts.audio_gain);
+        m_state.aout_gain = m_opts.audio_gain;
+    }
+}
+
+void DSDDecoder::setUvQuality(int uvquality)
+{
+    m_opts.uvquality = uvquality;
+
+    if (m_opts.uvquality < 1) {
+        m_opts.uvquality = 1;
+    } else if (m_opts.uvquality > 64) {
+        m_opts.uvquality = 64;
+    }
+
+    m_dsdLogger.log("Setting unvoice speech quality to %i waves per band.\n", m_opts.uvquality);
+}
+
+void DSDDecoder::setUpsampling(int upsampling)
+{
+    m_opts.upsample = upsampling;
+
+    if ((m_opts.upsample != 6) && (m_opts.upsample != 7)) {
+        m_opts.upsample = 0;
+    }
+
+    m_dsdLogger.log("Setting upsampling to x%d\n", (m_opts.upsample == 0 ? 1 : m_opts.upsample));
+}
+
+void DSDDecoder::setInvertedXTDMA(bool on)
+{
+    m_opts.inverted_x2tdma = (on ? 1 : 0);
+    m_dsdLogger.log("Expecting %sinverted X2-TDMA signals.\n", (m_opts.inverted_x2tdma == 0 ? "non-" : ""));
+}
+
+void DSDDecoder::setInvertedDMR(bool on)
+{
+    m_opts.inverted_dmr = (on ? 1 : 0);
+    m_dsdLogger.log("Expecting %sinverted DMR/MOTOTRBO signals.\n", (m_opts.inverted_x2tdma == 0 ? "non-" : ""));
+}
+
+void DSDDecoder::setAutoDetectionThreshold(int threshold)
+{
+    m_opts.mod_threshold = threshold;
+    m_dsdLogger.log("Setting C4FM/QPSK auto detection threshold to %i\n", m_opts.mod_threshold);
+}
+
+void DSDDecoder::setQPSKSymbolBufferSize(int size)
+{
+    m_opts.ssize = size;
+
+    if (m_opts.ssize > 128) {
+        m_opts.ssize = 128;
+    } else if (m_opts.ssize < 1) {
+        m_opts.ssize = 1;
+    }
+
+    m_dsdLogger.log("Setting QPSK symbol buffer to %i\n", m_opts.ssize);
+}
+
+void DSDDecoder::setQPSKMinMaxBufferSize(int size)
+{
+    m_opts.msize = size;
+
+    if (m_opts.msize > 1024) {
+        m_opts.msize = 1024;
+    } else if (m_opts.msize < 1) {
+        m_opts.msize = 1;
+    }
+
+    m_dsdLogger.log("Setting QPSK Min/Max buffer to %i\n", m_opts.msize);
+}
+
+void DSDDecoder::enableCosineFiltering(bool on)
+{
+    m_opts.use_cosine_filter = (on ? 1 : 0);
+    m_dsdLogger.log("%s cosine filter.\n", (on ? "Enabling" : "Disabling"));
+}
+
+void DSDDecoder::enableAudioOut(bool on)
+{
+    m_opts.audio_out = (on ? 1 : 0);
+    m_dsdLogger.log("%s audio output to soundcard.\n", (on ? "Enabling" : "Disabling"));
+}
+
+void DSDDecoder::enableScanResumeAfterTDULCFrames(int nbFrames)
+{
+    m_opts.resume = nbFrames;
+    m_dsdLogger.log("Enabling scan resume after %i TDULC frames\n", m_opts.resume);
+}
+
 void DSDDecoder::run(short sample)
 {
     if (m_dsdSymbol.pushSample(sample, m_hasSync)) // a symbol is retrieved

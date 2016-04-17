@@ -84,14 +84,13 @@ For more details refer to the online help with the `-h` option: `dsdccx -h`
 You can look at the source of the `dsdccx` binary to get an idea. Basically it involves the following steps:
 
   1. Allocate a new `DSDDecoder` object (stack or heap)
-  2. Set the options. You get full access to it with the `getOpts` method of `DSDDecoder`.
-  3. Do some initilizations in the state object. You get full access to it with the `getState` method of `DSDDecoder`.
-  4. Prepare the input (open file or stream)
-  5. Get a new sample from the stream
-  6. Push this sample to the decoder
-  7. Check if any audio output is available and possibly get its pointer and number of samples
-  8. Push these samples to the audio device or the output file or stream
-  9. Go back to step #5 until a signal is received or some sort of logic brings the loop to an end
-  10. Do the cleanup after the loop or in the signal handler (close file, destroy objects...)
+  2. Set the options and state object. with some `DSDDecoder` methods.
+  3. Prepare the input (open file or stream)
+  4. Get a new sample from the stream
+  5. Push this sample to the decoder
+  6. Check if any audio output is available and possibly get its pointer and number of samples
+  7. Push these samples to the audio device or the output file or stream
+  8. Go back to step #5 until a signal is received or some sort of logic brings the loop to an end
+  9. Do the cleanup after the loop or in the signal handler (close file, destroy objects...)
 
 Of course this loop can be run in its own thread or remain synchronous with the calling application. Unlike with the original DSD you have the choice.

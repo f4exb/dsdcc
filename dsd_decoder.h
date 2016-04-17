@@ -74,6 +74,35 @@ class DSDDecoder
 public:
     typedef enum
     {
+        DSDDecodeAuto,
+        DSDDecodeNone,
+        DSDDecodeP25P1,
+        DSDDecodeDStar,
+        DSDDecodeNXDN48,
+        DSDDecodeNXDN96,
+        DSDDecodeProVoice,
+        DSDDecodeDMR,
+        DSDDecodeX2TDMA
+    } DSDDecodeMode;
+
+    typedef enum
+    {
+        DSDModulationOptimAuto,
+        DSDModulationOptimGFSK,
+        DSDModulationOptimQPSK,
+        DSDModulationOptimC4FM,
+    } DSDModulationOptim;
+
+    typedef enum
+    {
+        DSDShowP25EncryptionSyncBits,
+        DSDShowP25LinkControlBits,
+        DSDShowP25StatusBitsAndLowSpeedData,
+        DSDShowP25TalkGroupInfo
+    } DSDShowP25;
+
+    typedef enum
+    {
         DSDLookForSync,
         DSDSyncFound,
         DSDprocessFrame,
@@ -106,12 +135,35 @@ public:
         m_state.audio_out_buf_p = m_state.audio_out_buf;
     }
 
-    DSDOpts *getOpts() { return &m_opts; }
-    DSDState *getState() { return &m_state; }
+    //DSDOpts *getOpts() { return &m_opts; }
+    //DSDState *getState() { return &m_state; }
 
     void setLogVerbosity(int verbosity) { m_dsdLogger.setVerbosity(verbosity); }
     void setLogFile(const char *filename) { m_dsdLogger.setFile(filename); }
     const DSDLogger& getLogger() const { return m_dsdLogger; }
+
+    // Initializations:
+    void setQuiet();
+    void setVerbosity(int verbosity);
+    void showDatascope();
+    void setDatascopeFrameRate(int frameRate);
+    void showErrorBars();
+    void showSymbolTiming();
+    void setP25DisplayOptions(DSDShowP25 mode, bool on);
+    void muteEncryptedP25(bool on);
+    void setDecodeMode(DSDDecodeMode mode, bool on);
+    void setModulationOptimizations(DSDModulationOptim mode);
+    void setAudioGain(float gain);
+    void setUvQuality(int uvquality);
+    void setUpsampling(int upsampling);
+    void setInvertedXTDMA(bool on);
+    void setInvertedDMR(bool on);
+    void setAutoDetectionThreshold(int threshold);
+    void setQPSKSymbolBufferSize(int size);
+    void setQPSKMinMaxBufferSize(int size);
+    void enableCosineFiltering(bool on);
+    void enableAudioOut(bool on);
+    void enableScanResumeAfterTDULCFrames(int nbFrames);
 
 private:
     int getFrameSync();
