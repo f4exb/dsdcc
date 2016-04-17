@@ -122,6 +122,10 @@ void DSDDecoder::setDecodeMode(DSDDecodeMode mode, bool on)
         m_opts.frame_dmr = (on ? 1 : 0);
         m_dsdLogger.log("%s the decoding of DMR/MOTOTRBO frames.\n", (on ? "Enabling" : "Disabling"));
         break;
+    case DSDDecodeDStar:
+        m_opts.frame_dstar = (on ? 1 : 0);
+        m_dsdLogger.log("%s the decoding of D-Star frames.\n", (on ? "Enabling" : "Disabling"));
+        break;
     case DSDDecodeAuto:
         m_opts.frame_dstar = (on ? 1 : 0);
         m_opts.frame_x2tdma = (on ? 1 : 0);
@@ -130,6 +134,7 @@ void DSDDecoder::setDecodeMode(DSDDecodeMode mode, bool on)
         m_opts.frame_nxdn96 = (on ? 1 : 0);
         m_opts.frame_dmr = (on ? 1 : 0);
         m_opts.frame_provoice = (on ? 1 : 0);
+        m_dsdLogger.log("%s auto frame decoding.\n", (on ? "Enabling" : "Disabling"));
         break;
     default:
         break;
@@ -290,11 +295,20 @@ void DSDDecoder::run(short sample)
 
             if (m_sync > -2) // -1 and above means syncing has been processed (sync found or not but not searching)
             {
+                //m_dsdLogger.log("DSDDecoder::run: sync found: %d symbol %d (%d)\n", m_sync, m_state.symbolcnt, m_dsdSymbol.getSymbol());
                 // recalibrate center/umid/lmid
                 m_state.center = ((m_state.max) + (m_state.min)) / 2;
                 m_state.umid = (((m_state.max) - m_state.center) * 5 / 8) + m_state.center;
                 m_state.lmid = (((m_state.min) - m_state.center) * 5 / 8) + m_state.center;
-                m_fsmState = DSDSyncFound; // go to processing state next time
+
+                if (m_sync > -1) // good sync found
+                {
+                    m_fsmState = DSDSyncFound; // go to processing state next time
+                }
+                else // no sync found
+                {
+                    resetFrameSync(); // go back searching
+                }
             }
             // still searching -> no change in FSM state
             break;
@@ -302,14 +316,15 @@ void DSDDecoder::run(short sample)
             m_state.synctype  = m_sync;
             if (m_state.synctype > -1) // 0 and above means a sync has been found
             {
-                //m_dsdLogger.log("DSDDecoder::run: before processFrameInit: symbol %d (%d)\n", m_state.symbolcnt, m_dsdSymbol.getSymbol());
+                m_dsdLogger.log("DSDDecoder::run: before processFrameInit: symbol %d (%d)\n", m_state.symbolcnt, m_dsdSymbol.getSymbol());
                 m_hasSync = 1;
                 processFrameInit();   // initiate the process of the frame which sync has been found. This will change FSM state
             }
             else // no sync has been found after searching -> call noCarrier() and go back searching
             {
                 noCarrier();
-                m_fsmState = DSDLookForSync;
+                resetFrameSync();
+                //m_fsmState = DSDLookForSync;
             }
             break;
         case DSDprocessDMRvoice:
@@ -391,6 +406,7 @@ void DSDDecoder::processFrameInit()
         m_state.nac = 0;
         sprintf(m_state.fsubtype, " VOICE        ");
         m_dsdDstar.init();
+        m_dsdDstar.process(); // process current symbol first
         m_fsmState = DSDprocessDSTAR;
     }
     else if ((m_state.synctype == 18) || (m_state.synctype == 19))
@@ -411,6 +427,7 @@ void DSDDecoder::processFrameInit()
         m_state.nac = 0;
         sprintf(m_state.fsubtype, " DATA         ");
         m_dsdDstar.init();
+        m_dsdDstar.processHD(); // process current symbol first
         m_fsmState = DSDprocessDSTAR_HD;
     }
     else
@@ -1300,7 +1317,7 @@ int DSDDecoder::getFrameSync()
 
 void DSDDecoder::resetFrameSync()
 {
-    //m_dsdLogger.log("DSDDecoder::resetFrameSync: symbol %d (%d)\n", m_state.symbolcnt, m_dsdSymbol.getSymbol());
+    m_dsdLogger.log("DSDDecoder::resetFrameSync: symbol %d (%d)\n", m_state.symbolcnt, m_dsdSymbol.getSymbol());
 
     for (int i = 18; i < 24; i++)
     {
