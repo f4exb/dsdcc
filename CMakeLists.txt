@@ -72,3 +72,4 @@ target_link_libraries(dsdccx dsdcc)
 
 install(TARGETS dsdccx DESTINATION bin)
 install(TARGETS dsdcc DESTINATION lib)
+install(FILES ${dsdcc_HEADERS} DESTINATION include/${PROJECT_NAME})
