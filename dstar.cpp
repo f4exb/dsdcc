@@ -135,12 +135,7 @@ DSDDstar::~DSDDstar()
 
 void DSDDstar::init()
 {
-    fprintf(stderr, "DSDDstar::init: symbol %d (%d)\n", m_dsdDecoder->m_state.symbolcnt, m_dsdDecoder->m_dsdSymbol.getSymbol());
-
-    if ((m_dsdDecoder->m_opts.errorbars == 1) && ((m_dsdDecoder->m_state.synctype == 6) || (m_dsdDecoder->m_state.synctype == 7)))
-    {
-        m_dsdDecoder->getLogger().log( "e:"); // print this only for voice/data frames
-    }
+    //fprintf(stderr, "DSDDstar::init: symbol %d (%d)\n", m_dsdDecoder->m_state.symbolcnt, m_dsdDecoder->m_dsdSymbol.getSymbol());
 
     if (m_dsdDecoder->m_state.synctype == 18) {
         framecount = 0;
@@ -150,6 +145,11 @@ void DSDDstar::init()
         m_dsdDecoder->m_state.synctype = 7;
     } else {
         framecount = 1; //just saw a sync frame; there should be 20 not 21 till the next
+    }
+
+    if ((m_dsdDecoder->m_opts.errorbars == 1) && ((m_dsdDecoder->m_state.synctype == 6) || (m_dsdDecoder->m_state.synctype == 7)))
+    {
+        m_dsdDecoder->getLogger().log( "e:"); // print this only for voice/data frames
     }
 
     sync_missed = 0;
@@ -204,7 +204,8 @@ void DSDDstar::processHD()
     if (m_symbolIndexHD == 660-1)
     {
         dstar_header_decode();
-        m_symbolIndexHD = 0;
+        m_symbolIndexHD = -1;
+        init(); // init for DSTAR
         m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDSTAR; // go to DSTAR
     }
 
@@ -240,7 +241,7 @@ void DSDDstar::processVoice()
     }
     else
     {
-		fprintf(stderr, "DSDDstar::processVoice: i: %d w: %d x: %d val: %d\n", m_symbolIndex, *w, *x, (1 & dibit));
+		//fprintf(stderr, "DSDDstar::processVoice: i: %d w: %d x: %d val: %d\n", m_symbolIndex, *w, *x, (1 & dibit));
 
 		ambe_fr[*w][*x] = (1 & dibit);
 		w++;
@@ -249,7 +250,7 @@ void DSDDstar::processVoice()
 
     if (m_symbolIndex == 72-1)
     {
-    	fprintf(stderr, "DSDDstar::processVoice: MBE: symbol %d (%d)\n", m_dsdDecoder->m_state.symbolcnt, m_dsdDecoder->m_dsdSymbol.getSymbol());
+    	//fprintf(stderr, "DSDDstar::processVoice: MBE: symbol %d (%d)\n", m_dsdDecoder->m_state.symbolcnt, m_dsdDecoder->m_dsdSymbol.getSymbol());
         m_dsdDecoder->m_mbeDecoder.processFrame(0, ambe_fr, 0);
     }
 }
@@ -327,7 +328,7 @@ void DSDDstar::processData()
 
     if (dataEnd) // last dibit in data frame
     {
-    	fprintf(stderr, "DSDDstar::processData: symbol %d (%d)\n", m_dsdDecoder->m_state.symbolcnt, m_dsdDecoder->m_dsdSymbol.getSymbol());
+    	//fprintf(stderr, "DSDDstar::processData: symbol %d (%d)\n", m_dsdDecoder->m_state.symbolcnt, m_dsdDecoder->m_dsdSymbol.getSymbol());
 
         slowdata[0] = (bitbuffer >> 16) & 0x000000FF;
         slowdata[1] = (bitbuffer >> 8) & 0x000000FF;
@@ -337,18 +338,18 @@ void DSDDstar::processData()
         if ((bitbuffer & 0x00FFFFFF) == 0x00AAB468)
         {
             //We got sync!
-            fprintf(stderr, "Sync on framecount = %d\n", framecount);
+            m_dsdDecoder->getLogger().log("DSDDstar::processData: Sync on framecount = %d\n", framecount);
             sync_missed = 0;
         }
         else if ((bitbuffer & 0x00FFFFFF) == 0xAAAAAA)
         {
             //End of transmission
-            m_dsdDecoder->getLogger().log("End of transmission\n");
+            m_dsdDecoder->getLogger().log("DSDDstar::processData: End of transmission\n");
             terminate = true;
         }
         else if (framecount % 21 == 0)
         {
-            m_dsdDecoder->getLogger().log("Missed sync on framecount = %d, value = %x/%x/%x\n",
+            m_dsdDecoder->getLogger().log("DSDDstar::processData: Missed sync on framecount = %d, value = %x/%x/%x\n",
                     framecount, slowdata[0], slowdata[1], slowdata[2]);
             sync_missed++;
         }
@@ -437,10 +438,6 @@ void DSDDstar::dstar_header_decode()
             radioheader[29], radioheader[30], radioheader[31], radioheader[32],
             radioheader[33], radioheader[34], radioheader[35], radioheader[36],
             radioheader[37], radioheader[38]);
-
-    // move to D-Star voice/data process on next sample
-    init();
-    m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDSTAR;
 
     //FCSinheader = ((radioheader[39] << 8) | radioheader[40]) & 0xFFFF;
     //FCScalculated = calc_fcs((unsigned char*) radioheader, 39);

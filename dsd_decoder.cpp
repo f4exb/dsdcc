@@ -426,7 +426,6 @@ void DSDDecoder::processFrameInit()
 
         m_state.nac = 0;
         sprintf(m_state.fsubtype, " DATA         ");
-        m_dsdDstar.init();
         m_dsdDstar.processHD(); // process current symbol first
         m_fsmState = DSDprocessDSTAR_HD;
     }
