@@ -1,3 +1,6 @@
+DSDcc
+=====
+
 **DSDcc** is a complete rewrite from the original [DSD (Digital Speech Decoder)](https://github.com/szechyjs/dsd) project.
 
 It is rewritten along the following lines:
@@ -16,8 +19,6 @@ These points have been retained from the original:
   - Input as S16LE samples at a fixed rate of 48kS/s
   - Audio output as S16LE samples at 8kS/s rate directly out of `mbelib` or upsampled to 48kS/s
 
-**Please note that at the moment this is just a work in progress and it does not actually work**
-
 <h1>Possible copyright issues with mbelib</h1>
 
 While DSDcc is intended to be patent-free, `mbelib` that it uses describes functions that may be covered by one or more U.S. patents owned by DVSI Inc. The source code itself should not be infringing as it merely describes possible methods of implementation. Compiling or using `mbelib` may infringe on patents rights in your jurisdiction and/or require licensing. It is unknown if DVSI will sell licenses for software that uses `mbelib`.
@@ -31,7 +32,7 @@ These are only a subset of the ones covered by the original DSD project. Migrati
   - DMR/MOTOTRBO: European two slot TDMA standard. MOTOTRBO is a popular implementation of this standard.
   - D-Star: developed and promoted by Icom for Amateur Radio customers.
 
-Next we might want to add YSF (Yaesu Sound Fusion a.k.a. C4FM) as a newly supported format to cover all AMBE codec based commercial formats used at present by Amateur Radio.
+Next we might want to add YSF (Yaesu Sound Fusion a.k.a. C4FM) as a newly supported format to cover all AMBE codec based commercial formats used at present by Amateur Radio. YSF is not supported by the original DSD but there is a GNUradio [gr-ysf](http://hb9uf.github.io/gr-ysf/) module available.
 
 <h1>Source code</h1>
 
