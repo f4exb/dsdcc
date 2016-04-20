@@ -127,13 +127,20 @@ void DSDDecoder::setDecodeMode(DSDDecodeMode mode, bool on)
         m_dsdLogger.log("%s the decoding of D-Star frames.\n", (on ? "Enabling" : "Disabling"));
         break;
     case DSDDecodeAuto:
-        m_opts.frame_dstar = (on ? 1 : 0);
-        m_opts.frame_x2tdma = (on ? 1 : 0);
-        m_opts.frame_p25p1 = (on ? 1 : 0);
-        m_opts.frame_nxdn48 = (on ? 1 : 0);
-        m_opts.frame_nxdn96 = (on ? 1 : 0);
         m_opts.frame_dmr = (on ? 1 : 0);
-        m_opts.frame_provoice = (on ? 1 : 0);
+        m_opts.frame_dstar = (on ? 1 : 0);
+        // Effective only for presently supported formats
+//        m_opts.frame_x2tdma = (on ? 1 : 0);
+//        m_opts.frame_p25p1 = (on ? 1 : 0);
+//        m_opts.frame_nxdn48 = (on ? 1 : 0);
+//        m_opts.frame_nxdn96 = (on ? 1 : 0);
+//        m_opts.frame_provoice = (on ? 1 : 0);
+        // unsupported formats (yet):
+        m_opts.frame_x2tdma = 0;
+        m_opts.frame_p25p1 = 0;
+        m_opts.frame_nxdn48 = 0;
+        m_opts.frame_nxdn96 = 0;
+        m_opts.frame_provoice = 0;
         m_dsdLogger.log("%s auto frame decoding.\n", (on ? "Enabling" : "Disabling"));
         break;
     default:

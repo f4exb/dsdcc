@@ -66,13 +66,13 @@ void usage()
     fprintf(stderr, "\n");
     fprintf(stderr, "Decoder options:\n");
     fprintf(stderr, "  -fa           Auto-detect frame type (default)\n");
-    fprintf(stderr, "  -f1           Decode only P25 Phase 1\n");
-    fprintf(stderr, "  -fd           Decode only D-STAR\n");
-    fprintf(stderr, "  -fi           Decode only NXDN48* (6.25 kHz) / IDAS*\n");
-    fprintf(stderr, "  -fn           Decode only NXDN96 (12.5 kHz)\n");
-    fprintf(stderr, "  -fp           Decode only ProVoice*\n");
     fprintf(stderr, "  -fr           Decode only DMR/MOTOTRBO\n");
-    fprintf(stderr, "  -fx           Decode only X2-TDMA\n");
+    fprintf(stderr, "  -fd           Decode only D-STAR\n");
+//    fprintf(stderr, "  -f1           Decode only P25 Phase 1\n");
+//    fprintf(stderr, "  -fi           Decode only NXDN48* (6.25 kHz) / IDAS*\n");
+//    fprintf(stderr, "  -fn           Decode only NXDN96 (12.5 kHz)\n");
+//    fprintf(stderr, "  -fp           Decode only ProVoice*\n");
+//    fprintf(stderr, "  -fx           Decode only X2-TDMA\n");
     fprintf(stderr, "  -l            Disable DMR/MOTOTRBO and NXDN input filtering\n");
     fprintf(stderr, "  -ma           Auto-select modulation optimizations (default)\n");
     fprintf(stderr, "  -mc           Use only C4FM modulation optimizations\n");
@@ -213,108 +213,6 @@ int main(int argc, char **argv)
 //                opts->frame_dmr = 1;
 //                opts->frame_provoice = 0;
             }
-            else if (optarg[0] == 'd') // D-Star
-            {
-                dsdDecoder.setDecodeMode(DSDcc::DSDDecoder::DSDDecodeAuto, false);
-                dsdDecoder.setDecodeMode(DSDcc::DSDDecoder::DSDDecodeDStar, true);
-//                opts->frame_dstar = 1;
-//                opts->frame_x2tdma = 0;
-//                opts->frame_p25p1 = 0;
-//                opts->frame_nxdn48 = 0;
-//                opts->frame_nxdn96 = 0;
-//                opts->frame_dmr = 0;
-//                opts->frame_provoice = 0;
-//                fprintf(stderr, "Decoding only D-STAR frames.\n");
-            }
-            else if (optarg[0] == 'x') // X2-TDMA
-            {
-                dsdDecoder.setDecodeMode(DSDcc::DSDDecoder::DSDDecodeAuto, false);
-                dsdDecoder.setDecodeMode(DSDcc::DSDDecoder::DSDDecodeX2TDMA, true);
-//                opts->frame_dstar = 0;
-//                opts->frame_x2tdma = 1;
-//                opts->frame_p25p1 = 0;
-//                opts->frame_nxdn48 = 0;
-//                opts->frame_nxdn96 = 0;
-//                opts->frame_dmr = 0;
-//                opts->frame_provoice = 0;
-//                fprintf(stderr, "Decoding only X2-TDMA frames.\n");
-            }
-            else if (optarg[0] == 'p') // ProVoice
-            {
-                dsdDecoder.setDecodeMode(DSDcc::DSDDecoder::DSDDecodeAuto, false);
-                dsdDecoder.setDecodeMode(DSDcc::DSDDecoder::DSDDecodeProVoice, true);
-//                opts->frame_dstar = 0;
-//                opts->frame_x2tdma = 0;
-//                opts->frame_p25p1 = 0;
-//                opts->frame_nxdn48 = 0;
-//                opts->frame_nxdn96 = 0;
-//                opts->frame_dmr = 0;
-//                opts->frame_provoice = 1;
-//                state->samplesPerSymbol = 5;
-//                state->symbolCenter = 2;
-                dsdDecoder.setModulationOptimizations(DSDcc::DSDDecoder::DSDModulationOptimGFSK);
-//                opts->mod_c4fm = 0;
-//                opts->mod_qpsk = 0;
-//                opts->mod_gfsk = 1;
-//                state->rf_mod = 2;
-//                fprintf(stderr, "Setting symbol rate to 9600 / second\n");
-//                fprintf(stderr, "Enabling only GFSK modulation optimizations.\n");
-//                fprintf(stderr, "Decoding only ProVoice frames.\n");
-            }
-            else if (optarg[0] == '1') // P25 Phase 1
-            {
-                dsdDecoder.setDecodeMode(DSDcc::DSDDecoder::DSDDecodeAuto, false);
-                dsdDecoder.setDecodeMode(DSDcc::DSDDecoder::DSDDecodeP25P1, true);
-//                opts->frame_dstar = 0;
-//                opts->frame_x2tdma = 0;
-//                opts->frame_p25p1 = 1;
-//                opts->frame_nxdn48 = 0;
-//                opts->frame_nxdn96 = 0;
-//                opts->frame_dmr = 0;
-//                opts->frame_provoice = 0;
-//                fprintf(stderr, "Decoding only P25 Phase 1 frames.\n");
-            }
-            else if (optarg[0] == 'i') // NXDN48 IDAS
-            {
-                dsdDecoder.setDecodeMode(DSDcc::DSDDecoder::DSDDecodeAuto, false);
-                dsdDecoder.setDecodeMode(DSDcc::DSDDecoder::DSDDecodeNXDN48, true);
-//                opts->frame_dstar = 0;
-//                opts->frame_x2tdma = 0;
-//                opts->frame_p25p1 = 0;
-//                opts->frame_nxdn48 = 1;
-//                opts->frame_nxdn96 = 0;
-//                opts->frame_dmr = 0;
-//                opts->frame_provoice = 0;
-//                state->samplesPerSymbol = 20;
-//                state->symbolCenter = 10;
-                dsdDecoder.setModulationOptimizations(DSDcc::DSDDecoder::DSDModulationOptimGFSK);
-//                opts->mod_c4fm = 0;
-//                opts->mod_qpsk = 0;
-//                opts->mod_gfsk = 1;
-//                state->rf_mod = 2;
-//                fprintf(stderr, "Setting symbol rate to 2400 / second\n");
-//                fprintf(stderr, "Enabling only GFSK modulation optimizations.\n");
-//                fprintf(stderr, "Decoding only NXDN 4800 baud frames.\n");
-            }
-            else if (optarg[0] == 'n') // NXDN96
-            {
-                dsdDecoder.setDecodeMode(DSDcc::DSDDecoder::DSDDecodeAuto, false);
-                dsdDecoder.setDecodeMode(DSDcc::DSDDecoder::DSDDecodeNXDN96, true);
-//                opts->frame_dstar = 0;
-//                opts->frame_x2tdma = 0;
-//                opts->frame_p25p1 = 0;
-//                opts->frame_nxdn48 = 0;
-//                opts->frame_nxdn96 = 1;
-//                opts->frame_dmr = 0;
-//                opts->frame_provoice = 0;
-                dsdDecoder.setModulationOptimizations(DSDcc::DSDDecoder::DSDModulationOptimGFSK);
-//                opts->mod_c4fm = 0;
-//                opts->mod_qpsk = 0;
-//                opts->mod_gfsk = 1;
-//                state->rf_mod = 2;
-//                fprintf(stderr, "Enabling only GFSK modulation optimizations.\n");
-//                fprintf(stderr, "Decoding only NXDN 9600 baud frames.\n");
-            }
             else if (optarg[0] == 'r') // DMR/MOTOTRBO
             {
                 dsdDecoder.setDecodeMode(DSDcc::DSDDecoder::DSDDecodeAuto, false);
@@ -329,6 +227,108 @@ int main(int argc, char **argv)
                 dsdDecoder.setModulationOptimizations(DSDcc::DSDDecoder::DSDModulationOptimGFSK); // new
 //                fprintf(stderr, "Decoding only DMR/MOTOTRBO frames.\n");
             }
+            else if (optarg[0] == 'd') // D-Star
+            {
+                dsdDecoder.setDecodeMode(DSDcc::DSDDecoder::DSDDecodeAuto, false);
+                dsdDecoder.setDecodeMode(DSDcc::DSDDecoder::DSDDecodeDStar, true);
+//                opts->frame_dstar = 1;
+//                opts->frame_x2tdma = 0;
+//                opts->frame_p25p1 = 0;
+//                opts->frame_nxdn48 = 0;
+//                opts->frame_nxdn96 = 0;
+//                opts->frame_dmr = 0;
+//                opts->frame_provoice = 0;
+//                fprintf(stderr, "Decoding only D-STAR frames.\n");
+            }
+//            else if (optarg[0] == 'x') // X2-TDMA
+//            {
+//                dsdDecoder.setDecodeMode(DSDcc::DSDDecoder::DSDDecodeAuto, false);
+//                dsdDecoder.setDecodeMode(DSDcc::DSDDecoder::DSDDecodeX2TDMA, true);
+////                opts->frame_dstar = 0;
+////                opts->frame_x2tdma = 1;
+////                opts->frame_p25p1 = 0;
+////                opts->frame_nxdn48 = 0;
+////                opts->frame_nxdn96 = 0;
+////                opts->frame_dmr = 0;
+////                opts->frame_provoice = 0;
+////                fprintf(stderr, "Decoding only X2-TDMA frames.\n");
+//            }
+//            else if (optarg[0] == 'p') // ProVoice
+//            {
+//                dsdDecoder.setDecodeMode(DSDcc::DSDDecoder::DSDDecodeAuto, false);
+//                dsdDecoder.setDecodeMode(DSDcc::DSDDecoder::DSDDecodeProVoice, true);
+////                opts->frame_dstar = 0;
+////                opts->frame_x2tdma = 0;
+////                opts->frame_p25p1 = 0;
+////                opts->frame_nxdn48 = 0;
+////                opts->frame_nxdn96 = 0;
+////                opts->frame_dmr = 0;
+////                opts->frame_provoice = 1;
+////                state->samplesPerSymbol = 5;
+////                state->symbolCenter = 2;
+//                dsdDecoder.setModulationOptimizations(DSDcc::DSDDecoder::DSDModulationOptimGFSK);
+////                opts->mod_c4fm = 0;
+////                opts->mod_qpsk = 0;
+////                opts->mod_gfsk = 1;
+////                state->rf_mod = 2;
+////                fprintf(stderr, "Setting symbol rate to 9600 / second\n");
+////                fprintf(stderr, "Enabling only GFSK modulation optimizations.\n");
+////                fprintf(stderr, "Decoding only ProVoice frames.\n");
+//            }
+//            else if (optarg[0] == '1') // P25 Phase 1
+//            {
+//                dsdDecoder.setDecodeMode(DSDcc::DSDDecoder::DSDDecodeAuto, false);
+//                dsdDecoder.setDecodeMode(DSDcc::DSDDecoder::DSDDecodeP25P1, true);
+////                opts->frame_dstar = 0;
+////                opts->frame_x2tdma = 0;
+////                opts->frame_p25p1 = 1;
+////                opts->frame_nxdn48 = 0;
+////                opts->frame_nxdn96 = 0;
+////                opts->frame_dmr = 0;
+////                opts->frame_provoice = 0;
+////                fprintf(stderr, "Decoding only P25 Phase 1 frames.\n");
+//            }
+//            else if (optarg[0] == 'i') // NXDN48 IDAS
+//            {
+//                dsdDecoder.setDecodeMode(DSDcc::DSDDecoder::DSDDecodeAuto, false);
+//                dsdDecoder.setDecodeMode(DSDcc::DSDDecoder::DSDDecodeNXDN48, true);
+////                opts->frame_dstar = 0;
+////                opts->frame_x2tdma = 0;
+////                opts->frame_p25p1 = 0;
+////                opts->frame_nxdn48 = 1;
+////                opts->frame_nxdn96 = 0;
+////                opts->frame_dmr = 0;
+////                opts->frame_provoice = 0;
+////                state->samplesPerSymbol = 20;
+////                state->symbolCenter = 10;
+//                dsdDecoder.setModulationOptimizations(DSDcc::DSDDecoder::DSDModulationOptimGFSK);
+////                opts->mod_c4fm = 0;
+////                opts->mod_qpsk = 0;
+////                opts->mod_gfsk = 1;
+////                state->rf_mod = 2;
+////                fprintf(stderr, "Setting symbol rate to 2400 / second\n");
+////                fprintf(stderr, "Enabling only GFSK modulation optimizations.\n");
+////                fprintf(stderr, "Decoding only NXDN 4800 baud frames.\n");
+//            }
+//            else if (optarg[0] == 'n') // NXDN96
+//            {
+//                dsdDecoder.setDecodeMode(DSDcc::DSDDecoder::DSDDecodeAuto, false);
+//                dsdDecoder.setDecodeMode(DSDcc::DSDDecoder::DSDDecodeNXDN96, true);
+////                opts->frame_dstar = 0;
+////                opts->frame_x2tdma = 0;
+////                opts->frame_p25p1 = 0;
+////                opts->frame_nxdn48 = 0;
+////                opts->frame_nxdn96 = 1;
+////                opts->frame_dmr = 0;
+////                opts->frame_provoice = 0;
+//                dsdDecoder.setModulationOptimizations(DSDcc::DSDDecoder::DSDModulationOptimGFSK);
+////                opts->mod_c4fm = 0;
+////                opts->mod_qpsk = 0;
+////                opts->mod_gfsk = 1;
+////                state->rf_mod = 2;
+////                fprintf(stderr, "Enabling only GFSK modulation optimizations.\n");
+////                fprintf(stderr, "Decoding only NXDN 9600 baud frames.\n");
+//            }
             break;
         case 'm':
             if (optarg[0] == 'a')
