@@ -127,10 +127,19 @@ const int DSDDstar::dX[72] = {
 DSDDstar::DSDDstar(DSDDecoder *dsdDecoder) :
         m_dsdDecoder(dsdDecoder)
 {
+    reset_header_strings();
 }
 
 DSDDstar::~DSDDstar()
 {
+}
+
+void DSDDstar::reset_header_strings()
+{
+    m_rpt1.clear();
+    m_rpt2.clear();
+    m_yourSign.clear();
+    m_mySign.clear();
 }
 
 void DSDDstar::init()
@@ -319,6 +328,7 @@ void DSDDstar::processData()
 
         if (terminate)
         {
+            reset_header_strings();
             m_dsdDecoder->resetFrameSync(); // end
         }
         else if (sync_missed < 3)
@@ -329,6 +339,7 @@ void DSDDstar::processData()
         }
         else
         {
+            reset_header_strings();
             m_dsdDecoder->resetFrameSync(); // end
         }
     }
@@ -375,19 +386,29 @@ void DSDDstar::dstar_header_decode()
     m_dsdDecoder->getLogger().log("\nDSTAR HEADER: ");
     //printf("FLAG1: %02X - FLAG2: %02X - FLAG3: %02X\n", radioheader[0],
     //      radioheader[1], radioheader[2]);
-    m_dsdDecoder->getLogger().log("RPT 2: %c%c%c%c%c%c%c%c ", radioheader[3], radioheader[4],
-            radioheader[5], radioheader[6], radioheader[7], radioheader[8],
-            radioheader[9], radioheader[10]);
-    m_dsdDecoder->getLogger().log("RPT 1: %c%c%c%c%c%c%c%c ", radioheader[11], radioheader[12],
-            radioheader[13], radioheader[14], radioheader[15], radioheader[16],
-            radioheader[17], radioheader[18]);
-    m_dsdDecoder->getLogger().log("YOUR: %c%c%c%c%c%c%c%c ", radioheader[19], radioheader[20],
-            radioheader[21], radioheader[22], radioheader[23], radioheader[24],
-            radioheader[25], radioheader[26]);
-    m_dsdDecoder->getLogger().log("MY: %c%c%c%c%c%c%c%c/%c%c%c%c\n", radioheader[27], radioheader[28],
-            radioheader[29], radioheader[30], radioheader[31], radioheader[32],
-            radioheader[33], radioheader[34], radioheader[35], radioheader[36],
-            radioheader[37], radioheader[38]);
+    m_rpt2 = std::string((const char *) &radioheader[3], 8);
+    m_dsdDecoder->getLogger().log("RPT 2: %s ", m_rpt2.c_str());
+//    m_dsdDecoder->getLogger().log("RPT 2: %c%c%c%c%c%c%c%c ", radioheader[3], radioheader[4],
+//            radioheader[5], radioheader[6], radioheader[7], radioheader[8],
+//            radioheader[9], radioheader[10]);
+    m_rpt1 = std::string((const char *) &radioheader[11], 8);
+    m_dsdDecoder->getLogger().log("RPT 1: %s ", m_rpt1.c_str());
+//    m_dsdDecoder->getLogger().log("RPT 1: %c%c%c%c%c%c%c%c ", radioheader[11], radioheader[12],
+//            radioheader[13], radioheader[14], radioheader[15], radioheader[16],
+//            radioheader[17], radioheader[18]);
+    m_yourSign = std::string((const char *) &radioheader[19], 8);
+    m_dsdDecoder->getLogger().log("YOUR: %s ", m_yourSign.c_str());
+//    m_dsdDecoder->getLogger().log("YOUR: %c%c%c%c%c%c%c%c ", radioheader[19], radioheader[20],
+//            radioheader[21], radioheader[22], radioheader[23], radioheader[24],
+//            radioheader[25], radioheader[26]);
+    m_mySign = std::string((const char *) &radioheader[27], 8);
+    m_mySign += '/';
+    m_mySign += std::string((const char *) &radioheader[35], 4);
+    m_dsdDecoder->getLogger().log("MY: %s\n", m_mySign.c_str());
+//    m_dsdDecoder->getLogger().log("MY: %c%c%c%c%c%c%c%c/%c%c%c%c\n", radioheader[27], radioheader[28],
+//            radioheader[29], radioheader[30], radioheader[31], radioheader[32],
+//            radioheader[33], radioheader[34], radioheader[35], radioheader[36],
+//            radioheader[37], radioheader[38]);
 
     //FCSinheader = ((radioheader[39] << 8) | radioheader[40]) & 0xFFFF;
     //FCScalculated = calc_fcs((unsigned char*) radioheader, 39);

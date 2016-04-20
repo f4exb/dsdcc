@@ -716,7 +716,7 @@ int DSDDecoder::getFrameSync()
                 m_state.max = ((m_state.max) + m_lmax) / 2;
                 m_state.min = ((m_state.min) + m_lmin) / 2;
 
-                sprintf(m_state.ftype, " P25 Phase 1 ");
+                sprintf(m_state.ftype, "+P25 Phase 1 ");
 
                 if (m_opts.errorbars == 1)
                 {
@@ -733,7 +733,7 @@ int DSDDecoder::getFrameSync()
                 m_state.max = ((m_state.max) + m_lmax) / 2;
                 m_state.min = ((m_state.min) + m_lmin) / 2;
 
-                sprintf(m_state.ftype, " P25 Phase 1 ");
+                sprintf(m_state.ftype, "-P25 Phase 1 ");
 
                 if (m_opts.errorbars == 1)
                 {
@@ -757,7 +757,7 @@ int DSDDecoder::getFrameSync()
                 if (m_opts.inverted_x2tdma == 0)
                 {
                     // data frame
-                    sprintf(m_state.ftype, " X2-TDMA     ");
+                    sprintf(m_state.ftype, "+X2-TDMAd    ");
 
                     if (m_opts.errorbars == 1)
                     {
@@ -770,7 +770,7 @@ int DSDDecoder::getFrameSync()
                 else
                 {
                     // inverted voice frame
-                    sprintf(m_state.ftype, " X2-TDMA     ");
+                    sprintf(m_state.ftype, "-X2-TDMAv    ");
 
                     if (m_opts.errorbars == 1)
                     {
@@ -797,7 +797,7 @@ int DSDDecoder::getFrameSync()
                 if (m_opts.inverted_x2tdma == 0)
                 {
                     // voice frame
-                    sprintf(m_state.ftype, " X2-TDMA     ");
+                    sprintf(m_state.ftype, "+X2-TDMAv    ");
 
                     if (m_opts.errorbars == 1)
                     {
@@ -815,7 +815,7 @@ int DSDDecoder::getFrameSync()
                 else
                 {
                     // inverted data frame
-                    sprintf(m_state.ftype, " X2-TDMA     ");
+                    sprintf(m_state.ftype, "-X2-TDMAd    ");
 
                     if (m_opts.errorbars == 1)
                     {
@@ -840,7 +840,7 @@ int DSDDecoder::getFrameSync()
                 if (m_opts.inverted_dmr == 0)
                 {
                     // data frame
-                    sprintf(m_state.ftype, " DMR         ");
+                    sprintf(m_state.ftype, "+DMRd        ");
 
                     if (m_opts.errorbars == 1)
                     {
@@ -853,7 +853,7 @@ int DSDDecoder::getFrameSync()
                 else
                 {
                     // inverted voice frame
-                    sprintf(m_state.ftype, " DMR         ");
+                    sprintf(m_state.ftype, "-DMRv        ");
 
                     if (m_opts.errorbars == 1)
                     {
@@ -880,7 +880,7 @@ int DSDDecoder::getFrameSync()
                 if (m_opts.inverted_dmr == 0)
                 {
                     // voice frame
-                    sprintf(m_state.ftype, " DMR         ");
+                    sprintf(m_state.ftype, "+DMRv        ");
 
                     if (m_opts.errorbars == 1)
                     {
@@ -898,7 +898,7 @@ int DSDDecoder::getFrameSync()
                 else
                 {
                     // inverted data frame
-                    sprintf(m_state.ftype, " DMR         ");
+                    sprintf(m_state.ftype, "-DMRd        ");
 
                     if (m_opts.errorbars == 1)
                     {
@@ -922,11 +922,11 @@ int DSDDecoder::getFrameSync()
                 m_state.max = ((m_state.max) + m_lmax) / 2;
                 m_state.min = ((m_state.min) + m_lmin) / 2;
 
-                sprintf(m_state.ftype, " ProVoice    ");
+                sprintf(m_state.ftype, "+ProVoice    ");
 
                 if (m_opts.errorbars == 1)
                 {
-                    printFrameSync(" -ProVoice ", m_synctest_pos + 1, m_modulation);
+                    printFrameSync(" +ProVoice ", m_synctest_pos + 1, m_modulation);
                 }
 
                 m_state.lastsynctype = 14;
@@ -940,7 +940,7 @@ int DSDDecoder::getFrameSync()
                 m_state.max = ((m_state.max) + m_lmax) / 2;
                 m_state.min = ((m_state.min) + m_lmin) / 2;
 
-                sprintf(m_state.ftype, " ProVoice    ");
+                sprintf(m_state.ftype, "-ProVoice    ");
 
                 if (m_opts.errorbars == 1)
                 {
@@ -969,7 +969,7 @@ int DSDDecoder::getFrameSync()
 
                     if (m_state.samplesPerSymbol == 20)
                     {
-                        sprintf(m_state.ftype, " NXDN48      ");
+                        sprintf(m_state.ftype, "+NXDN48v     ");
 
                         if (m_opts.errorbars == 1)
                         {
@@ -978,7 +978,7 @@ int DSDDecoder::getFrameSync()
                     }
                     else
                     {
-                        sprintf(m_state.ftype, " NXDN96      ");
+                        sprintf(m_state.ftype, "+NXDN96v     ");
 
                         if (m_opts.errorbars == 1)
                         {
@@ -1007,7 +1007,7 @@ int DSDDecoder::getFrameSync()
 
                     if (m_state.samplesPerSymbol == 20)
                     {
-                        sprintf(m_state.ftype, " NXDN48      ");
+                        sprintf(m_state.ftype, "-NXDN48v     ");
 
                         if (m_opts.errorbars == 1)
                         {
@@ -1016,7 +1016,7 @@ int DSDDecoder::getFrameSync()
                     }
                     else
                     {
-                        sprintf(m_state.ftype, " NXDN96      ");
+                        sprintf(m_state.ftype, "-NXDN96v     ");
 
                         if (m_opts.errorbars == 1)
                         {
@@ -1045,7 +1045,7 @@ int DSDDecoder::getFrameSync()
 
                     if (m_state.samplesPerSymbol == 20)
                     {
-                        sprintf(m_state.ftype, " NXDN48      ");
+                        sprintf(m_state.ftype, "+NXDN48d     ");
 
                         if (m_opts.errorbars == 1)
                         {
@@ -1054,7 +1054,7 @@ int DSDDecoder::getFrameSync()
                     }
                     else
                     {
-                        sprintf(m_state.ftype, " NXDN96      ");
+                        sprintf(m_state.ftype, "+NXDN96d     ");
 
                         if (m_opts.errorbars == 1)
                         {
@@ -1081,11 +1081,11 @@ int DSDDecoder::getFrameSync()
                     m_state.max = ((m_state.max) + m_lmax) / 2;
                     m_state.min = ((m_state.min) + m_lmin) / 2;
 
-                    sprintf(m_state.ftype, " NXDN        ");
+                    sprintf(m_state.ftype, "-NXDN        ");
 
                     if (m_state.samplesPerSymbol == 20)
                     {
-                        sprintf(m_state.ftype, " NXDN48      ");
+                        sprintf(m_state.ftype, "-NXDN48d     ");
 
                         if (m_opts.errorbars == 1)
                         {
@@ -1094,7 +1094,7 @@ int DSDDecoder::getFrameSync()
                     }
                     else
                     {
-                        sprintf(m_state.ftype, " NXDN96      ");
+                        sprintf(m_state.ftype, "-NXDN96d     ");
 
                         if (m_opts.errorbars == 1)
                         {
@@ -1120,7 +1120,7 @@ int DSDDecoder::getFrameSync()
                 m_state.max = ((m_state.max) + m_lmax) / 2;
                 m_state.min = ((m_state.min) + m_lmin) / 2;
 
-                sprintf(m_state.ftype, " D-STAR      ");
+                sprintf(m_state.ftype, "+D-STAR      ");
 
                 if (m_opts.errorbars == 1)
                 {
@@ -1137,7 +1137,7 @@ int DSDDecoder::getFrameSync()
                 m_state.max = ((m_state.max) + m_lmax) / 2;
                 m_state.min = ((m_state.min) + m_lmin) / 2;
 
-                sprintf(m_state.ftype, " D-STAR      ");
+                sprintf(m_state.ftype, "-D-STAR      ");
 
                 if (m_opts.errorbars == 1)
                 {
@@ -1154,7 +1154,7 @@ int DSDDecoder::getFrameSync()
                 m_state.max = ((m_state.max) + m_lmax) / 2;
                 m_state.min = ((m_state.min) + m_lmin) / 2;
 
-                sprintf(m_state.ftype, " D-STAR_HD   ");
+                sprintf(m_state.ftype, "+D-STAR_HD   ");
 
                 if (m_opts.errorbars == 1)
                 {
@@ -1171,7 +1171,7 @@ int DSDDecoder::getFrameSync()
                 m_state.max = ((m_state.max) + m_lmax) / 2;
                 m_state.min = ((m_state.min) + m_lmin) / 2;
 
-                sprintf(m_state.ftype, " D-STAR_HD   ");
+                sprintf(m_state.ftype, "-D-STAR_HD   ");
 
                 if (m_opts.errorbars == 1)
                 {
@@ -1194,7 +1194,7 @@ int DSDDecoder::getFrameSync()
                 m_state.max = ((m_state.max) + (m_lmax)) / 2;
                 m_state.min = ((m_state.min) + (m_lmin)) / 2;
 
-                sprintf(m_state.ftype, "(P25 Phase 1)");
+                sprintf(m_state.ftype, "(+P25 Phase1)");
 
                 if (m_opts.errorbars == 1)
                 {
@@ -1210,7 +1210,7 @@ int DSDDecoder::getFrameSync()
                 m_state.offset = m_synctest_pos;
                 m_state.max = ((m_state.max) + m_lmax) / 2;
                 m_state.min = ((m_state.min) + m_lmin) / 2;
-                sprintf(m_state.ftype, "(P25 Phase 1)");
+                sprintf(m_state.ftype, "(-P25 Phase1)");
                 if (m_opts.errorbars == 1)
                 {
                     printFrameSync("(-P25p1)   ",  m_synctest_pos + 1, m_modulation);
@@ -1226,7 +1226,7 @@ int DSDDecoder::getFrameSync()
                 m_state.max = ((m_state.max) + m_lmax) / 2;
                 m_state.min = ((m_state.min) + m_lmin) / 2;
 
-                sprintf(m_state.ftype, "(X2-TDMA)    ");
+                sprintf(m_state.ftype, "(-X2-TDMA)   ");
 
                 if (m_opts.errorbars == 1)
                 {
@@ -1243,7 +1243,7 @@ int DSDDecoder::getFrameSync()
                 m_state.max = ((m_state.max) + m_lmax) / 2;
                 m_state.min = ((m_state.min) + m_lmin) / 2;
 
-                sprintf(m_state.ftype, "(X2-TDMA)    ");
+                sprintf(m_state.ftype, "(+X2-TDMA)   ");
 
                 if (m_opts.errorbars == 1)
                 {
@@ -1260,7 +1260,7 @@ int DSDDecoder::getFrameSync()
                 m_state.max = ((m_state.max) + m_lmax) / 2;
                 m_state.min = ((m_state.min) + m_lmin) / 2;
 
-                sprintf(m_state.ftype, "(DMR)        ");
+                sprintf(m_state.ftype, "(-DMR)       ");
 
                 if (m_opts.errorbars == 1)
                 {
@@ -1277,7 +1277,7 @@ int DSDDecoder::getFrameSync()
                 m_state.max = ((m_state.max) + m_lmax) / 2;
                 m_state.min = ((m_state.min) + m_lmin) / 2;
 
-                sprintf(m_state.ftype, "(DMR)        ");
+                sprintf(m_state.ftype, "(+DMR)       ");
 
                 if (m_opts.errorbars == 1)
                 {

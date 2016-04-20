@@ -118,6 +118,31 @@ public:
         DSDprocessUnknown
     } DSDFSMState;
 
+    typedef enum
+    {
+        DSDSyncP25p1P,
+        DSDSyncP25p1N,
+        DSDSyncX2TDMADataP,
+        DSDSyncX2TDMAVoiceN,
+        DSDSyncX2TDMAVoiceP,
+        DSDSyncX2TDMADataN,
+        DSDSyncDStarP,
+        DSDSyncDStarN,
+        DSDSyncNXDNVoiceP,
+        DSDSyncNXDNVoiceN,
+        DSDSyncDMRDataP,
+        DSDSyncDMRVoiceN,
+        DSDSyncDMRVoiceP,
+        DSDSyncDMRDataN,
+        DSDSyncProVoiceP,
+        DSDSyncProVoiceN,
+        DSDSyncNXDNDataP,
+        DSDSyncNXDNDataN,
+        DSDSyncDStarHeaderP,
+        DSDSyncDStarHeaderN,
+        DSDSyncNone
+    } DSDSyncType;
+
     DSDDecoder();
     ~DSDDecoder();
 
@@ -141,6 +166,22 @@ public:
     void setLogVerbosity(int verbosity) { m_dsdLogger.setVerbosity(verbosity); }
     void setLogFile(const char *filename) { m_dsdLogger.setFile(filename); }
     const DSDLogger& getLogger() const { return m_dsdLogger; }
+
+    DSDSyncType getSyncType() const
+    {
+        if (m_state.lastsynctype < 0) {
+            return DSDSyncNone;
+        } else {
+            return (DSDSyncType) m_state.lastsynctype;
+        }
+    }
+
+    const char *getFrameTypeText() const { return m_state.ftype; }
+    const char *getFrameSubtypeText() const { return m_state.fsubtype; }
+    const char *getSlot0Text() const { return m_state.slot0light; }
+    const char *getSlot1Text() const { return m_state.slot1light; }
+    int getInLevel() const { return (int) m_state.max / 164; }
+    const DSDDstar& getDStarDecoder() const { return m_dsdDstar; }
 
     // Initializations:
     void setQuiet();

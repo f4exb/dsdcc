@@ -17,6 +17,8 @@
 #ifndef DSDCC_DSTAR_H_
 #define DSDCC_DSTAR_H_
 
+#include <string>
+
 namespace DSDcc
 {
 
@@ -32,12 +34,18 @@ public:
     void process();
     void processHD();
 
+    const std::string& getRpt1() const { return m_rpt1; }
+    const std::string& getRpt2() const { return m_rpt2; }
+    const std::string& getYourSign() const { return m_yourSign; }
+    const std::string& getMySign() const { return m_mySign; }
+
 private:
     void initVoiceFrame();
     void initDataFrame();
     void processVoice();
     void processData();
     void dstar_header_decode();
+    void reset_header_strings();
 
     DSDDecoder *m_dsdDecoder;
     int m_symbolIndex;    //!< Current symbol index in non HD sequence
@@ -57,6 +65,10 @@ private:
 
     // DSTAR-HD
     int radioheaderbuffer[660];
+    std::string m_rpt1;
+    std::string m_rpt2;
+    std::string m_yourSign;
+    std::string m_mySign;
 
     // constants
     static const int dW[72];
