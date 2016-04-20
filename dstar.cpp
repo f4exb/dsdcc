@@ -232,12 +232,6 @@ void DSDDstar::processVoice()
         w = dW;
         x = dX;
         framecount = 1;
-//        break;
-//                i = 0;
-//                w = dW;
-//                x = dX;
-//                framecount = 1;
-//                continue;
     }
     else
     {
@@ -259,54 +253,6 @@ void DSDDstar::processVoice()
     }
 }
 
-
-//void DSDDstar::processVoice()
-//{
-//    int dibit = m_dsdDecoder->m_dsdSymbol.getDibit(); // get dibit from symbol and store it in cache
-//    m_dibitCache[m_symbolIndex] = dibit;
-//
-//    if (m_symbolIndex == 72-1) // last dibit in voice frame
-//    {
-//        int i;
-//
-//        for (i = 0; i < 72; i++)
-//        {
-//            int dibit = m_dibitCache[i];
-//
-//            bitbuffer <<= 1;
-//
-//            if (dibit == 1) {
-//                bitbuffer |= 0x01;
-//            }
-//
-//            if ((bitbuffer & 0x00FFFFFF) == 0x00AAB468)
-//            {
-//                // we're slipping bits
-//                m_dsdDecoder->getLogger().log( "sync in voice after i=%d, restarting\n", i);
-//                //ugh just start over
-//                m_symbolIndex = -1; // restart a frame sequence - incremented at the end of process() hence -1
-//                framecount = 1;
-//                break;
-////                i = 0;
-////                w = dW;
-////                x = dX;
-////                framecount = 1;
-////                continue;
-//            }
-//
-//            fprintf(stderr, "DSDDstar::processVoice: i: %d w: %d x: %d val: %d\n", i, *w, *x, (1 & dibit));
-//
-//            ambe_fr[*w][*x] = (1 & dibit);
-//            w++;
-//            x++;
-//        } // for
-//
-//        if (i == 72) { // frame processed successfully
-//        	fprintf(stderr, "DSDDstar::processVoice: MBE: symbol %d (%d)\n", m_dsdDecoder->m_state.symbolcnt, m_dsdDecoder->m_dsdSymbol.getSymbol());
-//            m_dsdDecoder->m_mbeDecoder.processFrame(0, ambe_fr, 0);
-//        }
-//    }
-//}
 
 void DSDDstar::processData()
 {
