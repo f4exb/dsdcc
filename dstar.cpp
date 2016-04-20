@@ -251,6 +251,10 @@ void DSDDstar::processVoice()
     if (m_symbolIndex == 72-1)
     {
     	//fprintf(stderr, "DSDDstar::processVoice: MBE: symbol %d (%d)\n", m_dsdDecoder->m_state.symbolcnt, m_dsdDecoder->m_dsdSymbol.getSymbol());
+        if (m_dsdDecoder->m_opts.errorbars == 1) {
+            m_dsdDecoder->getLogger().log("\nMBE: ");
+        }
+
         m_dsdDecoder->m_mbeDecoder.processFrame(0, ambe_fr, 0);
     }
 }
