@@ -10,4 +10,6 @@ They can be used as pipe input to `dsdccx` using `sox` utility as in this exampl
 
 The files are:
 
-  - `dmr_it_8.dis`: Example of a DMR signal. This is some technical conversation in Italian. 
+  - `dmr_it_8.dis`: Example of a DMR signal. This is some technical conversation in Italian.
+  - `dstar_f1zil_1.dis`: Example of a D-Star signal with header. This is an amateur radio conversation in French over F1ZIL repeater. It has quite a few errors.
+  - `dstar_f1zil_2.dis`: Example of a D-Star signal captured on the fly i.e. without header. This is also a conversation over F1ZIL. It is shorter than the previous sample but has less errors. 
