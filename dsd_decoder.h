@@ -178,6 +178,7 @@ public:
 
     const char *getFrameTypeText() const { return m_state.ftype; }
     const char *getFrameSubtypeText() const { return m_state.fsubtype; }
+    const char *getModulationText() const { return m_modulation; }
     const char *getSlot0Text() const { return m_state.slot0light; }
     const char *getSlot1Text() const { return m_state.slot1light; }
     int getInLevel() const { return (int) m_state.max / 164; }

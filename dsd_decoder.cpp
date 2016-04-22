@@ -1315,9 +1315,10 @@ int DSDDecoder::getFrameSync()
             if ((m_opts.errorbars == 1) && (m_opts.verbose > 1)
                     && (m_state.carrier == 1))
             {
-                printf("Sync: no sync\n");
+                m_dsdLogger.log("Sync: no sync\n");
             }
 
+            sprintf(m_state.ftype, "No Sync      ");
             noCarrier();
             return(-1); // done
         }
