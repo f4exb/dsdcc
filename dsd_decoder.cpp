@@ -229,6 +229,11 @@ void DSDDecoder::setUpsampling(int upsampling)
     m_dsdLogger.log("Setting upsampling to x%d\n", (m_opts.upsample == 0 ? 1 : m_opts.upsample));
 }
 
+void DSDDecoder::setStereo(bool on)
+{
+    m_opts.stereo = (on ? 1 : 0);
+}
+
 void DSDDecoder::setInvertedXTDMA(bool on)
 {
     m_opts.inverted_x2tdma = (on ? 1 : 0);

@@ -197,6 +197,7 @@ public:
     void setAudioGain(float gain);
     void setUvQuality(int uvquality);
     void setUpsampling(int upsampling);
+    void setStereo(bool on);
     void setInvertedXTDMA(bool on);
     void setInvertedDMR(bool on);
     void setAutoDetectionThreshold(int threshold);
