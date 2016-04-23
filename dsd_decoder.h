@@ -143,6 +143,13 @@ public:
         DSDSyncNone
     } DSDSyncType;
 
+    typedef enum
+    {
+        DSDStationTypeNotApplicable,
+        DSDBaseStation,
+        DSDMobileStation
+    } DSDStationType;
+
     DSDDecoder();
     ~DSDDecoder();
 
@@ -176,12 +183,14 @@ public:
         }
     }
 
+    const DSDStationType getStationType() const { return m_stationType; }
     const char *getFrameTypeText() const { return m_state.ftype; }
     const char *getFrameSubtypeText() const { return m_state.fsubtype; }
     const char *getModulationText() const { return m_modulation; }
     const char *getSlot0Text() const { return m_state.slot0light; }
     const char *getSlot1Text() const { return m_state.slot1light; }
     int getInLevel() const { return (int) m_state.max / 164; }
+    int getSamplesPerSymbol() const { return m_state.samplesPerSymbol; }
     const DSDDstar& getDStarDecoder() const { return m_dsdDstar; }
 
     // Initializations:
@@ -221,6 +230,7 @@ private:
     DSDState m_state;
     DSDLogger m_dsdLogger;
     DSDFSMState m_fsmState;
+    DSDStationType m_stationType;
     // sync engine:
     int m_sync; //!< The current internal sync type
     int m_dibit, m_synctest_pos, m_lastt;

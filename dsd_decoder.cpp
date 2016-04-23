@@ -711,6 +711,7 @@ int DSDDecoder::getFrameSync()
         } // m_opts.datascope == 1
 
         strncpy(m_synctest, (m_synctest_p - 23), 24);
+        m_stationType = DSDStationTypeNotApplicable;
 
         if (m_opts.frame_p25p1 == 1)
         {
@@ -759,6 +760,12 @@ int DSDDecoder::getFrameSync()
                 m_state.max = ((m_state.max) + (m_lmax)) / 2;
                 m_state.min = ((m_state.min) + (m_lmin)) / 2;
 
+                if (strcmp(m_synctest, X2TDMA_BS_DATA_SYNC) == 0) {
+                    m_stationType = DSDBaseStation;
+                } else {
+                    m_stationType = DSDMobileStation;
+                }
+
                 if (m_opts.inverted_x2tdma == 0)
                 {
                     // data frame
@@ -798,6 +805,12 @@ int DSDDecoder::getFrameSync()
                 m_state.offset = m_synctest_pos;
                 m_state.max = ((m_state.max) + m_lmax) / 2;
                 m_state.min = ((m_state.min) + m_lmin) / 2;
+
+                if (strcmp(m_synctest, X2TDMA_BS_VOICE_SYNC) == 0) {
+                    m_stationType = DSDBaseStation;
+                } else {
+                    m_stationType = DSDMobileStation;
+                }
 
                 if (m_opts.inverted_x2tdma == 0)
                 {
@@ -842,6 +855,12 @@ int DSDDecoder::getFrameSync()
                 m_state.max = ((m_state.max) + (m_lmax)) / 2;
                 m_state.min = ((m_state.min) + (m_lmin)) / 2;
 
+                if (strcmp(m_synctest, DMR_BS_DATA_SYNC) == 0) {
+                    m_stationType = DSDBaseStation;
+                } else {
+                    m_stationType = DSDMobileStation;
+                }
+
                 if (m_opts.inverted_dmr == 0)
                 {
                     // data frame
@@ -881,6 +900,12 @@ int DSDDecoder::getFrameSync()
                 m_state.offset = m_synctest_pos;
                 m_state.max = ((m_state.max) + m_lmax) / 2;
                 m_state.min = ((m_state.min) + m_lmin) / 2;
+
+                if (strcmp(m_synctest, DMR_BS_VOICE_SYNC) == 0) {
+                    m_stationType = DSDBaseStation;
+                } else {
+                    m_stationType = DSDMobileStation;
+                }
 
                 if (m_opts.inverted_dmr == 0)
                 {
@@ -964,6 +989,13 @@ int DSDDecoder::getFrameSync()
             if ((strcmp(m_synctest18, NXDN_BS_VOICE_SYNC) == 0)
              || (strcmp(m_synctest18, NXDN_MS_VOICE_SYNC) == 0))
             {
+
+                if (strcmp(m_synctest, NXDN_BS_VOICE_SYNC) == 0) {
+                    m_stationType = DSDBaseStation;
+                } else {
+                    m_stationType = DSDMobileStation;
+                }
+
                 if ((m_state.lastsynctype == 8)
                  || (m_state.lastsynctype == 16))
                 {
@@ -1002,6 +1034,12 @@ int DSDDecoder::getFrameSync()
             else if ((strcmp(m_synctest18, INV_NXDN_BS_VOICE_SYNC) == 0)
                   || (strcmp(m_synctest18, INV_NXDN_MS_VOICE_SYNC) == 0))
             {
+                if (strcmp(m_synctest, INV_NXDN_BS_VOICE_SYNC) == 0) {
+                    m_stationType = DSDBaseStation;
+                } else {
+                    m_stationType = DSDMobileStation;
+                }
+
                 if ((m_state.lastsynctype == 9)
                  || (m_state.lastsynctype == 17))
                 {
@@ -1040,6 +1078,12 @@ int DSDDecoder::getFrameSync()
             else if ((strcmp(m_synctest18, NXDN_BS_DATA_SYNC) == 0)
                   || (strcmp(m_synctest18, NXDN_MS_DATA_SYNC) == 0))
             {
+                if (strcmp(m_synctest, NXDN_BS_DATA_SYNC) == 0) {
+                    m_stationType = DSDBaseStation;
+                } else {
+                    m_stationType = DSDMobileStation;
+                }
+
                 if ((m_state.lastsynctype == 8)
                         || (m_state.lastsynctype == 16))
                 {
@@ -1078,6 +1122,12 @@ int DSDDecoder::getFrameSync()
             else if ((strcmp(m_synctest18, INV_NXDN_BS_DATA_SYNC) == 0)
                   || (strcmp(m_synctest18, INV_NXDN_MS_DATA_SYNC) == 0))
             {
+                if (strcmp(m_synctest, INV_NXDN_BS_DATA_SYNC) == 0) {
+                    m_stationType = DSDBaseStation;
+                } else {
+                    m_stationType = DSDMobileStation;
+                }
+
                 if ((m_state.lastsynctype == 9)
                         || (m_state.lastsynctype == 17))
                 {
