@@ -213,12 +213,13 @@ void DSDDstar::processHD()
     if (m_symbolIndexHD == 660-1)
     {
         dstar_header_decode();
-        m_symbolIndexHD = -1;
         init(); // init for DSTAR
         m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDSTAR; // go to DSTAR
     }
-
-    m_symbolIndexHD++;
+    else
+    {
+        m_symbolIndexHD++;
+    }
 }
 
 void DSDDstar::processVoice()
