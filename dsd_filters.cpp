@@ -19,6 +19,9 @@
 namespace DSDcc
 {
 
+const float DSDFilters::ngain = 7.423339364f;
+const float DSDFilters::nxgain = 15.95930463f;
+
 // DMR filter
 const float DSDFilters::xcoeffs[] =
 {  -0.0083649323f, -0.0265444850f, -0.0428141462f, -0.0537571943f,
@@ -142,4 +145,3 @@ short DSDFilters::dsd_input_filter(short sample, int mode)
 }
 
 } // namespace dsdcc
-

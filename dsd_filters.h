@@ -30,9 +30,9 @@ public:
     DSDFilters();
     ~DSDFilters();
 
-    static const float ngain = 7.423339364f;
+    static const float ngain;
     static const float xcoeffs[];
-    static const float nxgain = 15.95930463f;
+    static const float nxgain;
     static const float nxcoeffs[];
 
     short dsd_input_filter(short sample, int mode);
