@@ -7,15 +7,15 @@ It is rewritten along the following lines:
 
   - A purely C++ library with a single decoder object at its central point
   - Works by pushing new samples to the decoder at the upper level rather than pulling it from the underlying filesystem (actual file or device) at the lowest level. This facilitates integration with software using it as a true library. This comes especially handy for projects in Qt that cannot afford using pthreads on their own like [gr-dsd](https://github.com/argilo/gr-dsd) does. In fact the main drive for this is to integrate it in a plugin of [SDRangel](https://github.com/f4exb/sdrangel).
-  - Works by polling to get possible new audio samples after new samples have been pushed to the decoder
+  - Works by polling to get possible new MBE or audio samples after new samples have been pushed to the decoder
   - Option to output audio samples as L+R (stereo) samples with L=R as this may facilitate integration
   - A binary that uses this library is provided for integration with other commands that run in a shell. So basically it works only with input / output files possibly being `stdin` / `stdout` to be integrated in a pipe command. There is no direct usage of audio devices nor fancy side reading from or writing to `.wav` or `.mbe` files.
+  - `mbelib` usage is optional at compile time. Without `mbelib` only the raw MBE samples can be extracted to be processed outside of DSDcc with the help of a hardware dongle for example thus lifting the possible copyright violations (See next)
 
 These points have been retained from the original:
 
   - The decoding methods
   - Minimal changes to the options and state structures
-  - `mbelib` usage (of course...) with the usual restrictions on possible copyright violations (See next)
   - Input as S16LE samples at a fixed rate of 48kS/s
   - Audio output as S16LE samples at 8kS/s rate directly out of `mbelib` or upsampled to 48kS/s
 
@@ -23,7 +23,9 @@ These points have been retained from the original:
 
 While DSDcc is intended to be patent-free, `mbelib` that it uses describes functions that may be covered by one or more U.S. patents owned by DVSI Inc. The source code itself should not be infringing as it merely describes possible methods of implementation. Compiling or using `mbelib` may infringe on patents rights in your jurisdiction and/or require licensing. It is unknown if DVSI will sell licenses for software that uses `mbelib`.
 
-If you are not comfortable with this just do not compile or use this software.
+If you are not comfortable with this just do not compile with `mbelib` support and you will still be able to extract the MBE frames and process them outside DSDcc with the help of a hardware dongle for example (e.g. ThumbDV USB dongle).
+
+If you still want `mbelib` support you have to use the `-DUSE_MBELIB=ON` directive on the `cmake` command line and of course you need to have `mbelib` installed in your system.
 
 <h1>Supported formats</h1>
 
@@ -45,9 +47,9 @@ Next we might want to add YSF (Yaesu Sound Fusion a.k.a. C4FM) as a newly suppor
 
 As usual with projects based on cmake create a `build` directory at the root of the cloned repository and cd into it.
 
-You will need [mbelib](https://github.com/szechyjs/mbelib) installed in your system. If you use custom installation paths like `/opt/install/mbelib` for example you will need to add the include and library locations to the cmake command line with these directives: `-DLIBMBE_INCLUDE_DIR=/opt/install/mbelib/include -DLIBMBE_LIBRARY=/opt/install/mbelib/lib/libmbe.so`
+For `mbelib`support you will need to specify the `-DUSE_MBELIB=ON` directive on the `cmake` command line and you will need to have [mbelib](https://github.com/szechyjs/mbelib) installed in your system. If you use custom installation paths like `/opt/install/mbelib` for example you will need to add the include and library locations to the cmake command line with these directives: `-DLIBMBE_INCLUDE_DIR=/opt/install/mbelib/include -DLIBMBE_LIBRARY=/opt/install/mbelib/lib/libmbe.so`
 
-So the full cmake command with a custom installation directory will look like: `cmake -Wno-dev -DCMAKE_INSTALL_PREFIX=/opt/install/dsdcc -DLIBMBE_INCLUDE_DIR=/opt/install/mbelib/include -DLIBMBE_LIBRARY=/opt/install/mbelib/lib/libmbe.so ..`
+So the full cmake command with a custom installation directory will look like: `cmake -Wno-dev -DCMAKE_INSTALL_PREFIX=/opt/install/dsdcc -DUSE_MBELIB=ON -DLIBMBE_INCLUDE_DIR=/opt/install/mbelib/include -DLIBMBE_LIBRARY=/opt/install/mbelib/lib/libmbe.so ..`
 
 Then:
 

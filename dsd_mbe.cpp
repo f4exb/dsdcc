@@ -38,10 +38,7 @@ DSDMBEDecoder::~DSDMBEDecoder()
 
 void DSDMBEDecoder::processFrame(char imbe_fr[8][23], char ambe_fr[4][24], char imbe7100_fr[7][24])
 {
-//    for (int i = 0; i < 88; i++)
-//    {
-//        imbe_d[i] = 0;
-//    }
+#ifdef DSD_USE_MBELIB
     memset((void *) imbe_d, 0, 88);
 
     if ((m_dsdDecoder->m_state.synctype == 0) || (m_dsdDecoder->m_state.synctype == 1))
@@ -76,15 +73,8 @@ void DSDMBEDecoder::processFrame(char imbe_fr[8][23], char ambe_fr[4][24], char 
     }
 
     processAudio();
-//    if (m_dsdDecoder->m_opts.wav_out_f != NULL)
-//    {
-//        writeSynthesizedVoice(opts, state);
-//    }
-//
-//    if (m_dsdDecoder->m_opts.audio_out == 1)
-//    {
-//        playSynthesizedVoice(opts, state);
-//    }
+#endif
+    m_dsdDecoder->m_mbeReady = true;
 }
 
 void DSDMBEDecoder::processAudio()

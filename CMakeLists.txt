@@ -15,7 +15,11 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules)
 
 project(dsdcc)
 
-find_package(LibMbe REQUIRED)
+find_package(LibMbe)
+
+if (USE_MBELIB AND LIBMBE_FOUND)
+    add_definitions(-DDSD_USE_MBELIB)
+endif()
 
 set(dsdcc_SOURCES
     descramble.cpp

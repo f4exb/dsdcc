@@ -155,6 +155,18 @@ public:
 
     void run(short sample);
 
+    const char *getMbe() const {
+        return &ambe_fr[0][0];
+    }
+
+    bool mbeReady() const {
+        return m_mbeReady;
+    }
+
+    void resetMbe() {
+        m_mbeReady = false;
+    }
+
     short *getAudio(int& nbSamples)
     {
         nbSamples = m_state.audio_out_nb_samples;
@@ -250,6 +262,7 @@ private:
     DSDSymbol m_dsdSymbol;
     // MBE decoder
     char ambe_fr[4][24];
+    bool m_mbeReady;
     DSDMBEDecoder m_mbeDecoder;
     // Frame decoders
     DSDDMRVoice m_dsdDMRVoice;
