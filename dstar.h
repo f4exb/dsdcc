@@ -54,7 +54,6 @@ private:
     int m_dibitIndex;     // index in dibit cache
 
     // DSTAR
-    char ambe_fr[4][24];
     unsigned char data[9];
     unsigned int bits[4];
     int framecount;

@@ -143,9 +143,9 @@ private:
     int m_slotIndex;   //!< Slot index in major block 0..9 //i;
     int m_majorBlock;  //!< Major block index 0..5 //j;
     int *dibit_p;
-    char ambe_fr[4][24];
-    char ambe_fr2[4][24];
-    char ambe_fr3[4][24];
+//    char ambe_fr[4][24];
+//    char ambe_fr2[4][24];
+//    char ambe_fr3[4][24];
     const int *w, *x, *y, *z;
     char sync[25];
     char syncdata[25];

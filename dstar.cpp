@@ -170,7 +170,7 @@ void DSDDstar::init()
 void DSDDstar::initVoiceFrame()
 {
     //fprintf(stderr, "DSDDstar::initVoiceFrame\n");
-    memset(ambe_fr, 0, 96);
+    memset(m_dsdDecoder->ambe_fr, 0, 96);
     // voice frame
     w = dW;
     x = dX;
@@ -247,7 +247,7 @@ void DSDDstar::processVoice()
     {
 		//fprintf(stderr, "DSDDstar::processVoice: i: %d w: %d x: %d val: %d\n", m_symbolIndex, *w, *x, (1 & dibit));
 
-		ambe_fr[*w][*x] = (1 & dibit);
+        m_dsdDecoder->ambe_fr[*w][*x] = (1 & dibit);
 		w++;
 		x++;
     }
@@ -259,7 +259,7 @@ void DSDDstar::processVoice()
             m_dsdDecoder->getLogger().log("\nMBE: ");
         }
 
-        m_dsdDecoder->m_mbeDecoder.processFrame(0, ambe_fr, 0);
+        m_dsdDecoder->m_mbeDecoder.processFrame(0, m_dsdDecoder->ambe_fr, 0);
     }
 }
 

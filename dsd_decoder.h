@@ -249,6 +249,7 @@ private:
     // Symbol extraction and operations
     DSDSymbol m_dsdSymbol;
     // MBE decoder
+    char ambe_fr[4][24];
     DSDMBEDecoder m_mbeDecoder;
     // Frame decoders
     DSDDMRVoice m_dsdDMRVoice;

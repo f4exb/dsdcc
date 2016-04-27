@@ -266,12 +266,24 @@ void DSDDMRVoice::processSlot2(int symbolIndex) // Slot2 is a 36 symbol slot
         {
             int dibit = dibitCache[i];
 
-            ambe_fr[*w][*x] = (1 & (dibit >> 1)); // bit 1
-            ambe_fr[*y][*z] = (1 & dibit);        // bit 0
+            m_dsdDecoder->ambe_fr[*w][*x] = (1 & (dibit >> 1)); // bit 1
+            m_dsdDecoder->ambe_fr[*y][*z] = (1 & dibit);        // bit 0
             w++;
             x++;
             y++;
             z++;
+        }
+
+        if (mutecurrentslot == 0)
+        {
+            if (m_dsdDecoder->m_opts.errorbars == 1) {
+                m_dsdDecoder->getLogger().log("\nMBE: ");
+            }
+
+            m_dsdDecoder->m_mbeDecoder.processFrame(0, m_dsdDecoder->ambe_fr, 0);
+            if (m_dsdDecoder->m_opts.errorbars == 1) {
+                m_dsdDecoder->getLogger().log(".");
+            }
         }
     }
 }
@@ -301,8 +313,8 @@ void DSDDMRVoice::processSlot3(int symbolIndex) // Slot3 is a 18 symbol slot
         {
             int dibit = dibitCache[i];
 
-            ambe_fr2[*w][*x] = (1 & (dibit >> 1)); // bit 1
-            ambe_fr2[*y][*z] = (1 & dibit);        // bit 0
+            m_dsdDecoder->ambe_fr[*w][*x] = (1 & (dibit >> 1)); // bit 1
+            m_dsdDecoder->ambe_fr[*y][*z] = (1 & dibit);        // bit 0
             w++;
             x++;
             y++;
@@ -394,8 +406,8 @@ void DSDDMRVoice::processSlot5(int symbolIndex) // Slot5 is a 18 symbol slot
             int dibit = dibitCache[i];
             //m_dsdDecoder->getLogger().log("DSDDMRVoice::processSlot5: dibit[%d]: %d\n", i, dibit);
 
-            ambe_fr2[*w][*x] = (1 & (dibit >> 1)); // bit 1
-            ambe_fr2[*y][*z] = (1 & dibit);        // bit 0
+            m_dsdDecoder->ambe_fr[*w][*x] = (1 & (dibit >> 1)); // bit 1
+            m_dsdDecoder->ambe_fr[*y][*z] = (1 & dibit);        // bit 0
             w++;
             x++;
             y++;
@@ -410,16 +422,7 @@ void DSDDMRVoice::processSlot5(int symbolIndex) // Slot5 is a 18 symbol slot
 //            }
 //            else
             {
-                if (m_dsdDecoder->m_opts.errorbars == 1) {
-                    m_dsdDecoder->getLogger().log("\nMBE: ");
-                }
-
-                m_dsdDecoder->m_mbeDecoder.processFrame(0, ambe_fr, 0);
-                if (m_dsdDecoder->m_opts.errorbars == 1) {
-                    m_dsdDecoder->getLogger().log(".");
-                }
-
-                m_dsdDecoder->m_mbeDecoder.processFrame(0, ambe_fr2, 0);
+                m_dsdDecoder->m_mbeDecoder.processFrame(0, m_dsdDecoder->ambe_fr, 0);
                 if (m_dsdDecoder->m_opts.errorbars == 1) {
                     m_dsdDecoder->getLogger().log(".");
                 }
@@ -451,8 +454,8 @@ void DSDDMRVoice::processSlot6(int symbolIndex) // Slot6 is a 36 symbol slot
         {
             int dibit = dibitCache[i];
 
-            ambe_fr3[*w][*x] = (1 & (dibit >> 1)); // bit 1
-            ambe_fr3[*y][*z] = (1 & dibit);        // bit 0
+            m_dsdDecoder->ambe_fr[*w][*x] = (1 & (dibit >> 1)); // bit 1
+            m_dsdDecoder->ambe_fr[*y][*z] = (1 & dibit);        // bit 0
             w++;
             x++;
             y++;
@@ -467,7 +470,7 @@ void DSDDMRVoice::processSlot6(int symbolIndex) // Slot6 is a 36 symbol slot
 //            }
 //            else
             {
-                m_dsdDecoder->m_mbeDecoder.processFrame(0, ambe_fr3, 0);
+                m_dsdDecoder->m_mbeDecoder.processFrame(0, m_dsdDecoder->ambe_fr, 0);
 
                 if (m_dsdDecoder->m_opts.errorbars == 1) {
                     m_dsdDecoder->getLogger().log("\n");
