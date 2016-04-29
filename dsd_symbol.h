@@ -35,6 +35,21 @@ public:
     int getDibit(); //!< from the last retrieved symbol Returns either the bit (0,1) or the dibit value (0,1,2,3)
     void print_datascope(int* sbuf2);
 
+    static void compressBits(const char *bitArray, unsigned char *byteArray, int nbBytes)
+    {
+        for (int i = 0; i < nbBytes; i++)
+        {
+            byteArray[i] = 1 & bitArray[8*i];
+            byteArray[i] = (byteArray[i]<<1) & (1 & bitArray[8*i+1]);
+            byteArray[i] = (byteArray[i]<<1) & (1 & bitArray[8*i+2]);
+            byteArray[i] = (byteArray[i]<<1) & (1 & bitArray[8*i+3]);
+            byteArray[i] = (byteArray[i]<<1) & (1 & bitArray[8*i+4]);
+            byteArray[i] = (byteArray[i]<<1) & (1 & bitArray[8*i+5]);
+            byteArray[i] = (byteArray[i]<<1) & (1 & bitArray[8*i+6]);
+            byteArray[i] = (byteArray[i]<<1) & (1 & bitArray[8*i+7]);
+        }
+    }
+
 private:
     void resetSymbol();
     int get_dibit_and_analog_signal(int* out_analog_signal);

@@ -23,7 +23,7 @@ These points have been retained from the original:
 
 While DSDcc is intended to be patent-free, `mbelib` that it uses describes functions that may be covered by one or more U.S. patents owned by DVSI Inc. The source code itself should not be infringing as it merely describes possible methods of implementation. Compiling or using `mbelib` may infringe on patents rights in your jurisdiction and/or require licensing. It is unknown if DVSI will sell licenses for software that uses `mbelib`.
 
-If you are not comfortable with this just do not compile with `mbelib` support and you will still be able to extract the MBE frames and process them outside DSDcc with the help of a hardware dongle for example (e.g. ThumbDV USB dongle).
+If you are not comfortable with this just do not compile with `mbelib` support and you will still be able to extract the MBE frames and process them outside DSDcc with the help of a hardware dongle for example (e.g. ThumbDV USB dongle). The provided binary `dsdccx` can use such a dongle with [SerialDV](https://github.com/f4exb/serialDV). See the Building section for details.
 
 If you still want `mbelib` support you have to use the `-DUSE_MBELIB=ON` directive on the `cmake` command line and of course you need to have `mbelib` installed in your system.
 
@@ -49,7 +49,11 @@ As usual with projects based on cmake create a `build` directory at the root of 
 
 For `mbelib`support you will need to specify the `-DUSE_MBELIB=ON` directive on the `cmake` command line and you will need to have [mbelib](https://github.com/szechyjs/mbelib) installed in your system. If you use custom installation paths like `/opt/install/mbelib` for example you will need to add the include and library locations to the cmake command line with these directives: `-DLIBMBE_INCLUDE_DIR=/opt/install/mbelib/include -DLIBMBE_LIBRARY=/opt/install/mbelib/lib/libmbe.so`
 
-So the full cmake command with a custom installation directory will look like: `cmake -Wno-dev -DCMAKE_INSTALL_PREFIX=/opt/install/dsdcc -DUSE_MBELIB=ON -DLIBMBE_INCLUDE_DIR=/opt/install/mbelib/include -DLIBMBE_LIBRARY=/opt/install/mbelib/lib/libmbe.so ..`
+For DVSI AMBE3000 serial device support (e.g. ThumbDV) in the binary `dsdccx` you will need to install [SerialDV](https://github.com/f4exb/serialDV). Please refer to the `Readme.md` in this package to install SerialDV. If you have SerialDV installed in a custom directory say `/opt/install/serialdv` you will need to add the include and library locations to the cmake command line with these directives: `-DLIBSERIALDV_INCLUDE_DIR=/opt/install/serialdv/include/serialdv -DLIBSERIALDV_LIBRARY=/opt/install/serialdv/lib/libserialdv.so`
+
+So the full cmake command with a custom installation directory and `mbelib`support will look like: `cmake -Wno-dev -DCMAKE_INSTALL_PREFIX=/opt/install/dsdcc -DUSE_MBELIB=ON -DLIBMBE_INCLUDE_DIR=/opt/install/mbelib/include -DLIBMBE_LIBRARY=/opt/install/mbelib/lib/libmbe.so ..`
+
+The full cmake command with a custom installation directory no `mbelib`support and SerialDV support for the binary will look like: `cmake -Wno-dev -DCMAKE_INSTALL_PREFIX=/opt/install/dsdcc -DLIBSERIALDV_INCLUDE_DIR=/opt/install/serialdv/include/serialdv -DLIBSERIALDV_LIBRARY=/opt/install/serialdv/lib/libserialdv.so`
 
 Then:
 
@@ -86,14 +90,19 @@ For more details refer to the online help with the `-h` option: `dsdccx -h`
 
 You can look at the source of the `dsdccx` binary to get an idea. Basically it involves the following steps:
 
-  1. Allocate a new `DSDDecoder` object (stack or heap)
-  2. Set the options and state object. with some `DSDDecoder` methods.
-  3. Prepare the input (open file or stream)
-  4. Get a new sample from the stream
-  5. Push this sample to the decoder
-  6. Check if any audio output is available and possibly get its pointer and number of samples
-  7. Push these samples to the audio device or the output file or stream
-  8. Go back to step #5 until a signal is received or some sort of logic brings the loop to an end
-  9. Do the cleanup after the loop or in the signal handler (close file, destroy objects...)
+ 1. Allocate a new `DSDDecoder` object (stack or heap)
+ 2. Set the options and state object. with some `DSDDecoder` methods.
+ 3. Prepare the input (open file or stream)
+ 4. Get a new sample from the stream
+ 5. Push this sample to the decoder
+ 6. With `mbelib` support:
+   a. Check if any audio output is available and possibly get its pointer and number of samples
+   b. Push these samples to the audio device or the output file or stream
+ 7. With a DVSI AMBE3000 based serial device and SerialDV support:
+   a. use DSDcc::DVController helper class with the processDVSerial method 
+   b. Check if any audio output is available from the helper class and possibly get its pointer and number of samples
+   c. Push these samples to the audio device or the output file or stream
+ 8. Go back to step #5 until a signal is received or some sort of logic brings the loop to an end
+ 9. Do the cleanup after the loop or in the signal handler (close file, destroy objects...)
 
 Of course this loop can be run in its own thread or remain synchronous with the calling application. Unlike with the original DSD you have the choice.

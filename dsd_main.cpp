@@ -23,6 +23,10 @@
 
 #include "dsd_decoder.h"
 
+#ifdef DSD_USE_SERIALDV
+#include "dsd_dvserial.h"
+#endif
+
 int exitflag;
 
 static void usage ();
@@ -59,6 +63,11 @@ void usage()
     fprintf(stderr, "  -n            Do not send synthesized speech to audio output device\n");
     fprintf(stderr, "  -L <filename> Log messages to file with file name <filename>. Default is stderr\n");
     fprintf(stderr, "                If file name is invalid messages will go to stderr\n");
+#ifdef DSD_USE_SERIALDV
+    fprintf(stderr, "  -D <device>   Use DVSI AMBE3000 based device for AMBE decoding (e.g. ThumbDV)\n");
+    fprintf(stderr, "                You must have compiled with serialDV support (see Readme.md)\n");
+    fprintf(stderr, "                Device name is the corresponding TTY USB device e.g /dev/ttyUSB0\n");
+#endif
     fprintf(stderr, "\n");
     fprintf(stderr, "Scanner control options:\n");
     fprintf(stderr,
@@ -115,6 +124,14 @@ int main(int argc, char **argv)
     int  out_file_fd = -1;
     char log_file[1023];
     log_file[0] = '\0';
+    char serialDevice[16];
+    std::string dvSerialDevice;
+#ifdef DSD_USE_SERIALDV
+    DSDcc::DVController *dvController = 0;
+#endif
+
+
+
 
     fprintf(stderr, "Digital Speech Decoder DSDcc\n");
 
@@ -122,7 +139,7 @@ int main(int argc, char **argv)
     signal(SIGINT, sigfun);
 
     while ((c = getopt(argc, argv,
-            "hep:qstv:z:i:o:g:nR:f:m:u:U:x:A:S:M:lL:")) != -1)
+            "hep:qstv:z:i:o:g:nR:f:m:u:U:x:A:S:M:lL:D:")) != -1)
     {
         opterr = 0;
         switch (c)
@@ -186,6 +203,13 @@ int main(int argc, char **argv)
             strncpy(out_file, (const char *) optarg, 1023);
             out_file[1023] = '\0';
             break;
+#ifdef DSD_USE_SERIALDV
+        case 'D':
+            strncpy(serialDevice, (const char *) optarg, 16);
+            serialDevice[16] = '\0';
+            dvSerialDevice = serialDevice;
+            break;
+#endif
         case 'g':
             float gain;
             sscanf(optarg, "%f", &gain);
@@ -454,6 +478,12 @@ int main(int argc, char **argv)
         return 0;
     }
 
+#ifdef DSD_USE_SERIALDV
+    if (!dvSerialDevice.empty()) {
+        dvController = new DSDcc::DVController(dvSerialDevice, dsdDecoder);
+    }
+#endif
+
     while (exitflag == 0)
     {
         short sample;
@@ -469,6 +499,21 @@ int main(int argc, char **argv)
         }
 
         dsdDecoder.run(sample);
+
+#ifdef DSD_USE_SERIALDV
+        if (dvController && dvController->processDVSerial())
+        {
+            result = write(out_file_fd, (const void *) dvController->getAudio(), sizeof(short) * dvController->getNbAudioSamples());
+
+            if (result == -1) {
+                fprintf(stderr, "Error writing to output\n");
+            } else if (result != sizeof(short) * dvController->getNbAudioSamples()) {
+                fprintf(stderr, "Written %d out of %d audio samples\n", result/2, dvController->getNbAudioSamples());
+            }
+
+            dsdDecoder.resetMbe();
+        }
+#else
         audioSamples = dsdDecoder.getAudio(nbAudioSamples);
 
         if (nbAudioSamples > 0)
@@ -483,9 +528,16 @@ int main(int argc, char **argv)
 
             dsdDecoder.resetAudio();
         }
+#endif
     }
 
     fprintf(stderr, "End of process\n");
+
+#ifdef DSD_USE_SERIALDV
+    if (dvController) {
+        delete dvController;
+    }
+#endif
 
     if ((out_file_fd > -1) && (out_file_fd != STDOUT_FILENO)) {
         close(out_file_fd);

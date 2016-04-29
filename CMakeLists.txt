@@ -16,9 +16,14 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules)
 project(dsdcc)
 
 find_package(LibMbe)
+find_package(SerialDV) 
 
 if (USE_MBELIB AND LIBMBE_FOUND)
     add_definitions(-DDSD_USE_MBELIB)
+endif()
+
+if (LIBSERIALDV_FOUND)
+    add_definitions(-DDSD_USE_SERIALDV)
 endif()
 
 set(dsdcc_SOURCES
@@ -36,6 +41,10 @@ set(dsdcc_SOURCES
     p25p1_heuristics.cpp
 )
 
+if (LIBSERIALDV_FOUND)
+    list (APPEND dsdcc_SOURCES "dsd_dvserial.cpp")
+endif()
+
 set(dsdcc_HEADERS
     descramble.h
     dmr_data.h
@@ -51,17 +60,22 @@ set(dsdcc_HEADERS
     p25p1_heuristics.h
 )
 
+if (LIBSERIALDV_FOUND)
+    list (APPEND dsdcc_HEADERS "dsd_dvserial.h")
+endif()
+
 include_directories(
     ${PROJECT_SOURCE_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}
     ${LIBMBE_INCLUDE_DIR}
+    ${LIBSERIALDV_INCLUDE_DIR}
 )
 
 add_library(dsdcc SHARED
     ${dsdcc_SOURCES}
 )
 
-target_link_libraries(dsdcc ${LIBMBE_LIBRARY})
+target_link_libraries(dsdcc ${LIBMBE_LIBRARY} ${LIBSERIALDV_LIBRARY})
 
 add_executable(dsdccx
     dsd_main.cpp

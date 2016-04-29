@@ -229,6 +229,9 @@ public:
     void enableAudioOut(bool on);
     void enableScanResumeAfterTDULCFrames(int nbFrames);
 
+    // parameter getters:
+    bool upsampling() const { return m_opts.upsample != 0; }
+
 private:
     int getFrameSync();
     void resetFrameSync();
