@@ -453,7 +453,7 @@ int main(int argc, char **argv)
     }
     else
     {
-        out_file_fd = open(out_file, O_WRONLY);
+        out_file_fd = open(out_file, O_WRONLY|O_CREAT|O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
     }
 
     if (out_file_fd > -1)
@@ -473,9 +473,13 @@ int main(int argc, char **argv)
 #ifdef DSD_USE_SERIALDV
     SerialDV::DVController dvController;
     short dvAudioSamples[SerialDV::MBE_AUDIO_BLOCK_SIZE];
+    unsigned char dvMbeSamples[SerialDV::MBE_FRAME_LENGTH_BYTES];
 
-    if (!dvSerialDevice.empty()) {
-        if (dvController.open(dvSerialDevice)) {
+    if (!dvSerialDevice.empty())
+    {
+        if (dvController.open(dvSerialDevice))
+        {
+            fprintf(stderr, "SerialDV up. Disable mbelib support\n");
             dsdDecoder.enableMbelib(false); // de-activate mbelib decoding
         }
     }
@@ -500,11 +504,11 @@ int main(int argc, char **argv)
 #ifdef DSD_USE_SERIALDV
         if (dvController.isOpen())
         {
-            if (dsdDecoder.mbeReady())
+            if (dsdDecoder.mbeDVReady())
             {
-                dvController.decode(dvAudioSamples, (const unsigned char *) dsdDecoder.getMbe(), (SerialDV::DVRate) dsdDecoder.getMbeRate());
-                result = write(out_file_fd, (const void *) audioSamples, SerialDV::MBE_AUDIO_BLOCK_BYTES); // TODO: upsampling
-                dsdDecoder.resetMbe();
+                dvController.decode(dvAudioSamples, (const unsigned char *) dsdDecoder.getMbeDVFrame(), (SerialDV::DVRate) dsdDecoder.getMbeRate());
+                result = write(out_file_fd, (const void *) dvAudioSamples, SerialDV::MBE_AUDIO_BLOCK_BYTES); // TODO: upsampling
+                dsdDecoder.resetMbeDV();
             }
         }
         else

@@ -171,6 +171,7 @@ void DSDDstar::initVoiceFrame()
 {
     //fprintf(stderr, "DSDDstar::initVoiceFrame\n");
     memset(m_dsdDecoder->ambe_fr, 0, 96);
+    memset((void *) m_dsdDecoder->m_mbeDVFrame, 0, 9); // initialize DVSI frame
     // voice frame
     w = dW;
     x = dX;
@@ -250,6 +251,8 @@ void DSDDstar::processVoice()
         m_dsdDecoder->ambe_fr[*w][*x] = (1 & dibit);
 		w++;
 		x++;
+
+        m_dsdDecoder->m_mbeDVFrame[m_symbolIndex/8] |= (1 & dibit)<<(m_symbolIndex%8); // store bits in order in DVSI frame LSB first
     }
 
     if (m_symbolIndex == 72-1)
@@ -260,6 +263,8 @@ void DSDDstar::processVoice()
         }
 
         m_dsdDecoder->m_mbeDecoder.processFrame(0, m_dsdDecoder->ambe_fr, 0);
+
+        m_dsdDecoder->m_mbeDVReady = true; // Indicate that a DVSI frame is available
     }
 }
 

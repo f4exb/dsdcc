@@ -38,9 +38,7 @@ DSDMBEDecoder::~DSDMBEDecoder()
 
 void DSDMBEDecoder::processFrame(char imbe_fr[8][23], char ambe_fr[4][24], char imbe7100_fr[7][24])
 {
-    m_dsdDecoder->m_mbeReady = true;
-
-    if (!m_dsdDecoder->m_mbeEnable) {
+    if (!m_dsdDecoder->m_mbelibEnable) {
         return;
     }
 #ifdef DSD_USE_MBELIB

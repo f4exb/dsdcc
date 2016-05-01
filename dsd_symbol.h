@@ -39,15 +39,27 @@ public:
     {
         for (int i = 0; i < nbBytes; i++)
         {
-            byteArray[i] = 1 & bitArray[8*i];
-            byteArray[i] = (byteArray[i]<<1) & (1 & bitArray[8*i+1]);
-            byteArray[i] = (byteArray[i]<<1) & (1 & bitArray[8*i+2]);
-            byteArray[i] = (byteArray[i]<<1) & (1 & bitArray[8*i+3]);
-            byteArray[i] = (byteArray[i]<<1) & (1 & bitArray[8*i+4]);
-            byteArray[i] = (byteArray[i]<<1) & (1 & bitArray[8*i+5]);
-            byteArray[i] = (byteArray[i]<<1) & (1 & bitArray[8*i+6]);
-            byteArray[i] = (byteArray[i]<<1) & (1 & bitArray[8*i+7]);
+            byteArray[i] =  (1 & bitArray[8*i+0]) << 7;
+            byteArray[i] += (1 & bitArray[8*i+1]) << 6;
+            byteArray[i] += (1 & bitArray[8*i+2]) << 5;
+            byteArray[i] += (1 & bitArray[8*i+3]) << 4;
+            byteArray[i] += (1 & bitArray[8*i+4]) << 3;
+            byteArray[i] += (1 & bitArray[8*i+5]) << 2;
+            byteArray[i] += (1 & bitArray[8*i+6]) << 1;
+            byteArray[i] += (1 & bitArray[8*i+7]) << 0;
         }
+
+//        for (int i = nbBytes-1; i >= 0; i--)
+//        {
+//            byteArray[i] =  (1 & bitArray[8*i+7]) << 7;
+//            byteArray[i] += (1 & bitArray[8*i+6]) << 6;
+//            byteArray[i] += (1 & bitArray[8*i+5]) << 5;
+//            byteArray[i] += (1 & bitArray[8*i+4]) << 4;
+//            byteArray[i] += (1 & bitArray[8*i+4]) << 3;
+//            byteArray[i] += (1 & bitArray[8*i+2]) << 2;
+//            byteArray[i] += (1 & bitArray[8*i+1]) << 1;
+//            byteArray[i] += (1 & bitArray[8*i+0]) << 0;
+//        }
     }
 
 private:

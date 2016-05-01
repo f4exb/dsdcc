@@ -162,20 +162,21 @@ public:
 
     void run(short sample);
 
-    const char *getMbe() const {
-        return &ambe_fr[0][0];
+    /** DVSI support */
+    const unsigned char *getMbeDVFrame() const {
+        return m_mbeDVFrame;
     }
 
     DSDMBERate getMbeRate() const {
         return m_mbeRate;
     }
 
-    bool mbeReady() const {
-        return m_mbeReady;
+    bool mbeDVReady() const {
+        return m_mbeDVReady;
     }
 
-    void resetMbe() {
-        m_mbeReady = false;
+    void resetMbeDV() {
+        m_mbeDVReady = false;
     }
 
     short *getAudio(int& nbSamples)
@@ -215,7 +216,7 @@ public:
     int getInLevel() const { return (int) m_state.max / 164; }
     int getSamplesPerSymbol() const { return m_state.samplesPerSymbol; }
     const DSDDstar& getDStarDecoder() const { return m_dsdDstar; }
-    void enableMbelib(bool enable) { m_mbeEnable = enable; }
+    void enableMbelib(bool enable) { m_mbelibEnable = enable; }
 
     // Initializations:
     void setQuiet();
@@ -277,10 +278,12 @@ private:
     DSDSymbol m_dsdSymbol;
     // MBE decoder
     char ambe_fr[4][24];
-    bool m_mbeReady;
-    bool m_mbeEnable;
+    bool m_mbelibEnable;
     DSDMBERate m_mbeRate;
     DSDMBEDecoder m_mbeDecoder;
+    // DVSI AMBE3000 serial device support
+    unsigned char m_mbeDVFrame[9];
+    bool m_mbeDVReady;
     // Frame decoders
     DSDDMRVoice m_dsdDMRVoice;
     DSDDMRData m_dsdDMRData;
