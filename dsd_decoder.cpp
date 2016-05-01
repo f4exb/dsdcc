@@ -25,6 +25,8 @@ DSDDecoder::DSDDecoder() :
         m_fsmState(DSDLookForSync),
         m_hasSync(0),
         m_mbeReady(false),
+        m_mbeEnable(true),
+        m_mbeRate(DSDMBERateNone),
         m_dsdSymbol(this),
         m_mbeDecoder(this),
         m_dsdDMRVoice(this),
@@ -731,6 +733,7 @@ int DSDDecoder::getFrameSync()
                 }
 
                 m_state.lastsynctype = 0;
+                m_mbeRate = DSDMBERate3600x2450;
                 return(0);
             }
             if (strcmp(m_synctest, INV_P25P1_SYNC) == 0)
@@ -748,6 +751,7 @@ int DSDDecoder::getFrameSync()
                 }
 
                 m_state.lastsynctype = 1;
+                m_mbeRate = DSDMBERate3600x2450;
                 return(1);
             }
         }
@@ -778,6 +782,7 @@ int DSDDecoder::getFrameSync()
                     }
 
                     m_state.lastsynctype = 2;
+                    m_mbeRate = DSDMBERate3600x2450;
                     return(2); // done
                 }
                 else
@@ -796,6 +801,7 @@ int DSDDecoder::getFrameSync()
                     }
 
                     m_state.lastsynctype = 3;
+                    m_mbeRate = DSDMBERate3600x2450;
                     return(3); // done
                 }
             }
@@ -829,6 +835,7 @@ int DSDDecoder::getFrameSync()
                     }
 
                     m_state.lastsynctype = 4;
+                    m_mbeRate = DSDMBERate3600x2450;
                     return(4); // done
                 }
                 else
@@ -842,6 +849,7 @@ int DSDDecoder::getFrameSync()
                     }
 
                     m_state.lastsynctype = 5;
+                    m_mbeRate = DSDMBERate3600x2450;
                     return(5); // done
                 }
             }
@@ -873,6 +881,7 @@ int DSDDecoder::getFrameSync()
                     }
 
                     m_state.lastsynctype = 10;
+                    m_mbeRate = DSDMBERate3600x2450;
                     return(10); // done
                 }
                 else
@@ -891,6 +900,7 @@ int DSDDecoder::getFrameSync()
                     }
 
                     m_state.lastsynctype = 11;
+                    m_mbeRate = DSDMBERate3600x2450;
                     return(11); // done
                 }
             }
@@ -924,6 +934,7 @@ int DSDDecoder::getFrameSync()
                     }
 
                     m_state.lastsynctype = 12;
+                    m_mbeRate = DSDMBERate3600x2450;
                     return(12); // done
                 }
                 else
@@ -937,6 +948,7 @@ int DSDDecoder::getFrameSync()
                     }
 
                     m_state.lastsynctype = 13;
+                    m_mbeRate = DSDMBERate3600x2450;
                     return(13); // done
                 }
             }
@@ -961,6 +973,7 @@ int DSDDecoder::getFrameSync()
                 }
 
                 m_state.lastsynctype = 14;
+                m_mbeRate = DSDMBERate3600x2450;
                 return(14); // done
             }
             else if ((strcmp(m_synctest32, INV_PROVOICE_SYNC) == 0)
@@ -979,6 +992,7 @@ int DSDDecoder::getFrameSync()
                 }
 
                 m_state.lastsynctype = 15;
+                m_mbeRate = DSDMBERate3600x2450;
                 return(15); // done
             }
 
@@ -1025,6 +1039,7 @@ int DSDDecoder::getFrameSync()
                     }
 
                     m_state.lastsynctype = 8;
+                    m_mbeRate = DSDMBERate3600x2450;
                     return(8); // done
                 }
                 else
@@ -1069,6 +1084,7 @@ int DSDDecoder::getFrameSync()
                     }
 
                     m_state.lastsynctype = 9;
+                    m_mbeRate = DSDMBERate3600x2450;
                     return(9); // done
                 }
                 else
@@ -1113,6 +1129,7 @@ int DSDDecoder::getFrameSync()
                     }
 
                     m_state.lastsynctype = 16;
+                    m_mbeRate = DSDMBERate3600x2450;
                     return(16); // done
                 }
                 else
@@ -1159,6 +1176,7 @@ int DSDDecoder::getFrameSync()
                     }
 
                     m_state.lastsynctype = 17;
+                    m_mbeRate = DSDMBERate3600x2450;
                     return(17); // done
                 }
                 else
@@ -1184,6 +1202,7 @@ int DSDDecoder::getFrameSync()
                 }
 
                 m_state.lastsynctype = 6;
+                m_mbeRate = DSDMBERate3600x2400;
                 return(6);
             }
             if (strcmp(m_synctest, INV_DSTAR_SYNC) == 0)
@@ -1201,6 +1220,7 @@ int DSDDecoder::getFrameSync()
                 }
 
                 m_state.lastsynctype = 7;
+                m_mbeRate = DSDMBERate3600x2400;
                 return(7); // done
             }
             if (strcmp(m_synctest, DSTAR_HD) == 0)
@@ -1218,6 +1238,7 @@ int DSDDecoder::getFrameSync()
                 }
 
                 m_state.lastsynctype = 18;
+                m_mbeRate = DSDMBERate3600x2400;
                 return(18); // done
             }
             if (strcmp(m_synctest, INV_DSTAR_HD) == 0)
@@ -1235,6 +1256,7 @@ int DSDDecoder::getFrameSync()
                 }
 
                 m_state.lastsynctype = 19;
+                m_mbeRate = DSDMBERate3600x2400;
                 return(19);
             }
         }
@@ -1258,6 +1280,7 @@ int DSDDecoder::getFrameSync()
                 }
 
                 m_state.lastsynctype = -1;
+                m_mbeRate = DSDMBERate3600x2450;
                 return(0); // done
             }
             else if ((m_state.lastsynctype == 1) && ((m_state.lastp25type == 1) || (m_state.lastp25type == 2)))
@@ -1273,6 +1296,7 @@ int DSDDecoder::getFrameSync()
                 }
 
                 m_state.lastsynctype = -1;
+                m_mbeRate = DSDMBERate3600x2450;
                 return(1); // done
             }
             else if ((m_state.lastsynctype == 3) && ((strcmp(m_synctest, X2TDMA_BS_VOICE_SYNC) != 0) || (strcmp(m_synctest, X2TDMA_MS_VOICE_SYNC) != 0)))
@@ -1290,6 +1314,7 @@ int DSDDecoder::getFrameSync()
                 }
 
                 m_state.lastsynctype = -1;
+                m_mbeRate = DSDMBERate3600x2450;
                 return(3);
             }
             else if ((m_state.lastsynctype == 4) && ((strcmp(m_synctest, X2TDMA_BS_DATA_SYNC) != 0) || (strcmp(m_synctest, X2TDMA_MS_DATA_SYNC) != 0)))
@@ -1307,6 +1332,7 @@ int DSDDecoder::getFrameSync()
                 }
 
                 m_state.lastsynctype = -1;
+                m_mbeRate = DSDMBERate3600x2450;
                 return(4);
             }
             else if ((m_state.lastsynctype == 11)  && ((strcmp(m_synctest, DMR_BS_VOICE_SYNC) != 0) || (strcmp(m_synctest, DMR_MS_VOICE_SYNC) != 0)))
@@ -1324,6 +1350,7 @@ int DSDDecoder::getFrameSync()
                 }
 
                 m_state.lastsynctype = -1;
+                m_mbeRate = DSDMBERate3600x2450;
                 return(11); // done
             }
             else if ((m_state.lastsynctype == 12) && ((strcmp(m_synctest, DMR_BS_DATA_SYNC) != 0) || (strcmp(m_synctest, DMR_MS_DATA_SYNC) != 0)))
@@ -1341,6 +1368,7 @@ int DSDDecoder::getFrameSync()
                 }
 
                 m_state.lastsynctype = -1;
+                m_mbeRate = DSDMBERate3600x2450;
                 return(12); // done
             }
         }
@@ -1371,10 +1399,12 @@ int DSDDecoder::getFrameSync()
 
             sprintf(m_state.ftype, "No Sync      ");
             noCarrier();
+            m_mbeRate = DSDMBERateNone;
             return(-1); // done
         }
     }
 
+    m_mbeRate = DSDMBERateNone;
     return(-2); // still searching
 }
 

@@ -41,10 +41,6 @@ set(dsdcc_SOURCES
     p25p1_heuristics.cpp
 )
 
-if (LIBSERIALDV_FOUND)
-    list (APPEND dsdcc_SOURCES "dsd_dvserial.cpp")
-endif()
-
 set(dsdcc_HEADERS
     descramble.h
     dmr_data.h
@@ -59,10 +55,6 @@ set(dsdcc_HEADERS
     dstar.h
     p25p1_heuristics.h
 )
-
-if (LIBSERIALDV_FOUND)
-    list (APPEND dsdcc_HEADERS "dsd_dvserial.h")
-endif()
 
 include_directories(
     ${PROJECT_SOURCE_DIR}

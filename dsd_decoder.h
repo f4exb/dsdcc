@@ -150,6 +150,13 @@ public:
         DSDMobileStation
     } DSDStationType;
 
+    typedef enum
+    {
+        DSDMBERateNone,
+        DSDMBERate3600x2400, //!< D-Star
+        DSDMBERate3600x2450  //!< DMR and the likes
+    } DSDMBERate;
+
     DSDDecoder();
     ~DSDDecoder();
 
@@ -157,6 +164,10 @@ public:
 
     const char *getMbe() const {
         return &ambe_fr[0][0];
+    }
+
+    DSDMBERate getMbeRate() const {
+        return m_mbeRate;
     }
 
     bool mbeReady() const {
@@ -204,6 +215,7 @@ public:
     int getInLevel() const { return (int) m_state.max / 164; }
     int getSamplesPerSymbol() const { return m_state.samplesPerSymbol; }
     const DSDDstar& getDStarDecoder() const { return m_dsdDstar; }
+    void enableMbelib(bool enable) { m_mbeEnable = enable; }
 
     // Initializations:
     void setQuiet();
@@ -266,6 +278,8 @@ private:
     // MBE decoder
     char ambe_fr[4][24];
     bool m_mbeReady;
+    bool m_mbeEnable;
+    DSDMBERate m_mbeRate;
     DSDMBEDecoder m_mbeDecoder;
     // Frame decoders
     DSDDMRVoice m_dsdDMRVoice;

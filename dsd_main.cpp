@@ -22,11 +22,9 @@
 #include <fcntl.h>
 
 #include "dsd_decoder.h"
-
 #ifdef DSD_USE_SERIALDV
-#include "dsd_dvserial.h"
+#include "dvcontroller.h"
 #endif
-
 int exitflag;
 
 static void usage ();
@@ -126,12 +124,6 @@ int main(int argc, char **argv)
     log_file[0] = '\0';
     char serialDevice[16];
     std::string dvSerialDevice;
-#ifdef DSD_USE_SERIALDV
-    DSDcc::DVController *dvController = 0;
-#endif
-
-
-
 
     fprintf(stderr, "Digital Speech Decoder DSDcc\n");
 
@@ -479,8 +471,13 @@ int main(int argc, char **argv)
     }
 
 #ifdef DSD_USE_SERIALDV
+    SerialDV::DVController dvController;
+    short dvAudioSamples[SerialDV::MBE_AUDIO_BLOCK_SIZE];
+
     if (!dvSerialDevice.empty()) {
-        dvController = new DSDcc::DVController(dvSerialDevice, dsdDecoder);
+        if (dvController.open(dvSerialDevice)) {
+            dsdDecoder.enableMbelib(false); // de-activate mbelib decoding
+        }
     }
 #endif
 
@@ -501,41 +498,40 @@ int main(int argc, char **argv)
         dsdDecoder.run(sample);
 
 #ifdef DSD_USE_SERIALDV
-        if (dvController && dvController->processDVSerial())
+        if (dvController.isOpen())
         {
-            result = write(out_file_fd, (const void *) dvController->getAudio(), sizeof(short) * dvController->getNbAudioSamples());
-
-            if (result == -1) {
-                fprintf(stderr, "Error writing to output\n");
-            } else if (result != sizeof(short) * dvController->getNbAudioSamples()) {
-                fprintf(stderr, "Written %d out of %d audio samples\n", result/2, dvController->getNbAudioSamples());
+            if (dsdDecoder.mbeReady())
+            {
+                dvController.decode(dvAudioSamples, (const unsigned char *) dsdDecoder.getMbe(), (SerialDV::DVRate) dsdDecoder.getMbeRate());
+                result = write(out_file_fd, (const void *) audioSamples, SerialDV::MBE_AUDIO_BLOCK_BYTES); // TODO: upsampling
+                dsdDecoder.resetMbe();
             }
-
-            dsdDecoder.resetMbe();
         }
-#else
-        audioSamples = dsdDecoder.getAudio(nbAudioSamples);
-
-        if (nbAudioSamples > 0)
-        {
-            result = write(out_file_fd, (const void *) audioSamples, sizeof(short) * nbAudioSamples);
-
-            if (result == -1) {
-                fprintf(stderr, "Error writing to output\n");
-            } else if (result != sizeof(short) * nbAudioSamples) {
-                fprintf(stderr, "Written %d out of %d audio samples\n", result/2, nbAudioSamples);
-            }
-
-            dsdDecoder.resetAudio();
-        }
+        else
 #endif
+        {
+            audioSamples = dsdDecoder.getAudio(nbAudioSamples);
+
+            if (nbAudioSamples > 0)
+            {
+                result = write(out_file_fd, (const void *) audioSamples, sizeof(short) * nbAudioSamples);
+
+                if (result == -1) {
+                    fprintf(stderr, "Error writing to output\n");
+                } else if (result != sizeof(short) * nbAudioSamples) {
+                    fprintf(stderr, "Written %d out of %d audio samples\n", result/2, nbAudioSamples);
+                }
+
+                dsdDecoder.resetAudio();
+            }
+        }
     }
 
     fprintf(stderr, "End of process\n");
 
 #ifdef DSD_USE_SERIALDV
-    if (dvController) {
-        delete dvController;
+    if (dvController.isOpen()) {
+        dvController.close();
     }
 #endif
 
