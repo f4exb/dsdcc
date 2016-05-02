@@ -46,6 +46,7 @@ private:
     void processData();
     void dstar_header_decode();
     void reset_header_strings();
+    void storeSymbolDV(int bitindex, unsigned char bit, bool lsbFirst = true);
 
     DSDDecoder *m_dsdDecoder;
     int m_symbolIndex;    //!< Current symbol index in non HD sequence

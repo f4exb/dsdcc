@@ -23,6 +23,7 @@ namespace DSDcc
 /*
  * DMR AMBE interleave schedule
  */
+// bit 1
 const int DSDDMRVoice::rW[36] = {
   0, 1, 0, 1, 0, 1,
   0, 1, 0, 1, 0, 1,
@@ -41,6 +42,7 @@ const int DSDDMRVoice::rX[36] = {
   8, 6, 7, 5, 6, 4
 };
 
+// bit 0
 const int DSDDMRVoice::rY[36] = {
   0, 2, 0, 2, 0, 2,
   0, 2, 0, 3, 0, 3,
@@ -261,6 +263,7 @@ void DSDDMRVoice::processSlot2(int symbolIndex) // Slot2 is a 36 symbol slot
         x = rX;
         y = rY;
         z = rZ;
+        memset((void *) m_dsdDecoder->m_mbeDVFrame, 0, 9); // initialize DVSI frame
 
         for (int i = 0; i < 36; i++)
         {
@@ -272,6 +275,8 @@ void DSDDMRVoice::processSlot2(int symbolIndex) // Slot2 is a 36 symbol slot
             x++;
             y++;
             z++;
+
+            storeSymbolDV(i, dibit, false, true); // store dibit for DVSI hardware deoder
         }
 
         if (mutecurrentslot == 0)
@@ -281,6 +286,8 @@ void DSDDMRVoice::processSlot2(int symbolIndex) // Slot2 is a 36 symbol slot
             }
 
             m_dsdDecoder->m_mbeDecoder.processFrame(0, m_dsdDecoder->ambe_fr, 0);
+            m_dsdDecoder->m_mbeDVReady = true; // Indicate that a DVSI frame is available
+
             if (m_dsdDecoder->m_opts.errorbars == 1) {
                 m_dsdDecoder->getLogger().log(".");
             }
@@ -308,6 +315,7 @@ void DSDDMRVoice::processSlot3(int symbolIndex) // Slot3 is a 18 symbol slot
         x = rX;
         y = rY;
         z = rZ;
+        memset((void *) m_dsdDecoder->m_mbeDVFrame, 0, 9); // initialize DVSI frame
 
         for (int i = 0; i < 18; i++)
         {
@@ -319,6 +327,8 @@ void DSDDMRVoice::processSlot3(int symbolIndex) // Slot3 is a 18 symbol slot
             x++;
             y++;
             z++;
+
+            storeSymbolDV(i, dibit, false, true); // store dibit for DVSI hardware deoder
         }
     }
 }
@@ -389,6 +399,27 @@ void DSDDMRVoice::processSlot4(int symbolIndex) // Slot4 is a 24 symbol slot
     }
 }
 
+void DSDDMRVoice::storeSymbolDV(int dibitindex, unsigned char dibit, bool lsbFirst, bool invertDibit)
+{
+    if (m_dsdDecoder->m_mbelibEnable) {
+        return;
+    }
+
+    if (invertDibit)
+    {
+        dibit = DSDcc::DSDSymbol::invert_dibit(dibit);
+    }
+
+    if (lsbFirst)
+    {
+        m_dsdDecoder->m_mbeDVFrame[dibitindex/4] |= (dibit << (2*(dibitindex % 4))); // store bits in order in DVSI frame LSB first
+    }
+    else
+    {
+        m_dsdDecoder->m_mbeDVFrame[8 - (dibitindex/4)] |= (dibit << (6 - 2*(dibitindex % 4))); // store bits in order in DVSI frame MSB first
+    }
+}
+
 void DSDDMRVoice::processSlot5(int symbolIndex) // Slot5 is a 18 symbol slot
 {
     int dibit = m_dsdDecoder->m_dsdSymbol.getDibit(); // get dibit from symbol and store it in cache
@@ -412,6 +443,8 @@ void DSDDMRVoice::processSlot5(int symbolIndex) // Slot5 is a 18 symbol slot
             x++;
             y++;
             z++;
+
+            storeSymbolDV(i+18, dibit, false, true); // store dibit for DVSI hardware deoder
         }
 
         if (mutecurrentslot == 0)
@@ -423,6 +456,8 @@ void DSDDMRVoice::processSlot5(int symbolIndex) // Slot5 is a 18 symbol slot
 //            else
             {
                 m_dsdDecoder->m_mbeDecoder.processFrame(0, m_dsdDecoder->ambe_fr, 0);
+                m_dsdDecoder->m_mbeDVReady = true; // Indicate that a DVSI frame is available
+
                 if (m_dsdDecoder->m_opts.errorbars == 1) {
                     m_dsdDecoder->getLogger().log(".");
                 }
@@ -449,6 +484,7 @@ void DSDDMRVoice::processSlot6(int symbolIndex) // Slot6 is a 36 symbol slot
         x = rX;
         y = rY;
         z = rZ;
+        memset((void *) m_dsdDecoder->m_mbeDVFrame, 0, 9); // initialize DVSI frame
 
         for (int i = 0; i < 36; i++)
         {
@@ -460,6 +496,8 @@ void DSDDMRVoice::processSlot6(int symbolIndex) // Slot6 is a 36 symbol slot
             x++;
             y++;
             z++;
+
+            storeSymbolDV(i, dibit, false, true); // store dibit for DVSI hardware deoder
         }
 
         if (mutecurrentslot == 0)
@@ -471,6 +509,7 @@ void DSDDMRVoice::processSlot6(int symbolIndex) // Slot6 is a 36 symbol slot
 //            else
             {
                 m_dsdDecoder->m_mbeDecoder.processFrame(0, m_dsdDecoder->ambe_fr, 0);
+                m_dsdDecoder->m_mbeDVReady = true; // Indicate that a DVSI frame is available
 
                 if (m_dsdDecoder->m_opts.errorbars == 1) {
                     m_dsdDecoder->getLogger().log("\n");

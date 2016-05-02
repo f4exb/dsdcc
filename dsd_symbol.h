@@ -33,6 +33,7 @@ public:
     int getSymbol() const { return m_symbol; }
     bool pushSample(short sample, int have_sync); //!< push a new sample into the decoder. Returns true if a new symbol is available
     int getDibit(); //!< from the last retrieved symbol Returns either the bit (0,1) or the dibit value (0,1,2,3)
+    static int invert_dibit(int dibit);
     void print_datascope(int* sbuf2);
 
     static void compressBits(const char *bitArray, unsigned char *byteArray, int nbBytes)
@@ -67,7 +68,6 @@ private:
     int get_dibit_and_analog_signal(int* out_analog_signal);
     void use_symbol(int symbol);
     int digitize(int symbol);
-    int invert_dibit(int dibit);
 
     DSDDecoder *m_dsdDecoder;
     DSDFilters m_dsdFilters;
