@@ -386,6 +386,11 @@ void DSDDMRVoice::processSlot4(int symbolIndex) // Slot4 is a 24 symbol slot
                 sprintf(m_dsdDecoder->m_state.slot1light, "[SLOT1]");
             }
         }
+        else
+        {
+            m_dsdDecoder->m_state.ccnum = (syncdata[0]<<2) + syncdata[1];
+        }
+
         if ((strcmp(sync, DMR_MS_VOICE_SYNC) == 0)
          || (strcmp(sync, DMR_MS_DATA_SYNC) == 0))
         {

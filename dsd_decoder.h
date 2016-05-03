@@ -213,6 +213,7 @@ public:
     const char *getModulationText() const { return m_modulation; }
     const char *getSlot0Text() const { return m_state.slot0light; }
     const char *getSlot1Text() const { return m_state.slot1light; }
+    unsigned char getColorCode() const { return m_state.ccnum; }
     int getInLevel() const { return (int) m_state.max / 164; }
     int getSamplesPerSymbol() const { return m_state.samplesPerSymbol; }
     const DSDDstar& getDStarDecoder() const { return m_dsdDstar; }

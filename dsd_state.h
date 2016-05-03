@@ -87,6 +87,7 @@ public:
     int firstframe;
     char slot0light[8];
     char slot1light[8];
+    unsigned char ccnum;
     float aout_gain;
     float aout_max_buf[200];
     float *aout_max_buf_p;

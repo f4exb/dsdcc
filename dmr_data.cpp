@@ -32,6 +32,7 @@ DSDDMRData::~DSDDMRData()
 
 void DSDDMRData::init()
 {
+    m_dsdDecoder->m_state.ccnum = 0;
     cc[4] = 0;
     bursttype[4] = 0;
     dibit_p = m_dsdDecoder->m_state.dibit_buf_p - 90;
@@ -92,6 +93,7 @@ void DSDDMRData::preProcess()
         dibit = (dibit ^ 2);
     }
 
+    m_dsdDecoder->m_state.ccnum = dibit << 2;
     cc[0] = (1 & (dibit >> 1)) + 48;      // bit 1
     cc[1] = (1 & dibit) + 48;     // bit 0
 
@@ -103,6 +105,7 @@ void DSDDMRData::preProcess()
         dibit = (dibit ^ 2);
     }
 
+    m_dsdDecoder->m_state.ccnum += dibit;
     cc[2] = (1 & (dibit >> 1)) + 48;      // bit 1
     cc[3] = (1 & dibit) + 48;     // bit 0
 
