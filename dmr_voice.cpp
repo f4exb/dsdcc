@@ -276,7 +276,7 @@ void DSDDMRVoice::processSlot2(int symbolIndex) // Slot2 is a 36 symbol slot
             y++;
             z++;
 
-            storeSymbolDV(i, dibit, false, true); // store dibit for DVSI hardware deoder
+            storeSymbolDV(i, dibit); // store dibit for DVSI hardware decoder
         }
 
         if (mutecurrentslot == 0)
@@ -328,7 +328,7 @@ void DSDDMRVoice::processSlot3(int symbolIndex) // Slot3 is a 18 symbol slot
             y++;
             z++;
 
-            storeSymbolDV(i, dibit, false, true); // store dibit for DVSI hardware deoder
+            storeSymbolDV(i, dibit); // store dibit for DVSI hardware decoder
         }
     }
 }
@@ -404,9 +404,10 @@ void DSDDMRVoice::processSlot4(int symbolIndex) // Slot4 is a 24 symbol slot
     }
 }
 
-void DSDDMRVoice::storeSymbolDV(int dibitindex, unsigned char dibit, bool lsbFirst, bool invertDibit)
+void DSDDMRVoice::storeSymbolDV(int dibitindex, unsigned char dibit, bool invertDibit)
 {
-    if (m_dsdDecoder->m_mbelibEnable) {
+    if (m_dsdDecoder->m_mbelibEnable)
+    {
         return;
     }
 
@@ -415,14 +416,7 @@ void DSDDMRVoice::storeSymbolDV(int dibitindex, unsigned char dibit, bool lsbFir
         dibit = DSDcc::DSDSymbol::invert_dibit(dibit);
     }
 
-    if (lsbFirst)
-    {
-        m_dsdDecoder->m_mbeDVFrame[dibitindex/4] |= (dibit << (2*(dibitindex % 4))); // store bits in order in DVSI frame LSB first
-    }
-    else
-    {
-        m_dsdDecoder->m_mbeDVFrame[8 - (dibitindex/4)] |= (dibit << (6 - 2*(dibitindex % 4))); // store bits in order in DVSI frame MSB first
-    }
+    m_dsdDecoder->m_mbeDVFrame[dibitindex/4] |= (dibit << (6 - 2*(dibitindex % 4)));
 }
 
 void DSDDMRVoice::processSlot5(int symbolIndex) // Slot5 is a 18 symbol slot
@@ -449,7 +443,7 @@ void DSDDMRVoice::processSlot5(int symbolIndex) // Slot5 is a 18 symbol slot
             y++;
             z++;
 
-            storeSymbolDV(i+18, dibit, false, true); // store dibit for DVSI hardware deoder
+            storeSymbolDV(i+18, dibit); // store dibit for DVSI hardware decoder
         }
 
         if (mutecurrentslot == 0)
@@ -502,7 +496,7 @@ void DSDDMRVoice::processSlot6(int symbolIndex) // Slot6 is a 36 symbol slot
             y++;
             z++;
 
-            storeSymbolDV(i, dibit, false, true); // store dibit for DVSI hardware deoder
+            storeSymbolDV(i, dibit); // store dibit for DVSI hardware decoder
         }
 
         if (mutecurrentslot == 0)

@@ -136,7 +136,7 @@ private:
     void processSlot7(int symbolIndex);
     void processSlot8(int symbolIndex);
     void processSlot9(int symbolIndex);
-    void storeSymbolDV(int dibitindex, unsigned char dibit, bool lsbFirst = true, bool invertDibit = false);
+    void storeSymbolDV(int dibitindex, unsigned char dibit, bool invertDibit = false);
 
     DSDDecoder *m_dsdDecoder;
     // extracts AMBE frames from DMR frame
