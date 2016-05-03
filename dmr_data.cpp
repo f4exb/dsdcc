@@ -140,11 +140,11 @@ void DSDDMRData::preProcess()
     }
     else if (strcmp(bursttype, "0001") == 0)
     {
-        sprintf(m_dsdDecoder->m_state.fsubtype, " VOICE Header ");
+        sprintf(m_dsdDecoder->m_state.fsubtype, " VOICE LC Hdr ");
     }
     else if (strcmp(bursttype, "0010") == 0)
     {
-        sprintf(m_dsdDecoder->m_state.fsubtype, " TLC          ");
+        sprintf(m_dsdDecoder->m_state.fsubtype, " Term. LC     ");
     }
     else if (strcmp(bursttype, "0011") == 0)
     {
@@ -156,7 +156,7 @@ void DSDDMRData::preProcess()
     }
     else if (strcmp(bursttype, "0101") == 0)
     {
-        sprintf(m_dsdDecoder->m_state.fsubtype, " MBC          ");
+        sprintf(m_dsdDecoder->m_state.fsubtype, " MBC Cont.    ");
     }
     else if (strcmp(bursttype, "0110") == 0)
     {
@@ -230,11 +230,11 @@ void DSDDMRData::process()
         {
             if (strcmp(m_dsdDecoder->m_state.fsubtype, "              ") == 0)
             {
-                m_dsdDecoder->getLogger().log(" Unknown burst type: %s\n", bursttype);
+                m_dsdDecoder->getLogger().log("DSDDMRData::process: Unknown burst type: %s\n", bursttype);
             }
             else
             {
-                m_dsdDecoder->getLogger().log("%s\n", m_dsdDecoder->m_state.fsubtype);
+                m_dsdDecoder->getLogger().log("DSDDMRData::process: burst type: %s\n", m_dsdDecoder->m_state.fsubtype);
             }
         }
 
