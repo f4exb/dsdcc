@@ -1400,12 +1400,10 @@ int DSDDecoder::getFrameSync()
 
             sprintf(m_state.ftype, "No Sync      ");
             noCarrier();
-            m_mbeRate = DSDMBERateNone;
             return(-1); // done
         }
     }
 
-    m_mbeRate = DSDMBERateNone;
     return(-2); // still searching
 }
 
