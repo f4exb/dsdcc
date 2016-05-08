@@ -244,7 +244,7 @@ public:
     void enableScanResumeAfterTDULCFrames(int nbFrames);
 
     // parameter getters:
-    bool upsampling() const { return m_opts.upsample != 0; }
+    int upsampling() const { return m_opts.upsample; }
 
 private:
     int getFrameSync();

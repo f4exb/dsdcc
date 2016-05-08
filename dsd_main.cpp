@@ -14,14 +14,16 @@
 // along with this program. If not, see <http://www.gnu.org/licenses/>.          //
 ///////////////////////////////////////////////////////////////////////////////////
 
-#include<stdio.h>
-#include<signal.h>
-#include<unistd.h>
+#include <stdio.h>
+#include <signal.h>
+#include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 
 #include "dsd_decoder.h"
+#include "dsd_upsample.h"
+
 #ifdef DSD_USE_SERIALDV
 #include "dvcontroller.h"
 #endif
@@ -116,6 +118,7 @@ int main(int argc, char **argv)
     extern char *optarg;
     extern int optind, opterr, optopt;
     DSDcc::DSDDecoder dsdDecoder;
+    DSDcc::DSDUpsampler upsamplingEngine;
     char in_file[1023];
     int  in_file_fd = -1;
     char out_file[1023];
@@ -472,7 +475,7 @@ int main(int argc, char **argv)
 
 #ifdef DSD_USE_SERIALDV
     SerialDV::DVController dvController;
-    short dvAudioSamples[SerialDV::MBE_AUDIO_BLOCK_SIZE];
+    short dvAudioSamples[SerialDV::MBE_AUDIO_BLOCK_SIZE * 8];
     unsigned char dvMbeSamples[SerialDV::MBE_FRAME_LENGTH_BYTES];
 
     if (!dvSerialDevice.empty())
@@ -507,7 +510,15 @@ int main(int argc, char **argv)
             if (dsdDecoder.mbeDVReady())
             {
                 dvController.decode(dvAudioSamples, (const unsigned char *) dsdDecoder.getMbeDVFrame(), (SerialDV::DVRate) dsdDecoder.getMbeRate());
-                result = write(out_file_fd, (const void *) dvAudioSamples, SerialDV::MBE_AUDIO_BLOCK_BYTES); // TODO: upsampling
+                if (dsdDecoder.upsampling())
+                {
+                    upsamplingEngine.upsample(dsdDecoder.upsampling(), dvAudioSamples, &dvAudioSamples[SerialDV::MBE_AUDIO_BLOCK_SIZE], SerialDV::MBE_AUDIO_BLOCK_SIZE);
+                    result = write(out_file_fd, (const void *) &dvAudioSamples[SerialDV::MBE_AUDIO_BLOCK_SIZE], SerialDV::MBE_AUDIO_BLOCK_BYTES * dsdDecoder.upsampling());
+                }
+                else
+                {
+                    result = write(out_file_fd, (const void *) dvAudioSamples, SerialDV::MBE_AUDIO_BLOCK_BYTES); // TODO: upsampling
+                }
                 dsdDecoder.resetMbeDV();
             }
         }

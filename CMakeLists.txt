@@ -39,6 +39,7 @@ set(dsdcc_SOURCES
     dsd_symbol.cpp
     dstar.cpp
     p25p1_heuristics.cpp
+    dsd_upsample.cpp
 )
 
 set(dsdcc_HEADERS
@@ -54,6 +55,7 @@ set(dsdcc_HEADERS
     dsd_symbol.h
     dstar.h
     p25p1_heuristics.h
+    dsd_upsample.h
 )
 
 include_directories(
