@@ -51,10 +51,10 @@
 #define INV_NXDN_BS_VOICE_SYNC "131311331313331331"
 #define NXDN_BS_VOICE_SYNC     "313133113131113113"
 
-#define DMR_BS_DATA_SYNC  "313333111331131131331131"
-#define DMR_BS_VOICE_SYNC "131111333113313313113313"
-#define DMR_MS_DATA_SYNC  "311131133313133331131113"
-#define DMR_MS_VOICE_SYNC "133313311131311113313331"
+#define DMR_BS_DATA_SYNC  "313333111331131131331131" // DF F5 7D 75 DF 5D
+#define DMR_BS_VOICE_SYNC "131111333113313313113313" // 75 5F D7 DF 75 F7
+#define DMR_MS_DATA_SYNC  "311131133313133331131113" // D5 D7 F7 7F D7 57
+#define DMR_MS_VOICE_SYNC "133313311131311113313331" // 7F 7D 5D D5 7D FD
 
 #define INV_PROVOICE_SYNC    "31313111333133133311331133113311"
 #define PROVOICE_SYNC        "13131333111311311133113311331133"
@@ -65,6 +65,8 @@
 #define DPMR_FS2_SYNC "113333131331"// 5F F7 7D
 #define DPMR_FS3_SYNC "133131333311"// 7D DF F5
 #define DPMR_FS4_SYNC "333111113311313313333131"// FD 55 F5 DF 7F DD
+
+#define YSF_SYNC "31111311313113131131" // D4 71 C9 63 4D => D5 75 DD 77 5D
 
 namespace DSDcc
 {
@@ -88,7 +90,8 @@ public:
         DSDDecodeProVoice,
         DSDDecodeDMR,
         DSDDecodeX2TDMA,
-        DSDDecodeDPMR
+        DSDDecodeDPMR,
+        DSDDecodeYSF
     } DSDDecodeMode;
 
     typedef enum
@@ -282,6 +285,7 @@ private:
     char m_synctest18[19]; //!< for 18 dibits sync word
     char m_synctest32[33]; //!< for 32 dibits sync word
     char m_synctest12[13]; //!< for 12 dibits sync word
+    char m_synctest20[21]; //!< for 20 dibits sync word
     char m_modulation[8];
     char *m_synctest_p;
     char m_synctest_buf[10240];

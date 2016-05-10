@@ -88,6 +88,7 @@ void usage()
     fprintf(stderr, "  -fp           Decode only ProVoice\n");
     fprintf(stderr, "  -fx           Decode only X2-TDMA\n");
     fprintf(stderr, "  -fm           Decode only DPMR Tier 1 or 2 (6.25 kHz)\n");
+    fprintf(stderr, "  -fy           Decode only YSF\n");
     fprintf(stderr, "  -l            Disable DMR/MOTOTRBO and NXDN input filtering\n");
     fprintf(stderr, "  -ma           Auto-select modulation optimizations (default)\n");
     fprintf(stderr, "  -mc           Use only C4FM modulation optimizations\n");
@@ -278,6 +279,11 @@ int main(int argc, char **argv)
             {
                 dsdDecoder.setDecodeMode(DSDcc::DSDDecoder::DSDDecodeDPMR, true);
                 dsdDecoder.setModulationOptimizations(DSDcc::DSDDecoder::DSDModulationOptimGFSK);
+            }
+            else if (optarg[0] == 'y') // YSF
+            {
+                dsdDecoder.setDecodeMode(DSDcc::DSDDecoder::DSDDecodeYSF, true);
+                dsdDecoder.setModulationOptimizations(DSDcc::DSDDecoder::DSDModulationOptimC4FM);
             }
             break;
         case 'm':

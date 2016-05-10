@@ -175,6 +175,11 @@ void DSDDecoder::setDecodeMode(DSDDecodeMode mode, bool on)
         if (on) setDataRate(DSDRate4800);
         m_dsdLogger.log("%s the decoding of X2 TDMA frames.\n", (on ? "Enabling" : "Disabling"));
         break;
+    case DSDDecodeYSF:
+        m_opts.frame_ysf = (on ? 1 : 0);
+        if (on) setDataRate(DSDRate4800);
+        m_dsdLogger.log("%s the decoding of YSF frames.\n", (on ? "Enabling" : "Disabling"));
+        break;
     case DSDDecodeAuto:
         switch (m_dataRate)
         {
@@ -188,6 +193,7 @@ void DSDDecoder::setDecodeMode(DSDDecodeMode mode, bool on)
             m_opts.frame_x2tdma = (on ? 1 : 0);
             m_opts.frame_p25p1 = (on ? 1 : 0);
             m_opts.frame_nxdn96 = (on ? 1 : 0);
+            m_opts.frame_ysf = (on ? 1 : 0);
             break;
         case DSDRate9600:
             m_opts.frame_provoice = (on ? 1 : 0);
@@ -566,6 +572,7 @@ int DSDDecoder::getFrameSync()
      * 21 = +DPMR Tier 1 or 2 FS2 (just sync detection - not implemented yet)
      * 22 = +DPMR Tier 1 or 2 FS3 (just sync detection - not implemented yet)
      * 23 = +DPMR Tier 1 or 2 FS4 (just sync detection - not implemented yet)
+     * 24 = +YSF (just sync detection - not implemented yet)
      */
 
     // smelly while was starting here
@@ -942,6 +949,28 @@ int DSDDecoder::getFrameSync()
                     m_mbeRate = DSDMBERate3600x2450;
                     return(5); // done
                 }
+            }
+        }
+        if (m_opts.frame_ysf == 1)
+        {
+            strncpy(m_synctest20, (m_synctest_p - 19), 20);
+
+            if (strcmp(m_synctest20, YSF_SYNC) == 0)
+            {
+                m_state.carrier = 1;
+                m_state.offset = m_synctest_pos;
+                m_state.max = ((m_state.max) + (m_lmax)) / 2;
+                m_state.min = ((m_state.min) + (m_lmin)) / 2;
+
+                sprintf(m_state.ftype, "+YSF         ");
+
+                if (m_opts.errorbars == 1)
+                {
+                    printFrameSync("+YSF       ", m_synctest_pos + 1, m_modulation);
+                }
+
+                m_state.lastsynctype = 24;
+                return(24);
             }
         }
         if (m_opts.frame_dmr == 1)
