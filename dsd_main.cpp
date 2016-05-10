@@ -20,6 +20,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <math.h>
 
 #include "dsd_decoder.h"
 #include "dsd_upsample.h"
@@ -131,6 +132,7 @@ int main(int argc, char **argv)
     log_file[0] = '\0';
     char serialDevice[16];
     std::string dvSerialDevice;
+    int dvGain_dB = 0;
 
     fprintf(stderr, "Digital Speech Decoder DSDcc\n");
 
@@ -213,6 +215,11 @@ int main(int argc, char **argv)
             float gain;
             sscanf(optarg, "%f", &gain);
             dsdDecoder.setAudioGain(gain);
+#ifdef DSD_USE_SERIALDV
+            if (gain > 0) {
+                dvGain_dB = (int) (10.0f * log10f(gain));
+            }
+#endif
             break;
         case 'n':
             dsdDecoder.enableAudioOut(false);
@@ -429,7 +436,7 @@ int main(int argc, char **argv)
         {
             if (dsdDecoder.mbeDVReady())
             {
-                dvController.decode(dvAudioSamples, (const unsigned char *) dsdDecoder.getMbeDVFrame(), (SerialDV::DVRate) dsdDecoder.getMbeRate());
+                dvController.decode(dvAudioSamples, (const unsigned char *) dsdDecoder.getMbeDVFrame(), (SerialDV::DVRate) dsdDecoder.getMbeRate(), dvGain_dB);
                 if (dsdDecoder.upsampling())
                 {
                     upsamplingEngine.upsample(dsdDecoder.upsampling(), dvAudioSamples, &dvAudioSamples[SerialDV::MBE_AUDIO_BLOCK_SIZE], SerialDV::MBE_AUDIO_BLOCK_SIZE);
