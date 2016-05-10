@@ -31,7 +31,8 @@ DSDDecoder::DSDDecoder() :
         m_mbeDecoder(this),
         m_dsdDMRVoice(this),
         m_dsdDMRData(this),
-        m_dsdDstar(this)
+        m_dsdDstar(this),
+        m_dataRate(DSDRate4800)
 {
     resetFrameSync();
     noCarrier();
@@ -119,31 +120,80 @@ void DSDDecoder::muteEncryptedP25(bool on)
 
 void DSDDecoder::setDecodeMode(DSDDecodeMode mode, bool on)
 {
-    switch(mode) // retain only supported modes
+    switch(mode)
     {
+    case DSDDecodeNone:
+        if (on)
+        {
+            m_opts.frame_dmr = 0;
+            m_opts.frame_dstar = 0;
+            m_opts.frame_p25p1 = 0;
+            m_opts.frame_nxdn48 = 0;
+            m_opts.frame_nxdn96 = 0;
+            m_opts.frame_provoice = 0;
+            m_opts.frame_x2tdma = 0;
+            setDataRate(DSDRate4800);
+        }
+        break;
     case DSDDecodeDMR:
         m_opts.frame_dmr = (on ? 1 : 0);
+        if (on) setDataRate(DSDRate4800);
         m_dsdLogger.log("%s the decoding of DMR/MOTOTRBO frames.\n", (on ? "Enabling" : "Disabling"));
         break;
     case DSDDecodeDStar:
         m_opts.frame_dstar = (on ? 1 : 0);
+        if (on) setDataRate(DSDRate4800);
         m_dsdLogger.log("%s the decoding of D-Star frames.\n", (on ? "Enabling" : "Disabling"));
         break;
+    case DSDDecodeP25P1:
+        m_opts.frame_p25p1 = (on ? 1 : 0);
+        if (on) setDataRate(DSDRate4800);
+        m_dsdLogger.log("%s the decoding of P25p1 frames.\n", (on ? "Enabling" : "Disabling"));
+        break;
+    case DSDDecodeNXDN48:
+        m_opts.frame_nxdn48 = (on ? 1 : 0);
+        if (on) setDataRate(DSDRate2400); else setDataRate(DSDRate4800);
+        m_dsdLogger.log("%s the decoding of NXDN48 frames.\n", (on ? "Enabling" : "Disabling"));
+        break;
+    case DSDDecodeNXDN96:
+        m_opts.frame_nxdn96 = (on ? 1 : 0);
+        if (on) setDataRate(DSDRate4800);
+        m_dsdLogger.log("%s the decoding of NXDN96 frames.\n", (on ? "Enabling" : "Disabling"));
+        break;
+    case DSDDecodeProVoice:
+        m_opts.frame_provoice = (on ? 1 : 0);
+        if (on) setDataRate(DSDRate9600); else setDataRate(DSDRate4800);
+        m_dsdLogger.log("%s the decoding of Pro Voice frames.\n", (on ? "Enabling" : "Disabling"));
+        break;
+    case DSDDecodeX2TDMA:
+        m_opts.frame_x2tdma = (on ? 1 : 0);
+        if (on) setDataRate(DSDRate4800);
+        m_dsdLogger.log("%s the decoding of X2 TDMA frames.\n", (on ? "Enabling" : "Disabling"));
+        break;
     case DSDDecodeAuto:
-        m_opts.frame_dmr = (on ? 1 : 0);
-        m_opts.frame_dstar = (on ? 1 : 0);
-        // Effective only for presently supported formats
-//        m_opts.frame_x2tdma = (on ? 1 : 0);
-//        m_opts.frame_p25p1 = (on ? 1 : 0);
-//        m_opts.frame_nxdn48 = (on ? 1 : 0);
-//        m_opts.frame_nxdn96 = (on ? 1 : 0);
-//        m_opts.frame_provoice = (on ? 1 : 0);
-        // unsupported formats (yet):
-        m_opts.frame_x2tdma = 0;
-        m_opts.frame_p25p1 = 0;
-        m_opts.frame_nxdn48 = 0;
-        m_opts.frame_nxdn96 = 0;
-        m_opts.frame_provoice = 0;
+        switch (m_dataRate)
+        {
+        case DSDRate2400:
+            m_opts.frame_nxdn48 = (on ? 1 : 0);
+            break;
+        case DSDRate4800:
+            m_opts.frame_dmr = (on ? 1 : 0);
+            m_opts.frame_dstar = (on ? 1 : 0);
+            m_opts.frame_x2tdma = (on ? 1 : 0);
+            m_opts.frame_p25p1 = (on ? 1 : 0);
+            m_opts.frame_nxdn96 = (on ? 1 : 0);
+            break;
+        case DSDRate9600:
+            m_opts.frame_provoice = (on ? 1 : 0);
+            break;
+        default:
+            m_opts.frame_dmr = (on ? 1 : 0);
+            m_opts.frame_dstar = (on ? 1 : 0);
+            m_opts.frame_x2tdma = (on ? 1 : 0);
+            m_opts.frame_p25p1 = (on ? 1 : 0);
+            m_opts.frame_nxdn96 = (on ? 1 : 0);
+            break;
+        }
         m_dsdLogger.log("%s auto frame decoding.\n", (on ? "Enabling" : "Disabling"));
         break;
     default:
@@ -297,6 +347,27 @@ void DSDDecoder::enableScanResumeAfterTDULCFrames(int nbFrames)
 {
     m_opts.resume = nbFrames;
     m_dsdLogger.log("Enabling scan resume after %i TDULC frames\n", m_opts.resume);
+}
+
+void DSDDecoder::setDataRate(DSDRate dataRate)
+{
+    m_dataRate = dataRate;
+
+    switch(dataRate)
+    {
+    case DSDRate2400:
+        m_state.samplesPerSymbol = 20;
+        break;
+    case DSDRate4800:
+        m_state.samplesPerSymbol = 10;
+        break;
+    case DSDRate9600:
+        m_state.samplesPerSymbol = 5;
+        break;
+    default:
+        m_state.samplesPerSymbol = 10;
+        break;
+    }
 }
 
 void DSDDecoder::run(short sample)

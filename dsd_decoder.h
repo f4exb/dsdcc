@@ -87,6 +87,13 @@ public:
 
     typedef enum
     {
+        DSDRate2400,
+        DSDRate4800,
+        DSDRate9600
+    } DSDRate;
+
+    typedef enum
+    {
         DSDModulationOptimAuto,
         DSDModulationOptimGFSK,
         DSDModulationOptimQPSK,
@@ -216,6 +223,7 @@ public:
     unsigned char getColorCode() const { return m_state.ccnum; }
     int getInLevel() const { return (int) m_state.max / 164; }
     int getSamplesPerSymbol() const { return m_state.samplesPerSymbol; }
+    DSDRate getDataRate() const { return m_dataRate; };
     const DSDDstar& getDStarDecoder() const { return m_dsdDstar; }
     void enableMbelib(bool enable) { m_mbelibEnable = enable; }
 
@@ -242,6 +250,7 @@ public:
     void enableCosineFiltering(bool on);
     void enableAudioOut(bool on);
     void enableScanResumeAfterTDULCFrames(int nbFrames);
+    void setDataRate(DSDRate dataRate);
 
     // parameter getters:
     int upsampling() const { return m_opts.upsample; }
@@ -289,6 +298,7 @@ private:
     DSDDMRVoice m_dsdDMRVoice;
     DSDDMRData m_dsdDMRData;
     DSDDstar m_dsdDstar;
+    DSDRate m_dataRate;
 };
 
 } // namespace dsdcc
