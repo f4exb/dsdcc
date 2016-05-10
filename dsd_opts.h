@@ -47,6 +47,7 @@ public:
     int frame_nxdn96;
     int frame_dmr;
     int frame_provoice;
+    int frame_dpmr;
     int mod_c4fm;
     int mod_qpsk;
     int mod_gfsk;

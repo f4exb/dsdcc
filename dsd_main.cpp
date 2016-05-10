@@ -83,10 +83,11 @@ void usage()
     fprintf(stderr, "  -fr           Decode only DMR/MOTOTRBO\n");
     fprintf(stderr, "  -fd           Decode only D-STAR\n");
     fprintf(stderr, "  -f1           Decode only P25 Phase 1\n");
-    fprintf(stderr, "  -fi           Decode only NXDN48* (6.25 kHz) / IDAS*\n");
+    fprintf(stderr, "  -fi           Decode only NXDN48 (6.25 kHz) / IDAS*\n");
     fprintf(stderr, "  -fn           Decode only NXDN96 (12.5 kHz)\n");
-    fprintf(stderr, "  -fp           Decode only ProVoice*\n");
+    fprintf(stderr, "  -fp           Decode only ProVoice\n");
     fprintf(stderr, "  -fx           Decode only X2-TDMA\n");
+    fprintf(stderr, "  -fm           Decode only DPMR Tier 1 or 2 (6.25 kHz)\n");
     fprintf(stderr, "  -l            Disable DMR/MOTOTRBO and NXDN input filtering\n");
     fprintf(stderr, "  -ma           Auto-select modulation optimizations (default)\n");
     fprintf(stderr, "  -mc           Use only C4FM modulation optimizations\n");
@@ -96,8 +97,6 @@ void usage()
     fprintf(stderr, "  -u <num>      Unvoiced speech quality (default=3)\n");
     fprintf(stderr, "  -xx           Expect non-inverted X2-TDMA signal\n");
     fprintf(stderr, "  -xr           Expect inverted DMR/MOTOTRBO signal\n");
-    fprintf(stderr, "\n");
-    fprintf(stderr, "  * denotes frame types that cannot be auto-detected.\n");
     fprintf(stderr, "\n");
     fprintf(stderr, "Advanced decoder options:\n");
     fprintf(stderr,
@@ -261,7 +260,7 @@ int main(int argc, char **argv)
                 dsdDecoder.setDecodeMode(DSDcc::DSDDecoder::DSDDecodeProVoice, true);
                 dsdDecoder.setModulationOptimizations(DSDcc::DSDDecoder::DSDModulationOptimGFSK);
             }
-            else if (optarg[0] == '1') // P25 Phase 1
+            else if (optarg[0] == '0') // P25 Phase 1
             {
                 dsdDecoder.setDecodeMode(DSDcc::DSDDecoder::DSDDecodeP25P1, true);
             }
@@ -273,6 +272,11 @@ int main(int argc, char **argv)
             else if (optarg[0] == 'n') // NXDN96
             {
                 dsdDecoder.setDecodeMode(DSDcc::DSDDecoder::DSDDecodeNXDN96, true);
+                dsdDecoder.setModulationOptimizations(DSDcc::DSDDecoder::DSDModulationOptimGFSK);
+            }
+            else if (optarg[0] == 'm') // DPMR Tier 1 or 2
+            {
+                dsdDecoder.setDecodeMode(DSDcc::DSDDecoder::DSDDecodeDPMR, true);
                 dsdDecoder.setModulationOptimizations(DSDcc::DSDDecoder::DSDModulationOptimGFSK);
             }
             break;

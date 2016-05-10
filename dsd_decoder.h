@@ -61,6 +61,11 @@
 #define INV_PROVOICE_EA_SYNC "13313133113113333311313133133311"
 #define PROVOICE_EA_SYNC     "31131311331331111133131311311133"
 
+#define DPMR_FS1_SYNC "111333331133131131111313" // 57 FF 5F 75 D5 77
+#define DPMR_FS2_SYNC "113333131331"// 5F F7 7D
+#define DPMR_FS3_SYNC "133131333311"// 7D DF F5
+#define DPMR_FS4_SYNC "333111113311313313333131"// FD 55 F5 DF 7F DD
+
 namespace DSDcc
 {
 
@@ -82,7 +87,8 @@ public:
         DSDDecodeNXDN96,
         DSDDecodeProVoice,
         DSDDecodeDMR,
-        DSDDecodeX2TDMA
+        DSDDecodeX2TDMA,
+        DSDDecodeDPMR
     } DSDDecodeMode;
 
     typedef enum
@@ -272,9 +278,10 @@ private:
     // sync engine:
     int m_sync; //!< The current internal sync type
     int m_dibit, m_synctest_pos, m_lastt;
-    char m_synctest[25];
-    char m_synctest18[19];
-    char m_synctest32[33];
+    char m_synctest[25];   //!< for default 24 dibits sync word
+    char m_synctest18[19]; //!< for 18 dibits sync word
+    char m_synctest32[33]; //!< for 32 dibits sync word
+    char m_synctest12[13]; //!< for 12 dibits sync word
     char m_modulation[8];
     char *m_synctest_p;
     char m_synctest_buf[10240];

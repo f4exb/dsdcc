@@ -132,7 +132,7 @@ void DSDDecoder::setDecodeMode(DSDDecodeMode mode, bool on)
             m_opts.frame_nxdn96 = 0;
             m_opts.frame_provoice = 0;
             m_opts.frame_x2tdma = 0;
-            setDataRate(DSDRate4800);
+            m_opts.frame_dpmr = 0;
         }
         break;
     case DSDDecodeDMR:
@@ -149,6 +149,11 @@ void DSDDecoder::setDecodeMode(DSDDecodeMode mode, bool on)
         m_opts.frame_p25p1 = (on ? 1 : 0);
         if (on) setDataRate(DSDRate4800);
         m_dsdLogger.log("%s the decoding of P25p1 frames.\n", (on ? "Enabling" : "Disabling"));
+        break;
+    case DSDDecodeDPMR:
+        m_opts.frame_dpmr = (on ? 1 : 0);
+        if (on) setDataRate(DSDRate2400); else setDataRate(DSDRate4800);
+        m_dsdLogger.log("%s the decoding of DPMR Tier 1 or 2 frames.\n", (on ? "Enabling" : "Disabling"));
         break;
     case DSDDecodeNXDN48:
         m_opts.frame_nxdn48 = (on ? 1 : 0);
@@ -175,6 +180,7 @@ void DSDDecoder::setDecodeMode(DSDDecodeMode mode, bool on)
         {
         case DSDRate2400:
             m_opts.frame_nxdn48 = (on ? 1 : 0);
+            m_opts.frame_dpmr = (on ? 1 : 0);
             break;
         case DSDRate4800:
             m_opts.frame_dmr = (on ? 1 : 0);
@@ -358,18 +364,22 @@ void DSDDecoder::setDataRate(DSDRate dataRate)
     case DSDRate2400:
         m_dsdLogger.log("Set data rate to 2400 bauds. 20 samples per symbol\n");
         m_state.samplesPerSymbol = 20;
+        m_state.symbolCenter = 10;
         break;
     case DSDRate4800:
         m_dsdLogger.log("Set data rate to 4800 bauds. 10 samples per symbol\n");
         m_state.samplesPerSymbol = 10;
+        m_state.symbolCenter = 4;
         break;
     case DSDRate9600:
         m_dsdLogger.log("Set data rate to 9600 bauds. 5 samples per symbol\n");
         m_state.samplesPerSymbol = 5;
+        m_state.symbolCenter = 2;
         break;
     default:
         m_dsdLogger.log("Set default data rate to 4800 bauds. 10 samples per symbol\n");
         m_state.samplesPerSymbol = 10;
+        m_state.symbolCenter = 4;
         break;
     }
 }
@@ -532,16 +542,16 @@ int DSDDecoder::getFrameSync()
     /* detects frame sync and returns frame type
      * -2 = in progress
      * -1 = no sync
-     * 0 = +P25p1
-     * 1 = -P25p1
-     * 2 = +X2-TDMA (non inverted signal data frame)
-     * 3 = +X2-TDMA (inverted signal voice frame)
-     * 4 = -X2-TDMA (non inverted signal voice frame)
-     * 5 = -X2-TDMA (inverted signal data frame)
-     * 6 = +D-STAR
-     * 7 = -D-STAR
-     * 8 = +NXDN (non inverted voice frame)
-     * 9 = -NXDN (inverted voice frame)
+     * 0  = +P25p1
+     * 1  = -P25p1
+     * 2  = +X2-TDMA (non inverted signal data frame)
+     * 3  = +X2-TDMA (inverted signal voice frame)
+     * 4  = -X2-TDMA (non inverted signal voice frame)
+     * 5  = -X2-TDMA (inverted signal data frame)
+     * 6  = +D-STAR
+     * 7  = -D-STAR
+     * 8  = +NXDN (non inverted voice frame)
+     * 9  = -NXDN (inverted voice frame)
      * 10 = +DMR (non inverted singlan data frame)
      * 11 = -DMR (inverted signal voice frame)
      * 12 = +DMR (non inverted signal voice frame)
@@ -552,6 +562,10 @@ int DSDDecoder::getFrameSync()
      * 17 = -NXDN (inverted data frame)
      * 18 = +D-STAR_HD
      * 19 = -D-STAR_HD
+     * 20 = +DPMR Tier 1 or 2 FS1 (just sync detection - not implemented yet)
+     * 21 = +DPMR Tier 1 or 2 FS2 (just sync detection - not implemented yet)
+     * 22 = +DPMR Tier 1 or 2 FS3 (just sync detection - not implemented yet)
+     * 23 = +DPMR Tier 1 or 2 FS4 (just sync detection - not implemented yet)
      */
 
     // smelly while was starting here
@@ -1258,6 +1272,82 @@ int DSDDecoder::getFrameSync()
 //                {
 //                    m_state.lastsynctype = 17;
 //                }
+            }
+        }
+        if (m_opts.frame_dpmr == 1)
+        {
+            if (strcmp(m_synctest, DPMR_FS1_SYNC) == 0)
+            {
+                m_state.carrier = 1;
+                m_state.offset = m_synctest_pos;
+                m_state.max = ((m_state.max) + m_lmax) / 2;
+                m_state.min = ((m_state.min) + m_lmin) / 2;
+
+                sprintf(m_state.ftype, "+DPMR-FS1    ");
+
+                if (m_opts.errorbars == 1)
+                {
+                    printFrameSync("+DPMR-FS1  ", m_synctest_pos + 1, m_modulation);
+                }
+
+                m_state.lastsynctype = 20;
+                return(20);
+            }
+            else if (strcmp(m_synctest, DPMR_FS4_SYNC) == 0)
+            {
+                m_state.carrier = 1;
+                m_state.offset = m_synctest_pos;
+                m_state.max = ((m_state.max) + m_lmax) / 2;
+                m_state.min = ((m_state.min) + m_lmin) / 2;
+
+                sprintf(m_state.ftype, "+DPMR-FS4    ");
+
+                if (m_opts.errorbars == 1)
+                {
+                    printFrameSync("+DPMR-FS4  ", m_synctest_pos + 1, m_modulation);
+                }
+
+                m_state.lastsynctype = 23;
+                return(23);
+            }
+            else
+            {
+                strncpy(m_synctest12, (m_synctest_p - 11), 12);
+
+                if (strcmp(m_synctest12, DPMR_FS2_SYNC) == 0)
+                {
+                    m_state.carrier = 1;
+                    m_state.offset = m_synctest_pos;
+                    m_state.max = ((m_state.max) + m_lmax) / 2;
+                    m_state.min = ((m_state.min) + m_lmin) / 2;
+
+                    sprintf(m_state.ftype, "+DPMR-FS2    ");
+
+                    if (m_opts.errorbars == 1)
+                    {
+                        printFrameSync("+DPMR-FS2  ", m_synctest_pos + 1, m_modulation);
+                    }
+
+                    m_state.lastsynctype = 21;
+                    return(21);
+                }
+                else if (strcmp(m_synctest12, DPMR_FS3_SYNC) == 0)
+                {
+                    m_state.carrier = 1;
+                    m_state.offset = m_synctest_pos;
+                    m_state.max = ((m_state.max) + m_lmax) / 2;
+                    m_state.min = ((m_state.min) + m_lmin) / 2;
+
+                    sprintf(m_state.ftype, "+DPMR-FS3    ");
+
+                    if (m_opts.errorbars == 1)
+                    {
+                        printFrameSync("+DPMR-FS3  ", m_synctest_pos + 1, m_modulation);
+                    }
+
+                    m_state.lastsynctype = 22;
+                    return(22);
+                }
             }
         }
         if (m_opts.frame_dstar == 1)
