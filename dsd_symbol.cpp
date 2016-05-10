@@ -104,14 +104,19 @@ bool DSDSymbol::pushSample(short sample, int have_sync)
     // process sample
     if (m_dsdDecoder->m_opts.use_cosine_filter)
     {
-        if (m_dsdDecoder->m_state.lastsynctype >= 10 && m_dsdDecoder->m_state.lastsynctype <= 13)
+        if (m_dsdDecoder->m_state.lastsynctype >= 10 && m_dsdDecoder->m_state.lastsynctype <= 13)              // all DMR
         {
-            sample = m_dsdFilters.dmr_filter(sample);
+            sample = m_dsdFilters.dmr_filter(sample);  // 12.5 kHz for DMR
         }
-        else if (m_dsdDecoder->m_state.lastsynctype == 8  || m_dsdDecoder->m_state.lastsynctype == 9
-              || m_dsdDecoder->m_state.lastsynctype == 16 || m_dsdDecoder->m_state.lastsynctype == 17)
+        else if (m_dsdDecoder->m_state.lastsynctype == 8  || m_dsdDecoder->m_state.lastsynctype == 9           // +/-NXDN voice
+              || m_dsdDecoder->m_state.lastsynctype == 16 || m_dsdDecoder->m_state.lastsynctype == 17          // +/-NXDN data
+              || ((m_dsdDecoder->m_state.lastsynctype >= 20) && (m_dsdDecoder->m_state.lastsynctype >= 23)))   // +DPMR FS1,2,3,4
         {
-            sample = m_dsdFilters.nxdn_filter(sample);
+            if (m_dsdDecoder->m_state.samplesPerSymbol == 20) {
+                sample = m_dsdFilters.nxdn_filter(sample); // 6.25 kHz for NXDN48 / DPMR
+            } else {
+                sample = m_dsdFilters.dmr_filter(sample);  // 12.5 kHz for NXDN96
+            }
         }
     }
 
