@@ -356,15 +356,19 @@ void DSDDecoder::setDataRate(DSDRate dataRate)
     switch(dataRate)
     {
     case DSDRate2400:
+        m_dsdLogger.log("Set data rate to 2400 bauds. 20 samples per symbol\n");
         m_state.samplesPerSymbol = 20;
         break;
     case DSDRate4800:
+        m_dsdLogger.log("Set data rate to 4800 bauds. 10 samples per symbol\n");
         m_state.samplesPerSymbol = 10;
         break;
     case DSDRate9600:
+        m_dsdLogger.log("Set data rate to 9600 bauds. 5 samples per symbol\n");
         m_state.samplesPerSymbol = 5;
         break;
     default:
+        m_dsdLogger.log("Set default data rate to 4800 bauds. 10 samples per symbol\n");
         m_state.samplesPerSymbol = 10;
         break;
     }
@@ -1076,15 +1080,14 @@ int DSDDecoder::getFrameSync()
             if ((strcmp(m_synctest18, NXDN_BS_VOICE_SYNC) == 0)
              || (strcmp(m_synctest18, NXDN_MS_VOICE_SYNC) == 0))
             {
-
                 if (strcmp(m_synctest, NXDN_BS_VOICE_SYNC) == 0) {
                     m_stationType = DSDBaseStation;
                 } else {
                     m_stationType = DSDMobileStation;
                 }
 
-                if ((m_state.lastsynctype == 8)
-                 || (m_state.lastsynctype == 16))
+//                if ((m_state.lastsynctype == 8)
+//                 || (m_state.lastsynctype == 16))
                 {
                     m_state.carrier = 1;
                     m_state.offset = m_synctest_pos;
@@ -1114,10 +1117,10 @@ int DSDDecoder::getFrameSync()
                     m_mbeRate = DSDMBERate3600x2450;
                     return(8); // done
                 }
-                else
-                {
-                    m_state.lastsynctype = 8;
-                }
+//                else
+//                {
+//                    m_state.lastsynctype = 8;
+//                }
             }
             else if ((strcmp(m_synctest18, INV_NXDN_BS_VOICE_SYNC) == 0)
                   || (strcmp(m_synctest18, INV_NXDN_MS_VOICE_SYNC) == 0))
@@ -1128,8 +1131,8 @@ int DSDDecoder::getFrameSync()
                     m_stationType = DSDMobileStation;
                 }
 
-                if ((m_state.lastsynctype == 9)
-                 || (m_state.lastsynctype == 17))
+//                if ((m_state.lastsynctype == 9)
+//                 || (m_state.lastsynctype == 17))
                 {
                     m_state.carrier = 1;
                     m_state.offset = m_synctest_pos;
@@ -1159,10 +1162,10 @@ int DSDDecoder::getFrameSync()
                     m_mbeRate = DSDMBERate3600x2450;
                     return(9); // done
                 }
-                else
-                {
-                    m_state.lastsynctype = 9;
-                }
+//                else
+//                {
+//                    m_state.lastsynctype = 9;
+//                }
             }
             else if ((strcmp(m_synctest18, NXDN_BS_DATA_SYNC) == 0)
                   || (strcmp(m_synctest18, NXDN_MS_DATA_SYNC) == 0))
@@ -1173,8 +1176,8 @@ int DSDDecoder::getFrameSync()
                     m_stationType = DSDMobileStation;
                 }
 
-                if ((m_state.lastsynctype == 8)
-                        || (m_state.lastsynctype == 16))
+//                if ((m_state.lastsynctype == 8)
+//                        || (m_state.lastsynctype == 16))
                 {
                     m_state.carrier = 1;
                     m_state.offset = m_synctest_pos;
@@ -1204,10 +1207,10 @@ int DSDDecoder::getFrameSync()
                     m_mbeRate = DSDMBERate3600x2450;
                     return(16); // done
                 }
-                else
-                {
-                    m_state.lastsynctype = 16;
-                }
+//                else
+//                {
+//                    m_state.lastsynctype = 16;
+//                }
             }
             else if ((strcmp(m_synctest18, INV_NXDN_BS_DATA_SYNC) == 0)
                   || (strcmp(m_synctest18, INV_NXDN_MS_DATA_SYNC) == 0))
@@ -1218,8 +1221,8 @@ int DSDDecoder::getFrameSync()
                     m_stationType = DSDMobileStation;
                 }
 
-                if ((m_state.lastsynctype == 9)
-                        || (m_state.lastsynctype == 17))
+//                if ((m_state.lastsynctype == 9)
+//                        || (m_state.lastsynctype == 17))
                 {
                     m_state.carrier = 1;
                     m_state.offset = m_synctest_pos;
@@ -1251,10 +1254,10 @@ int DSDDecoder::getFrameSync()
                     m_mbeRate = DSDMBERate3600x2450;
                     return(17); // done
                 }
-                else
-                {
-                    m_state.lastsynctype = 17;
-                }
+//                else
+//                {
+//                    m_state.lastsynctype = 17;
+//                }
             }
         }
         if (m_opts.frame_dstar == 1)
