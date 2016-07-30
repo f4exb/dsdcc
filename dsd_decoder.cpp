@@ -569,8 +569,8 @@ int DSDDecoder::getFrameSync()
      * 18 = +D-STAR_HD
      * 19 = -D-STAR_HD
      * 20 = +DPMR Tier 1 or 2 FS1 (just sync detection - not implemented yet)
-     * 21 = +DPMR Tier 1 or 2 FS2 (just sync detection - not implemented yet)
-     * 22 = +DPMR Tier 1 or 2 FS3 (just sync detection - not implemented yet)
+     * 21 = +DPMR Tier 1 or 2 FS2 (just sync detection - not implemented yet - disabled)
+     * 22 = +DPMR Tier 1 or 2 FS3 (just sync detection - not implemented yet - disabled)
      * 23 = +DPMR Tier 1 or 2 FS4 (just sync detection - not implemented yet)
      * 24 = +YSF (just sync detection - not implemented yet)
      */
@@ -1339,45 +1339,46 @@ int DSDDecoder::getFrameSync()
                 m_state.lastsynctype = 23;
                 return(23);
             }
-            else
-            {
-                strncpy(m_synctest12, (m_synctest_p - 11), 12);
-
-                if (strcmp(m_synctest12, DPMR_FS2_SYNC) == 0)
-                {
-                    m_state.carrier = 1;
-                    m_state.offset = m_synctest_pos;
-                    m_state.max = ((m_state.max) + m_lmax) / 2;
-                    m_state.min = ((m_state.min) + m_lmin) / 2;
-
-                    sprintf(m_state.ftype, "+DPMR-FS2    ");
-
-                    if (m_opts.errorbars == 1)
-                    {
-                        printFrameSync("+DPMR-FS2  ", m_synctest_pos + 1, m_modulation);
-                    }
-
-                    m_state.lastsynctype = 21;
-                    return(21);
-                }
-                else if (strcmp(m_synctest12, DPMR_FS3_SYNC) == 0)
-                {
-                    m_state.carrier = 1;
-                    m_state.offset = m_synctest_pos;
-                    m_state.max = ((m_state.max) + m_lmax) / 2;
-                    m_state.min = ((m_state.min) + m_lmin) / 2;
-
-                    sprintf(m_state.ftype, "+DPMR-FS3    ");
-
-                    if (m_opts.errorbars == 1)
-                    {
-                        printFrameSync("+DPMR-FS3  ", m_synctest_pos + 1, m_modulation);
-                    }
-
-                    m_state.lastsynctype = 22;
-                    return(22);
-                }
-            }
+            // Deactivate too short syncs at top level for now
+//            else
+//            {
+//                strncpy(m_synctest12, (m_synctest_p - 11), 12);
+//
+//                if (strcmp(m_synctest12, DPMR_FS2_SYNC) == 0)
+//                {
+//                    m_state.carrier = 1;
+//                    m_state.offset = m_synctest_pos;
+//                    m_state.max = ((m_state.max) + m_lmax) / 2;
+//                    m_state.min = ((m_state.min) + m_lmin) / 2;
+//
+//                    sprintf(m_state.ftype, "+DPMR-FS2    ");
+//
+//                    if (m_opts.errorbars == 1)
+//                    {
+//                        printFrameSync("+DPMR-FS2  ", m_synctest_pos + 1, m_modulation);
+//                    }
+//
+//                    m_state.lastsynctype = 21;
+//                    return(21);
+//                }
+//                else if (strcmp(m_synctest12, DPMR_FS3_SYNC) == 0)
+//                {
+//                    m_state.carrier = 1;
+//                    m_state.offset = m_synctest_pos;
+//                    m_state.max = ((m_state.max) + m_lmax) / 2;
+//                    m_state.min = ((m_state.min) + m_lmin) / 2;
+//
+//                    sprintf(m_state.ftype, "+DPMR-FS3    ");
+//
+//                    if (m_opts.errorbars == 1)
+//                    {
+//                        printFrameSync("+DPMR-FS3  ", m_synctest_pos + 1, m_modulation);
+//                    }
+//
+//                    m_state.lastsynctype = 22;
+//                    return(22);
+//                }
+//            }
         }
         if (m_opts.frame_dstar == 1)
         {
