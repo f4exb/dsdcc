@@ -32,6 +32,7 @@ DSDDecoder::DSDDecoder() :
         m_dsdDMRVoice(this),
         m_dsdDMRData(this),
         m_dsdDstar(this),
+        m_dsdYSF(this),
         m_dataRate(DSDRate4800)
 {
     resetFrameSync();
@@ -447,6 +448,9 @@ void DSDDecoder::run(short sample)
         case DSDprocessDSTAR_HD:
             m_dsdDstar.processHD();
             break;
+        case DSDprocessYSF:
+            m_dsdYSF.process();
+            break;
         default:
             break;
         }
@@ -466,7 +470,7 @@ void DSDDecoder::processFrameInit()
         m_state.minref = m_state.min;
     }
 
-    if ((m_state.synctype >= 10) && (m_state.synctype <= 13))
+    if ((m_state.synctype >= 10) && (m_state.synctype <= 13)) // DMR
     {
         m_state.nac = 0;
         m_state.lastsrc = 0;
@@ -496,7 +500,7 @@ void DSDDecoder::processFrameInit()
             m_fsmState = DSDprocessDMRdata;
         }
     }
-    else if ((m_state.synctype == 6) || (m_state.synctype == 7))
+    else if ((m_state.synctype == 6) || (m_state.synctype == 7)) // D-Star voice
     {
         m_state.nac = 0;
         m_state.lastsrc = 0;
@@ -517,7 +521,7 @@ void DSDDecoder::processFrameInit()
         m_dsdDstar.process(); // process current symbol first
         m_fsmState = DSDprocessDSTAR;
     }
-    else if ((m_state.synctype == 18) || (m_state.synctype == 19))
+    else if ((m_state.synctype == 18) || (m_state.synctype == 19)) // D-Star header
     {
         m_state.nac = 0;
         m_state.lastsrc = 0;
@@ -537,6 +541,27 @@ void DSDDecoder::processFrameInit()
         m_dsdDstar.init();
         m_dsdDstar.processHD(); // process current symbol first
         m_fsmState = DSDprocessDSTAR_HD;
+    }
+    else if (m_state.synctype == 24) // YSF
+    {
+        m_state.nac = 0;
+        m_state.lastsrc = 0;
+        m_state.lasttg = 0;
+
+        if (m_opts.errorbars == 1)
+        {
+            if (m_opts.verbose > 0)
+            {
+                int level = (int) m_state.max / 164;
+                m_dsdLogger.log("inlvl: %2i%% ", level);
+            }
+        }
+
+        m_state.nac = 0;
+        sprintf(m_state.fsubtype, " ANY          ");
+        m_dsdYSF.init();
+        m_dsdYSF.process();
+        m_fsmState = DSDprocessYSF;
     }
     else
     {
@@ -1114,7 +1139,7 @@ int DSDDecoder::getFrameSync()
 
                 m_state.lastsynctype = 15;
                 m_mbeRate = DSDMBERate3600x2450;
-                return(15); // done
+                return(15); // donesynctype
             }
 
         }

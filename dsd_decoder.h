@@ -25,6 +25,7 @@
 #include "dmr_voice.h"
 #include "dmr_data.h"
 #include "dstar.h"
+#include "ysf.h"
 
 /*
  * Frame sync patterns
@@ -78,6 +79,7 @@ class DSDDecoder
     friend class DSDDMRVoice;
     friend class DSDDMRData;
     friend class DSDDstar;
+    friend class DSDYSF;
 public:
     typedef enum
     {
@@ -131,6 +133,7 @@ public:
         DSDprocessX2TDMAvoice,
         DSDprocessX2TDMAdata,
         DSDprocessProVoice,
+        DSDprocessYSF,
         DSDprocessUnknown
     } DSDFSMState;
 
@@ -309,6 +312,7 @@ private:
     DSDDMRVoice m_dsdDMRVoice;
     DSDDMRData m_dsdDMRData;
     DSDDstar m_dsdDstar;
+    DSDYSF m_dsdYSF;
     DSDRate m_dataRate;
 };
 
