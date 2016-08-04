@@ -133,6 +133,7 @@ void DSDDecoder::setDecodeMode(DSDDecodeMode mode, bool on)
             m_opts.frame_provoice = 0;
             m_opts.frame_x2tdma = 0;
             m_opts.frame_dpmr = 0;
+            m_opts.frame_ysf = 0;
         }
         break;
     case DSDDecodeDMR:
@@ -204,6 +205,7 @@ void DSDDecoder::setDecodeMode(DSDDecodeMode mode, bool on)
             m_opts.frame_x2tdma = (on ? 1 : 0);
             m_opts.frame_p25p1 = (on ? 1 : 0);
             m_opts.frame_nxdn96 = (on ? 1 : 0);
+            m_opts.frame_ysf = (on ? 1 : 0);
             break;
         }
         m_dsdLogger.log("%s auto frame decoding.\n", (on ? "Enabling" : "Disabling"));
