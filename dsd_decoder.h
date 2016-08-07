@@ -26,6 +26,7 @@
 #include "dmr_data.h"
 #include "dstar.h"
 #include "ysf.h"
+#include "dpmr.h"
 
 /*
  * Frame sync patterns
@@ -43,14 +44,16 @@
 #define DSTAR_SYNC     "313131313133131113313111"
 #define INV_DSTAR_SYNC "131313131311313331131333"
 
-#define NXDN_MS_DATA_SYNC      "313133113131111333"
-#define INV_NXDN_MS_DATA_SYNC  "131311331313333111"
+// NXDN symbol mapping: 01(1):+3, 00(0):+1, 10(2):-1, 11(3):-3
+//                              FSW       LICH
+#define NXDN_MS_DATA_SYNC      "313133113131111333" // CD F5 9| => DD F5 D|
 #define NXDN_MS_VOICE_SYNC     "313133113131113133"
+#define NXDN_BS_DATA_SYNC      "313133113131111313"
+#define NXDN_BS_VOICE_SYNC     "313133113131113113"
+#define INV_NXDN_MS_DATA_SYNC  "131311331313333111"
 #define INV_NXDN_MS_VOICE_SYNC "131311331313331311"
 #define INV_NXDN_BS_DATA_SYNC  "131311331313333131"
-#define NXDN_BS_DATA_SYNC      "313133113131111313"
 #define INV_NXDN_BS_VOICE_SYNC "131311331313331331"
-#define NXDN_BS_VOICE_SYNC     "313133113131113113"
 
 #define DMR_BS_DATA_SYNC  "313333111331131131331131" // DF F5 7D 75 DF 5D
 #define DMR_BS_VOICE_SYNC "131111333113313313113313" // 75 5F D7 DF 75 F7
@@ -62,10 +65,11 @@
 #define INV_PROVOICE_EA_SYNC "13313133113113333311313133133311"
 #define PROVOICE_EA_SYNC     "31131311331331111133131311311133"
 
-#define DPMR_FS1_SYNC "111333331133131131111313" // 57 FF 5F 75 D5 77
-#define DPMR_FS2_SYNC "113333131331"// 5F F7 7D
-#define DPMR_FS3_SYNC "133131333311"// 7D DF F5
-#define DPMR_FS4_SYNC "333111113311313313333131"// FD 55 F5 DF 7F DD
+// dPMR symbol mapping: 01(1):+3, 00(0):+1, 10(2):-1, 11(3):-3
+#define DPMR_FS1_SYNC "111333331133131131111313" // 57 FF 5F 75 D5 77 - non packet data header
+#define DPMR_FS2_SYNC "113333131331"// 5F F7 7D                       - superframe sync (each 2 384 bit frames)
+#define DPMR_FS3_SYNC "133131333311"// 7D DF F5                       - end frame sync
+#define DPMR_FS4_SYNC "333111113311313313333131"// FD 55 F5 DF 7F DD  - packet data header
 
 #define YSF_SYNC "31111311313113131131" // D4 71 C9 63 4D => D5 75 DD 77 5D
 
@@ -80,6 +84,7 @@ class DSDDecoder
     friend class DSDDMRData;
     friend class DSDDstar;
     friend class DSDYSF;
+    friend class DSDdPMR;
 public:
     typedef enum
     {
@@ -134,31 +139,37 @@ public:
         DSDprocessX2TDMAdata,
         DSDprocessProVoice,
         DSDprocessYSF,
+        DSDprocessDPMR,
         DSDprocessUnknown
     } DSDFSMState;
 
     typedef enum
     {
-        DSDSyncP25p1P,
-        DSDSyncP25p1N,
-        DSDSyncX2TDMADataP,
-        DSDSyncX2TDMAVoiceN,
-        DSDSyncX2TDMAVoiceP,
-        DSDSyncX2TDMADataN,
-        DSDSyncDStarP,
-        DSDSyncDStarN,
-        DSDSyncNXDNVoiceP,
-        DSDSyncNXDNVoiceN,
-        DSDSyncDMRDataP,
-        DSDSyncDMRVoiceN,
-        DSDSyncDMRVoiceP,
-        DSDSyncDMRDataN,
-        DSDSyncProVoiceP,
-        DSDSyncProVoiceN,
-        DSDSyncNXDNDataP,
-        DSDSyncNXDNDataN,
-        DSDSyncDStarHeaderP,
-        DSDSyncDStarHeaderN,
+        DSDSyncP25p1P,         // 0
+        DSDSyncP25p1N,         // 1
+        DSDSyncX2TDMADataP,    // 2
+        DSDSyncX2TDMAVoiceN,   // 3
+        DSDSyncX2TDMAVoiceP,   // 4
+        DSDSyncX2TDMADataN,    // 5
+        DSDSyncDStarP,         // 6
+        DSDSyncDStarN,         // 7
+        DSDSyncNXDNVoiceP,     // 8
+        DSDSyncNXDNVoiceN,     // 9
+        DSDSyncDMRDataP,       // 10
+        DSDSyncDMRVoiceN,      // 11
+        DSDSyncDMRVoiceP,      // 12
+        DSDSyncDMRDataN,       // 13
+        DSDSyncProVoiceP,      // 14
+        DSDSyncProVoiceN,      // 15
+        DSDSyncNXDNDataP,      // 16
+        DSDSyncNXDNDataN,      // 17
+        DSDSyncDStarHeaderP,   // 18
+        DSDSyncDStarHeaderN,   // 19
+        DSDSyncDPMR,           // 20
+        DSDSyncDPMRPacket,     // 21
+        DSDSyncDPMRPayload,    // 22
+        DSDSyncDPMREnd,        // 23
+        DSDSyncYSF,            // 24
         DSDSyncNone
     } DSDSyncType;
 
@@ -237,6 +248,7 @@ public:
     int getSamplesPerSymbol() const { return m_state.samplesPerSymbol; }
     DSDRate getDataRate() const { return m_dataRate; };
     const DSDDstar& getDStarDecoder() const { return m_dsdDstar; }
+    const DSDdPMR& getDPMRDecoder() const { return m_dsdDPMR; }
     void enableMbelib(bool enable) { m_mbelibEnable = enable; }
 
     // Initializations:
@@ -313,6 +325,7 @@ private:
     DSDDMRData m_dsdDMRData;
     DSDDstar m_dsdDstar;
     DSDYSF m_dsdYSF;
+    DSDdPMR m_dsdDPMR;
     DSDRate m_dataRate;
 };
 

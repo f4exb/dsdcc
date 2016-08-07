@@ -39,6 +39,7 @@ set(dsdcc_SOURCES
     dsd_symbol.cpp
     dstar.cpp
     ysf.cpp
+    dpmr.cpp
     p25p1_heuristics.cpp
     dsd_upsample.cpp
 )
@@ -56,6 +57,7 @@ set(dsdcc_HEADERS
     dsd_symbol.h
     dstar.h
     ysf.h
+    dpmr.h
     p25p1_heuristics.h
     dsd_upsample.h
 )

@@ -14,38 +14,52 @@
 // along with this program. If not, see <http://www.gnu.org/licenses/>.          //
 ///////////////////////////////////////////////////////////////////////////////////
 
-#include "ysf.h"
-#include "dsd_decoder.h"
+#ifndef DPMR_H_
+#define DPMR_H_
 
 namespace DSDcc
 {
 
-DSDYSF::DSDYSF(DSDDecoder *dsdDecoder) :
-        m_dsdDecoder(dsdDecoder),
-        m_symbolIndex(0)
-{
-}
+class DSDDecoder;
 
-DSDYSF::~DSDYSF()
+class DSDdPMR
 {
-}
+public:
+    DSDdPMR(DSDDecoder *dsdDecoder);
+    ~DSDdPMR();
 
-void DSDYSF::init()
-{
-    m_symbolIndex = 0;
-}
+    void init();
+    void process();
 
-void DSDYSF::process() // just pass the frames for now
-{
-    if (m_symbolIndex < 480 - 20) // frame is 480 dibits and sync is 20 dibits
+    int getColorCode() const { return m_colourCode; }
+
+private:
+    typedef enum
     {
-        m_symbolIndex++;
-    }
-    else
-    {
-        m_dsdDecoder->resetFrameSync(); // end
-    }
-}
+       DPMRHeader,         // FS1 sync header frame (sync detected at upper level)
+       DPMRPostFrame,      // frame(s) have been processed and we are looking for a FS2 or FS3 sync
+       DPMRSuperFrame,     // process superframe
+       DPMREnd             // FS3 sync end frame
+    } DPMRState;
+
+    void processHeader();
+    void processSuperFrame(); // process super frame
+    void processEvenFrame();  // process 0 or 2 frames of a super frame
+    void processOddFrame();   // process 1 or 3 frames of a super frame
+    void processEndFrame();
+    void processPostFrame();
+    void processColourCode();
+
+    DSDDecoder *m_dsdDecoder;
+    DPMRState   m_state;
+    char m_syncBuffer[13];   //!< buffer for frame sync: 12  dibits + \0
+    char m_colourBuffer[13]; //!< buffer for colour code: 12  dibits + \0
+    int m_symbolIndex;       //!< current symbol index in non HD sequence
+    int m_frameIndex;        //!< count of frames in superframes since header
+    int m_colourCode;        //!< calculated colour code
+};
 
 
 } // namespace DSDcc
+
+#endif /* DPMR_H_ */

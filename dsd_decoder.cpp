@@ -33,6 +33,7 @@ DSDDecoder::DSDDecoder() :
         m_dsdDMRData(this),
         m_dsdDstar(this),
         m_dsdYSF(this),
+        m_dsdDPMR(this),
         m_dataRate(DSDRate4800)
 {
     resetFrameSync();
@@ -451,6 +452,9 @@ void DSDDecoder::run(short sample)
         case DSDprocessYSF:
             m_dsdYSF.process();
             break;
+        case DSDprocessDPMR:
+            m_dsdDPMR.process();
+            break;
         default:
             break;
         }
@@ -542,6 +546,27 @@ void DSDDecoder::processFrameInit()
         m_dsdDstar.processHD(); // process current symbol first
         m_fsmState = DSDprocessDSTAR_HD;
     }
+    else if (m_state.synctype == 20) // dPMR classic (not packet)
+    {
+        m_state.nac = 0;
+        m_state.lastsrc = 0;
+        m_state.lasttg = 0;
+
+        if (m_opts.errorbars == 1)
+        {
+            if (m_opts.verbose > 0)
+            {
+                int level = (int) m_state.max / 164;
+                m_dsdLogger.log("inlvl: %2i%% ", level);
+            }
+        }
+
+        m_state.nac = 0;
+        sprintf(m_state.fsubtype, " ANY          ");
+        m_dsdDPMR.init();
+        m_dsdDPMR.process();
+        m_fsmState = DSDprocessDPMR;
+    }
     else if (m_state.synctype == 24) // YSF
     {
         m_state.nac = 0;
@@ -595,10 +620,10 @@ int DSDDecoder::getFrameSync()
      * 17 = -NXDN (inverted data frame)
      * 18 = +D-STAR_HD
      * 19 = -D-STAR_HD
-     * 20 = +DPMR Tier 1 or 2 FS1 (just sync detection - not implemented yet)
-     * 21 = +DPMR Tier 1 or 2 FS2 (just sync detection - not implemented yet - disabled)
-     * 22 = +DPMR Tier 1 or 2 FS3 (just sync detection - not implemented yet - disabled)
-     * 23 = +DPMR Tier 1 or 2 FS4 (just sync detection - not implemented yet)
+     * 20 = +dPMR Tier 1 or 2 FS1 (just sync detection - not implemented yet)
+     * 21 = +dPMR Tier 1 or 2 FS4 (just sync detection - not implemented yet)
+     * 22 = +dPMR Tier 1 or 2 FS2 (handled by specialized class - not used)
+     * 23 = +dPMR Tier 1 or 2 FS3 (handled by specialized class - not used)
      * 24 = +YSF (just sync detection - not implemented yet)
      */
 
@@ -1332,80 +1357,40 @@ int DSDDecoder::getFrameSync()
         }
         if (m_opts.frame_dpmr == 1)
         {
-            if (strcmp(m_synctest, DPMR_FS1_SYNC) == 0)
+            if (strcmp(m_synctest, DPMR_FS1_SYNC) == 0) // dPMR classic (not packet)
             {
                 m_state.carrier = 1;
                 m_state.offset = m_synctest_pos;
                 m_state.max = ((m_state.max) + m_lmax) / 2;
                 m_state.min = ((m_state.min) + m_lmin) / 2;
 
-                sprintf(m_state.ftype, "+DPMR-FS1    ");
+                sprintf(m_state.ftype, "+dPMR        ");
 
                 if (m_opts.errorbars == 1)
                 {
-                    printFrameSync("+DPMR-FS1  ", m_synctest_pos + 1, m_modulation);
+                    printFrameSync("+dPMR      ", m_synctest_pos + 1, m_modulation);
                 }
 
                 m_state.lastsynctype = 20;
                 return(20);
             }
-            else if (strcmp(m_synctest, DPMR_FS4_SYNC) == 0)
+            else if (strcmp(m_synctest, DPMR_FS4_SYNC) == 0) // dPMR packet mode
             {
                 m_state.carrier = 1;
                 m_state.offset = m_synctest_pos;
                 m_state.max = ((m_state.max) + m_lmax) / 2;
                 m_state.min = ((m_state.min) + m_lmin) / 2;
 
-                sprintf(m_state.ftype, "+DPMR-FS4    ");
+                sprintf(m_state.ftype, "+dPMRpkt     ");
 
                 if (m_opts.errorbars == 1)
                 {
-                    printFrameSync("+DPMR-FS4  ", m_synctest_pos + 1, m_modulation);
+                    printFrameSync("+dPMRpkt   ", m_synctest_pos + 1, m_modulation);
                 }
 
-                m_state.lastsynctype = 23;
+                m_state.lastsynctype = 21;
                 return(23);
             }
-            // Deactivate too short syncs at top level for now
-//            else
-//            {
-//                strncpy(m_synctest12, (m_synctest_p - 11), 12);
-//
-//                if (strcmp(m_synctest12, DPMR_FS2_SYNC) == 0)
-//                {
-//                    m_state.carrier = 1;
-//                    m_state.offset = m_synctest_pos;
-//                    m_state.max = ((m_state.max) + m_lmax) / 2;
-//                    m_state.min = ((m_state.min) + m_lmin) / 2;
-//
-//                    sprintf(m_state.ftype, "+DPMR-FS2    ");
-//
-//                    if (m_opts.errorbars == 1)
-//                    {
-//                        printFrameSync("+DPMR-FS2  ", m_synctest_pos + 1, m_modulation);
-//                    }
-//
-//                    m_state.lastsynctype = 21;
-//                    return(21);
-//                }
-//                else if (strcmp(m_synctest12, DPMR_FS3_SYNC) == 0)
-//                {
-//                    m_state.carrier = 1;
-//                    m_state.offset = m_synctest_pos;
-//                    m_state.max = ((m_state.max) + m_lmax) / 2;
-//                    m_state.min = ((m_state.min) + m_lmin) / 2;
-//
-//                    sprintf(m_state.ftype, "+DPMR-FS3    ");
-//
-//                    if (m_opts.errorbars == 1)
-//                    {
-//                        printFrameSync("+DPMR-FS3  ", m_synctest_pos + 1, m_modulation);
-//                    }
-//
-//                    m_state.lastsynctype = 22;
-//                    return(22);
-//                }
-//            }
         }
         if (m_opts.frame_dstar == 1)
         {
