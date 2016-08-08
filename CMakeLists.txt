@@ -40,6 +40,7 @@ set(dsdcc_SOURCES
     dstar.cpp
     ysf.cpp
     dpmr.cpp
+    nxdn.cpp
     p25p1_heuristics.cpp
     dsd_upsample.cpp
 )
@@ -58,6 +59,7 @@ set(dsdcc_HEADERS
     dstar.h
     ysf.h
     dpmr.h
+    nxdn.h
     p25p1_heuristics.h
     dsd_upsample.h
 )

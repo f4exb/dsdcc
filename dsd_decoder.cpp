@@ -34,6 +34,7 @@ DSDDecoder::DSDDecoder() :
         m_dsdDstar(this),
         m_dsdYSF(this),
         m_dsdDPMR(this),
+		m_dsdNXDN(this),
         m_dataRate(DSDRate4800)
 {
     resetFrameSync();
@@ -184,6 +185,15 @@ void DSDDecoder::setDecodeMode(DSDDecodeMode mode, bool on)
         m_dsdLogger.log("%s the decoding of YSF frames.\n", (on ? "Enabling" : "Disabling"));
         break;
     case DSDDecodeAuto:
+        m_opts.frame_dmr = 0;
+        m_opts.frame_dstar = 0;
+        m_opts.frame_p25p1 = 0;
+        m_opts.frame_nxdn48 = 0;
+        m_opts.frame_nxdn96 = 0;
+        m_opts.frame_provoice = 0;
+        m_opts.frame_x2tdma = 0;
+        m_opts.frame_dpmr = 0;
+        m_opts.frame_ysf = 0;
         switch (m_dataRate)
         {
         case DSDRate2400:
@@ -455,6 +465,9 @@ void DSDDecoder::run(short sample)
         case DSDprocessDPMR:
             m_dsdDPMR.process();
             break;
+        case DSDprocessNXDN:
+            m_dsdNXDN.process();
+            break;
         default:
             break;
         }
@@ -524,6 +537,27 @@ void DSDDecoder::processFrameInit()
         m_dsdDstar.init();
         m_dsdDstar.process(); // process current symbol first
         m_fsmState = DSDprocessDSTAR;
+    }
+    else if ((m_state.synctype == 8) || (m_state.synctype == 9)) // NXDN conventional
+    {
+        m_state.nac = 0;
+        m_state.lastsrc = 0;
+        m_state.lasttg = 0;
+
+        if (m_opts.errorbars == 1)
+        {
+            if (m_opts.verbose > 0)
+            {
+                int level = (int) m_state.max / 164;
+                printf("inlvl: %2i%% ", level);
+            }
+        }
+
+        m_state.nac = 0;
+        sprintf(m_state.fsubtype, " RDCH         ");
+        m_dsdNXDN.init();
+        m_dsdNXDN.process(); // process current symbol first
+        m_fsmState = DSDprocessNXDN;
     }
     else if ((m_state.synctype == 18) || (m_state.synctype == 19)) // D-Star header
     {
@@ -608,16 +642,16 @@ int DSDDecoder::getFrameSync()
      * 5  = -X2-TDMA (inverted signal data frame)
      * 6  = +D-STAR
      * 7  = -D-STAR
-     * 8  = +NXDN (non inverted voice frame)
-     * 9  = -NXDN (inverted voice frame)
+     * 8  = +NXDN (non inverted RDCH first frame)
+     * 9  = -NXDN (inverted RDCH first frame)
      * 10 = +DMR (non inverted singlan data frame)
      * 11 = -DMR (inverted signal voice frame)
      * 12 = +DMR (non inverted signal voice frame)
      * 13 = -DMR (inverted signal data frame)
      * 14 = +ProVoice
      * 15 = -ProVoice
-     * 16 = +NXDN (non inverted data frame)
-     * 17 = -NXDN (inverted data frame)
+     * 16 = +NXDN (non inverted data frame - not used)
+     * 17 = -NXDN (inverted data frame - not used)
      * 18 = +D-STAR_HD
      * 19 = -D-STAR_HD
      * 20 = +dPMR Tier 1 or 2 FS1 (just sync detection - not implemented yet)
@@ -1170,190 +1204,161 @@ int DSDDecoder::getFrameSync()
         }
         if ((m_opts.frame_nxdn96 == 1) || (m_opts.frame_nxdn48 == 1))
         {
-            strncpy(m_synctest18, (m_synctest_p - 17), 18);
+        	strncpy(m_synctest20, (m_synctest_p - 19), 20);
 
-            if ((strcmp(m_synctest18, NXDN_BS_VOICE_SYNC) == 0)
-             || (strcmp(m_synctest18, NXDN_MS_VOICE_SYNC) == 0))
+            if (strcmp(m_synctest20, NXDN_RDCH_FULL_SYNC) == 0)
             {
-                if (strcmp(m_synctest, NXDN_BS_VOICE_SYNC) == 0) {
-                    m_stationType = DSDBaseStation;
-                } else {
-                    m_stationType = DSDMobileStation;
-                }
+				m_state.carrier = 1;
+				m_state.offset = m_synctest_pos;
+				m_state.max = ((m_state.max) + m_lmax) / 2;
+				m_state.min = ((m_state.min) + m_lmin) / 2;
 
-//                if ((m_state.lastsynctype == 8)
-//                 || (m_state.lastsynctype == 16))
-                {
-                    m_state.carrier = 1;
-                    m_state.offset = m_synctest_pos;
-                    m_state.max = ((m_state.max) + m_lmax) / 2;
-                    m_state.min = ((m_state.min) + m_lmin) / 2;
+				if (m_state.samplesPerSymbol == 20)
+				{
+					sprintf(m_state.ftype, "+NXDN48      ");
 
-                    if (m_state.samplesPerSymbol == 20)
-                    {
-                        sprintf(m_state.ftype, "+NXDN48v     ");
+					if (m_opts.errorbars == 1)
+					{
+						printFrameSync(" +NXDN48   ", m_synctest_pos + 1, m_modulation);
+					}
+				}
+				else
+				{
+					sprintf(m_state.ftype, "+NXDN96      ");
 
-                        if (m_opts.errorbars == 1)
-                        {
-                            printFrameSync(" +NXDN48   ", m_synctest_pos + 1, m_modulation);
-                        }
-                    }
-                    else
-                    {
-                        sprintf(m_state.ftype, "+NXDN96v     ");
+					if (m_opts.errorbars == 1)
+					{
+						printFrameSync(" +NXDN96   ", m_synctest_pos + 1, m_modulation);
+					}
+				}
 
-                        if (m_opts.errorbars == 1)
-                        {
-                            printFrameSync(" +NXDN96   ", m_synctest_pos + 1, m_modulation);
-                        }
-                    }
-
-                    m_state.lastsynctype = 8;
-                    m_mbeRate = DSDMBERate3600x2450;
-                    return(8); // done
-                }
-//                else
-//                {
-//                    m_state.lastsynctype = 8;
-//                }
+				m_state.lastsynctype = 8;
+				m_mbeRate = DSDMBERate3600x2450;
+				return(8); // done
             }
-            else if ((strcmp(m_synctest18, INV_NXDN_BS_VOICE_SYNC) == 0)
-                  || (strcmp(m_synctest18, INV_NXDN_MS_VOICE_SYNC) == 0))
+            else if (strcmp(m_synctest20, INV_NXDN_RDCH_FULL_SYNC) == 0)
             {
-                if (strcmp(m_synctest, INV_NXDN_BS_VOICE_SYNC) == 0) {
-                    m_stationType = DSDBaseStation;
-                } else {
-                    m_stationType = DSDMobileStation;
-                }
+				m_state.carrier = 1;
+				m_state.offset = m_synctest_pos;
+				m_state.max = ((m_state.max) + m_lmax) / 2;
+				m_state.min = ((m_state.min) + m_lmin) / 2;
 
-//                if ((m_state.lastsynctype == 9)
-//                 || (m_state.lastsynctype == 17))
-                {
-                    m_state.carrier = 1;
-                    m_state.offset = m_synctest_pos;
-                    m_state.max = ((m_state.max) + m_lmax) / 2;
-                    m_state.min = ((m_state.min) + m_lmin) / 2;
+				if (m_state.samplesPerSymbol == 20)
+				{
+					sprintf(m_state.ftype, "-NXDN48      ");
 
-                    if (m_state.samplesPerSymbol == 20)
-                    {
-                        sprintf(m_state.ftype, "-NXDN48v     ");
+					if (m_opts.errorbars == 1)
+					{
+						printFrameSync(" -NXDN48   ", m_synctest_pos + 1, m_modulation);
+					}
+				}
+				else
+				{
+					sprintf(m_state.ftype, "-NXDN96      ");
 
-                        if (m_opts.errorbars == 1)
-                        {
-                            printFrameSync(" -NXDN48   ", m_synctest_pos + 1, m_modulation);
-                        }
-                    }
-                    else
-                    {
-                        sprintf(m_state.ftype, "-NXDN96v     ");
+					if (m_opts.errorbars == 1)
+					{
+						printFrameSync(" -NXDN96   ", m_synctest_pos + 1, m_modulation);
+					}
+				}
 
-                        if (m_opts.errorbars == 1)
-                        {
-                            printFrameSync(" -NXDN96   ", m_synctest_pos + 1, m_modulation);
-                        }
-                    }
-
-                    m_state.lastsynctype = 9;
-                    m_mbeRate = DSDMBERate3600x2450;
-                    return(9); // done
-                }
-//                else
-//                {
-//                    m_state.lastsynctype = 9;
-//                }
+				m_state.lastsynctype = 9;
+				m_mbeRate = DSDMBERate3600x2450;
+				return(9); // done
             }
-            else if ((strcmp(m_synctest18, NXDN_BS_DATA_SYNC) == 0)
-                  || (strcmp(m_synctest18, NXDN_MS_DATA_SYNC) == 0))
-            {
-                if (strcmp(m_synctest, NXDN_BS_DATA_SYNC) == 0) {
-                    m_stationType = DSDBaseStation;
-                } else {
-                    m_stationType = DSDMobileStation;
-                }
-
-//                if ((m_state.lastsynctype == 8)
-//                        || (m_state.lastsynctype == 16))
-                {
-                    m_state.carrier = 1;
-                    m_state.offset = m_synctest_pos;
-                    m_state.max = ((m_state.max) + m_lmax) / 2;
-                    m_state.min = ((m_state.min) + m_lmin) / 2;
-
-                    if (m_state.samplesPerSymbol == 20)
-                    {
-                        sprintf(m_state.ftype, "+NXDN48d     ");
-
-                        if (m_opts.errorbars == 1)
-                        {
-                            printFrameSync(" +NXDN48   ", m_synctest_pos + 1, m_modulation);
-                        }
-                    }
-                    else
-                    {
-                        sprintf(m_state.ftype, "+NXDN96d     ");
-
-                        if (m_opts.errorbars == 1)
-                        {
-                            printFrameSync(" +NXDN96   ", m_synctest_pos + 1, m_modulation);
-                        }
-                    }
-
-                    m_state.lastsynctype = 16;
-                    m_mbeRate = DSDMBERate3600x2450;
-                    return(16); // done
-                }
-//                else
+//            else if ((strcmp(m_synctest18, NXDN_BS_DATA_SYNC) == 0)
+//                  || (strcmp(m_synctest18, NXDN_MS_DATA_SYNC) == 0))
+//            {
+//                if (strcmp(m_synctest, NXDN_BS_DATA_SYNC) == 0) {
+//                    m_stationType = DSDBaseStation;
+//                } else {
+//                    m_stationType = DSDMobileStation;
+//                }
+//
+////                if ((m_state.lastsynctype == 8)
+////                        || (m_state.lastsynctype == 16))
 //                {
+//                    m_state.carrier = 1;
+//                    m_state.offset = m_synctest_pos;
+//                    m_state.max = ((m_state.max) + m_lmax) / 2;
+//                    m_state.min = ((m_state.min) + m_lmin) / 2;
+//
+//                    if (m_state.samplesPerSymbol == 20)
+//                    {
+//                        sprintf(m_state.ftype, "+NXDN48d     ");
+//
+//                        if (m_opts.errorbars == 1)
+//                        {
+//                            printFrameSync(" +NXDN48   ", m_synctest_pos + 1, m_modulation);
+//                        }
+//                    }
+//                    else
+//                    {
+//                        sprintf(m_state.ftype, "+NXDN96d     ");
+//
+//                        if (m_opts.errorbars == 1)
+//                        {
+//                            printFrameSync(" +NXDN96   ", m_synctest_pos + 1, m_modulation);
+//                        }
+//                    }
+//
 //                    m_state.lastsynctype = 16;
+//                    m_mbeRate = DSDMBERate3600x2450;
+//                    return(16); // done
 //                }
-            }
-            else if ((strcmp(m_synctest18, INV_NXDN_BS_DATA_SYNC) == 0)
-                  || (strcmp(m_synctest18, INV_NXDN_MS_DATA_SYNC) == 0))
-            {
-                if (strcmp(m_synctest, INV_NXDN_BS_DATA_SYNC) == 0) {
-                    m_stationType = DSDBaseStation;
-                } else {
-                    m_stationType = DSDMobileStation;
-                }
-
-//                if ((m_state.lastsynctype == 9)
-//                        || (m_state.lastsynctype == 17))
-                {
-                    m_state.carrier = 1;
-                    m_state.offset = m_synctest_pos;
-                    m_state.max = ((m_state.max) + m_lmax) / 2;
-                    m_state.min = ((m_state.min) + m_lmin) / 2;
-
-                    sprintf(m_state.ftype, "-NXDN        ");
-
-                    if (m_state.samplesPerSymbol == 20)
-                    {
-                        sprintf(m_state.ftype, "-NXDN48d     ");
-
-                        if (m_opts.errorbars == 1)
-                        {
-                            printFrameSync(" -NXDN48   ", m_synctest_pos + 1, m_modulation);
-                        }
-                    }
-                    else
-                    {
-                        sprintf(m_state.ftype, "-NXDN96d     ");
-
-                        if (m_opts.errorbars == 1)
-                        {
-                            printFrameSync(" -NXDN96   ", m_synctest_pos + 1, m_modulation);
-                        }
-                    }
-
-                    m_state.lastsynctype = 17;
-                    m_mbeRate = DSDMBERate3600x2450;
-                    return(17); // done
-                }
-//                else
+////                else
+////                {
+////                    m_state.lastsynctype = 16;
+////                }
+//            }
+//            else if ((strcmp(m_synctest18, INV_NXDN_BS_DATA_SYNC) == 0)
+//                  || (strcmp(m_synctest18, INV_NXDN_MS_DATA_SYNC) == 0))
+//            {
+//                if (strcmp(m_synctest, INV_NXDN_BS_DATA_SYNC) == 0) {
+//                    m_stationType = DSDBaseStation;
+//                } else {
+//                    m_stationType = DSDMobileStation;
+//                }
+//
+////                if ((m_state.lastsynctype == 9)
+////                        || (m_state.lastsynctype == 17))
 //                {
+//                    m_state.carrier = 1;
+//                    m_state.offset = m_synctest_pos;
+//                    m_state.max = ((m_state.max) + m_lmax) / 2;
+//                    m_state.min = ((m_state.min) + m_lmin) / 2;
+//
+//                    sprintf(m_state.ftype, "-NXDN        ");
+//
+//                    if (m_state.samplesPerSymbol == 20)
+//                    {
+//                        sprintf(m_state.ftype, "-NXDN48d     ");
+//
+//                        if (m_opts.errorbars == 1)
+//                        {
+//                            printFrameSync(" -NXDN48   ", m_synctest_pos + 1, m_modulation);
+//                        }
+//                    }
+//                    else
+//                    {
+//                        sprintf(m_state.ftype, "-NXDN96d     ");
+//
+//                        if (m_opts.errorbars == 1)
+//                        {
+//                            printFrameSync(" -NXDN96   ", m_synctest_pos + 1, m_modulation);
+//                        }
+//                    }
+//
 //                    m_state.lastsynctype = 17;
+//                    m_mbeRate = DSDMBERate3600x2450;
+//                    return(17); // done
 //                }
-            }
+////                else
+////                {
+////                    m_state.lastsynctype = 17;
+////                }
+//            }
+//        }
         }
         if (m_opts.frame_dpmr == 1)
         {

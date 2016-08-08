@@ -27,6 +27,7 @@
 #include "dstar.h"
 #include "ysf.h"
 #include "dpmr.h"
+#include "nxdn.h"
 
 /*
  * Frame sync patterns
@@ -45,6 +46,7 @@
 #define INV_DSTAR_SYNC "131313131311313331131333"
 
 // NXDN symbol mapping: 01(1):+3, 00(0):+1, 10(2):-1, 11(3):-3
+// old way with FSW+LICH
 //                              FSW       LICH
 #define NXDN_MS_DATA_SYNC      "313133113131111333" // CD F5 9| => DD F5 D|
 #define NXDN_MS_VOICE_SYNC     "313133113131113133"
@@ -54,6 +56,13 @@
 #define INV_NXDN_MS_VOICE_SYNC "131311331313331311"
 #define INV_NXDN_BS_DATA_SYNC  "131311331313333131"
 #define INV_NXDN_BS_VOICE_SYNC "131311331313331331"
+// new way with preamble and FSW only for RDCH (conventional) type
+//                           PREAMBLE  FSW
+#define NXDN_RDCH_FULL_SYNC "11131133313131331131" // Full sync lookup in auto mode
+#define NXDN_RDCH_FSW_SYNC            "3131331131" // FSW sync lookup (follow up or sync lookup in NXDN mode) 
+// inverted versions
+#define INV_NXDN_RDCH_FULL_SYNC "33313311131313113313"
+#define INV_NXDN_RDCH_FSW_SYNC            "1313113313" 
 
 #define DMR_BS_DATA_SYNC  "313333111331131131331131" // DF F5 7D 75 DF 5D
 #define DMR_BS_VOICE_SYNC "131111333113313313113313" // 75 5F D7 DF 75 F7
@@ -85,6 +94,7 @@ class DSDDecoder
     friend class DSDDstar;
     friend class DSDYSF;
     friend class DSDdPMR;
+    friend class DSDNXDN;
 public:
     typedef enum
     {
@@ -140,6 +150,7 @@ public:
         DSDprocessProVoice,
         DSDprocessYSF,
         DSDprocessDPMR,
+		DSDprocessNXDN,
         DSDprocessUnknown
     } DSDFSMState;
 
@@ -153,8 +164,8 @@ public:
         DSDSyncX2TDMADataN,    // 5
         DSDSyncDStarP,         // 6
         DSDSyncDStarN,         // 7
-        DSDSyncNXDNVoiceP,     // 8
-        DSDSyncNXDNVoiceN,     // 9
+        DSDSyncNXDNP,          // 8
+        DSDSyncNXDNN,          // 9
         DSDSyncDMRDataP,       // 10
         DSDSyncDMRVoiceN,      // 11
         DSDSyncDMRVoiceP,      // 12
@@ -326,6 +337,7 @@ private:
     DSDDstar m_dsdDstar;
     DSDYSF m_dsdYSF;
     DSDdPMR m_dsdDPMR;
+    DSDNXDN m_dsdNXDN;
     DSDRate m_dataRate;
 };
 
