@@ -29,6 +29,8 @@
 #include "dpmr.h"
 #include "nxdn.h"
 
+#define DSD_SQUELCH_TIMEOUT_SAMPLES 960 // 200ms timeout after return to sync search
+
 /*
  * Frame sync patterns
  */
@@ -59,10 +61,10 @@
 // new way with preamble and FSW only for RDCH (conventional) type
 //                           PREAMBLE  FSW
 #define NXDN_RDCH_FULL_SYNC "11131133313131331131" // Full sync lookup in auto mode
-#define NXDN_RDCH_FSW_SYNC            "3131331131" // FSW sync lookup (follow up or sync lookup in NXDN mode) 
+#define NXDN_RDCH_FSW_SYNC            "3131331131" // FSW sync lookup (follow up or sync lookup in NXDN mode)
 // inverted versions
 #define INV_NXDN_RDCH_FULL_SYNC "33313311131313113313"
-#define INV_NXDN_RDCH_FSW_SYNC            "1313113313" 
+#define INV_NXDN_RDCH_FSW_SYNC            "1313113313"
 
 #define DMR_BS_DATA_SYNC  "313333111331131131331131" // DF F5 7D 75 DF 5D
 #define DMR_BS_VOICE_SYNC "131111333113313313113313" // 75 5F D7 DF 75 F7
@@ -321,6 +323,7 @@ private:
     char m_spectrum[64];
     int m_t;
     int m_hasSync; //!< tells whether we are in synced phase
+    int m_squelchTimeoutCount;
     // Symbol extraction and operations
     DSDSymbol m_dsdSymbol;
     // MBE decoder

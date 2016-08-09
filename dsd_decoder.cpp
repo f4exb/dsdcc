@@ -39,6 +39,7 @@ DSDDecoder::DSDDecoder() :
 {
     resetFrameSync();
     noCarrier();
+    m_squelchTimeoutCount = 0;
 }
 
 DSDDecoder::~DSDDecoder()
@@ -406,6 +407,24 @@ void DSDDecoder::setDataRate(DSDRate dataRate)
 
 void DSDDecoder::run(short sample)
 {
+    // mode time out if squelch has been closed for a number of samples
+    if (m_fsmState != DSDLookForSync)
+    {
+        if (sample == 0)
+        {
+            if (m_squelchTimeoutCount < DSD_SQUELCH_TIMEOUT_SAMPLES)
+            {
+                m_squelchTimeoutCount++;
+            }
+            else
+            {
+                m_dsdLogger.log("DSDDecoder::run: squelch time out go back to sync search\n");
+                resetFrameSync();
+                m_squelchTimeoutCount = 0;
+            }
+        }
+    }
+
     if (m_dsdSymbol.pushSample(sample, m_hasSync)) // a symbol is retrieved
     {
         switch (m_fsmState)
