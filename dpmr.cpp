@@ -21,12 +21,59 @@
 namespace DSDcc
 {
 
+/*
+ * DMR AMBE interleave schedule
+ */
+// bit 1
+const int DSDdPMR::rW[36] = {
+  0, 1, 0, 1, 0, 1,
+  0, 1, 0, 1, 0, 1,
+  0, 1, 0, 1, 0, 1,
+  0, 1, 0, 1, 0, 2,
+  0, 2, 0, 2, 0, 2,
+  0, 2, 0, 2, 0, 2
+};
+
+const int DSDdPMR::rX[36] = {
+  23, 10, 22, 9, 21, 8,
+  20, 7, 19, 6, 18, 5,
+  17, 4, 16, 3, 15, 2,
+  14, 1, 13, 0, 12, 10,
+  11, 9, 10, 8, 9, 7,
+  8, 6, 7, 5, 6, 4
+};
+
+// bit 0
+const int DSDdPMR::rY[36] = {
+  0, 2, 0, 2, 0, 2,
+  0, 2, 0, 3, 0, 3,
+  1, 3, 1, 3, 1, 3,
+  1, 3, 1, 3, 1, 3,
+  1, 3, 1, 3, 1, 3,
+  1, 3, 1, 3, 1, 3
+};
+
+const int DSDdPMR::rZ[36] = {
+  5, 3, 4, 2, 3, 1,
+  2, 0, 1, 13, 0, 12,
+  22, 11, 21, 10, 20, 9,
+  19, 8, 18, 7, 17, 6,
+  16, 5, 15, 4, 14, 3,
+  13, 2, 12, 1, 11, 0
+};
+
+
 DSDdPMR::DSDdPMR(DSDDecoder *dsdDecoder) :
         m_dsdDecoder(dsdDecoder),
         m_state(DPMRHeader),
+        m_superframeType(DPMRVoiceSuperframe),
         m_symbolIndex(0),
         m_frameIndex(-1),
-        m_colourCode(0)
+        m_colourCode(0),
+        w(0),
+        x(0),
+        y(0),
+        z(0)
 {
 }
 
@@ -155,7 +202,7 @@ void DSDdPMR::processSuperFrame()
 {
     int dibit = m_dsdDecoder->m_dsdSymbol.getDibit(); // get di-bit from symbol
 
-    if (m_symbolIndex < 36 + 144) // frame 0 or 2
+    if (m_symbolIndex < 36) // frame 0 or 2
     {
         if (m_symbolIndex == 0) // new frame
         {
@@ -164,6 +211,11 @@ void DSDdPMR::processSuperFrame()
         }
 
         processEvenFrame();
+        m_symbolIndex++;
+    }
+    else if (m_symbolIndex < 36 + 144) // // 4*36 di-bits payload
+    {
+        processPayload(m_symbolIndex - 36, dibit);
         m_symbolIndex++;
     }
     else if (m_symbolIndex < 36 + 144 + 12) // frame 1 or 3 colour code
@@ -183,9 +235,14 @@ void DSDdPMR::processSuperFrame()
             processColourCode();
         }
     }
-    else if (m_symbolIndex < 36 + 144 + 12 + 36 + 144) // frame 1 or 3
+    else if (m_symbolIndex < 36 + 144 + 12 + 36) // frame 1 or 3
     {
         processOddFrame();
+        m_symbolIndex++;
+    }
+    else if (m_symbolIndex < 36 + 144 + 12 + 36 + 144) // 4*36 di-bits payload
+    {
+        processPayload(m_symbolIndex - (36  + 144 + 12 + 36), dibit);
         m_symbolIndex++;
 
         if (m_symbolIndex == 36 + 144 + 12 + 36 + 144) // frame complete
@@ -244,6 +301,65 @@ void DSDdPMR::processColourCode()
     }
 
     m_dsdDecoder->getLogger().log("DSDdPMR::processColourCode: %d\n", m_colourCode); // DEBUG
+}
+
+void DSDdPMR::processPayload(int symbolIndex, int dibit)
+{
+    if (m_superframeType == DPMRVoiceSuperframe)
+    {
+        if ((symbolIndex == 0) && (m_dsdDecoder->m_opts.errorbars == 1))
+        {
+            m_dsdDecoder->getLogger().log("\nMBE: ");
+        }
+
+        if (symbolIndex % 36 == 0)
+        {
+            w = rW;
+            x = rX;
+            y = rY;
+            z = rZ;
+            memset((void *) m_dsdDecoder->m_mbeDVFrame, 0, 9); // initialize DVSI frame
+        }
+
+        m_dsdDecoder->ambe_fr[*w][*x] = (1 & (dibit >> 1)); // bit 1
+        m_dsdDecoder->ambe_fr[*y][*z] = (1 & dibit);        // bit 0
+        w++;
+        x++;
+        y++;
+        z++;
+
+        storeSymbolDV(symbolIndex % 36, dibit); // store dibit for DVSI hardware decoder
+
+        if (symbolIndex % 36 == 35)
+        {
+            m_dsdDecoder->m_mbeDecoder.processFrame(0, m_dsdDecoder->ambe_fr, 0);
+            m_dsdDecoder->m_mbeDVReady = true; // Indicate that a DVSI frame is available
+
+            if (m_dsdDecoder->m_opts.errorbars == 1)
+            {
+                m_dsdDecoder->getLogger().log(".");
+            }
+        }
+    }
+    else
+    {
+        // TODO: assume only voice for new
+    }
+}
+
+void DSDdPMR::storeSymbolDV(int dibitindex, unsigned char dibit, bool invertDibit)
+{
+    if (m_dsdDecoder->m_mbelibEnable)
+    {
+        return;
+    }
+
+    if (invertDibit)
+    {
+        dibit = DSDcc::DSDSymbol::invert_dibit(dibit);
+    }
+
+    m_dsdDecoder->m_mbeDVFrame[dibitindex/4] |= (dibit << (6 - 2*(dibitindex % 4)));
 }
 
 } // namespace DSDcc

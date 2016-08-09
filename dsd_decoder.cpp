@@ -1396,6 +1396,7 @@ int DSDDecoder::getFrameSync()
                 }
 
                 m_state.lastsynctype = 20;
+                m_mbeRate = DSDMBERate3600x2450;
                 return(20);
             }
             else if (strcmp(m_synctest, DPMR_FS4_SYNC) == 0) // dPMR packet mode

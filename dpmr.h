@@ -42,6 +42,13 @@ private:
        DPMREnd             // FS3 sync end frame
     } DPMRState;
 
+    typedef enum
+    {
+        DPMRVoiceSuperframe, // voice
+        DPMRData1Superframe, // data wihout FEC
+        DPMRData2Superframe, // data with FEC
+    } DPMRSuperframeType;
+
     void processHeader();
     void processSuperFrame(); // process super frame
     void processEvenFrame();  // process 0 or 2 frames of a super frame
@@ -49,14 +56,23 @@ private:
     void processEndFrame();
     void processPostFrame();
     void processColourCode();
+    void processPayload(int symbolIndex, int dibit);
+    void storeSymbolDV(int dibitindex, unsigned char dibit, bool invertDibit = false);
 
     DSDDecoder *m_dsdDecoder;
     DPMRState   m_state;
+    DPMRSuperframeType m_superframeType;
     char m_syncBuffer[13];   //!< buffer for frame sync: 12  dibits + \0
     char m_colourBuffer[13]; //!< buffer for colour code: 12  dibits + \0
     int m_symbolIndex;       //!< current symbol index in non HD sequence
     int m_frameIndex;        //!< count of frames in superframes since header
     int m_colourCode;        //!< calculated colour code
+
+    static const int rW[36];
+    static const int rX[36];
+    static const int rY[36];
+    static const int rZ[36];
+    const int *w, *x, *y, *z;
 };
 
 
