@@ -139,15 +139,15 @@ void DSDdPMR::processPostFrame()
                 m_state = DPMREnd;
                 m_symbolIndex = 0;
             }
-            else // should be an ACK or sync error => terminated
-            {
-                m_dsdDecoder->resetFrameSync(); // end
-            }
         }
     }
-    else if (m_symbolIndex == 12) // out of sync => terminate
+    else if (m_symbolIndex < 12 + 5*36) // length of a payload frame
     {
-        m_dsdDecoder->resetFrameSync(); // end
+        m_symbolIndex++;
+    }
+    else
+    {
+        m_symbolIndex = 0; // back to FS2 or FS3 sync search
     }
 }
 
