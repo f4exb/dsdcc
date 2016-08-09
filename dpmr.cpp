@@ -70,6 +70,7 @@ DSDdPMR::DSDdPMR(DSDDecoder *dsdDecoder) :
         m_symbolIndex(0),
         m_frameIndex(-1),
         m_colourCode(0),
+        m_hasSync(false),
         w(0),
         x(0),
         y(0),
@@ -114,6 +115,7 @@ void DSDdPMR::processHeader()
 
     if (m_symbolIndex == 0)
     {
+        m_hasSync = true;
         m_dsdDecoder->getLogger().log("DSDdPMR::processHeader: start\n"); // DEBUG
     }
 
@@ -145,6 +147,7 @@ void DSDdPMR::processHeader()
     }
     else // out of sync => terminate
     {
+        m_hasSync = false;
         m_dsdDecoder->resetFrameSync(); // end
     }
 }
@@ -186,6 +189,10 @@ void DSDdPMR::processPostFrame()
                 m_state = DPMREnd;
                 m_symbolIndex = 0;
             }
+            else
+            {
+                m_hasSync = false;
+            }
         }
     }
     else if (m_symbolIndex < 12 + 5*36) // length of a payload frame
@@ -206,6 +213,7 @@ void DSDdPMR::processSuperFrame()
     {
         if (m_symbolIndex == 0) // new frame
         {
+            m_hasSync = true;
             m_frameIndex++;
             m_dsdDecoder->getLogger().log("DSDdPMR::processSuperFrame: start even frame %d\n", m_frameIndex); // DEBUG
         }
@@ -253,6 +261,7 @@ void DSDdPMR::processSuperFrame()
     }
     else // shouldn´t go there => out of sync error
     {
+        m_hasSync = false;
         m_dsdDecoder->resetFrameSync(); // end
     }
 }
@@ -271,6 +280,7 @@ void DSDdPMR::processEndFrame()
 {
     if (m_symbolIndex == 0)
     {
+        m_hasSync = true;
         m_dsdDecoder->getLogger().log("DSDdPMR::processEndFrame: start\n"); // DEBUG
     }
 
@@ -278,12 +288,13 @@ void DSDdPMR::processEndFrame()
     {
         m_symbolIndex++;
     }
-    else if (m_symbolIndex < 18) // END1: TODO: just pass for now
+    else if (m_symbolIndex < 18 + 18) // END1: TODO: just pass for now
     {
         m_symbolIndex++;
     }
     else // terminated
     {
+        m_hasSync = false;
         m_dsdDecoder->resetFrameSync(); // end
     }
 }

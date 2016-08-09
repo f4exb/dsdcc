@@ -32,6 +32,7 @@ public:
     void process();
 
     int getColorCode() const { return m_colourCode; }
+    bool hasSync() const { return m_hasSync; }
 
 private:
     typedef enum
@@ -67,6 +68,7 @@ private:
     int m_symbolIndex;       //!< current symbol index in non HD sequence
     int m_frameIndex;        //!< count of frames in superframes since header
     int m_colourCode;        //!< calculated colour code
+    bool m_hasSync;
 
     static const int rW[36];
     static const int rX[36];
