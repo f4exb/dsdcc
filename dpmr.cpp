@@ -66,11 +66,10 @@ const int DSDdPMR::rZ[36] = {
 DSDdPMR::DSDdPMR(DSDDecoder *dsdDecoder) :
         m_dsdDecoder(dsdDecoder),
         m_state(DPMRHeader),
-        m_superframeType(DPMRVoiceSuperframe),
+        m_frameType(DPMRNoFrame),
         m_symbolIndex(0),
         m_frameIndex(-1),
         m_colourCode(0),
-        m_hasSync(false),
         w(0),
         x(0),
         y(0),
@@ -115,7 +114,7 @@ void DSDdPMR::processHeader()
 
     if (m_symbolIndex == 0)
     {
-        m_hasSync = true;
+        m_frameType = DPMRHeaderFrame;
         m_dsdDecoder->getLogger().log("DSDdPMR::processHeader: start\n"); // DEBUG
     }
 
@@ -147,7 +146,7 @@ void DSDdPMR::processHeader()
     }
     else // out of sync => terminate
     {
-        m_hasSync = false;
+    	m_frameType = DPMRNoFrame;
         m_dsdDecoder->resetFrameSync(); // end
     }
 }
@@ -189,9 +188,18 @@ void DSDdPMR::processPostFrame()
                 m_state = DPMREnd;
                 m_symbolIndex = 0;
             }
-            else
+            // not sure it is in ETSI standard but some repeaters insert complete re-synchronization sequences in the flow
+            else if ((strncmp(m_syncBuffer, DPMR_PREAMBLE, 8) == 0)
+            		|| (strncmp(&m_syncBuffer[1], DPMR_PREAMBLE, 8) == 0)
+					|| (strncmp(&m_syncBuffer[2], DPMR_PREAMBLE, 8) == 0)
+					|| (strncmp(&m_syncBuffer[3], DPMR_PREAMBLE, 8) == 0))
             {
-                m_hasSync = false;
+            	m_frameType = DPMRNoFrame;
+            	m_dsdDecoder->resetFrameSync(); // trigger a full resync
+            }
+            else // look for sync on next expected place
+            {
+            	m_frameType = DPMRNoFrame;
             }
         }
     }
@@ -213,7 +221,7 @@ void DSDdPMR::processSuperFrame()
     {
         if (m_symbolIndex == 0) // new frame
         {
-            m_hasSync = true;
+            m_frameType = DPMRPayloadFrame;
             m_frameIndex++;
             m_dsdDecoder->getLogger().log("DSDdPMR::processSuperFrame: start even frame %d\n", m_frameIndex); // DEBUG
         }
@@ -261,7 +269,7 @@ void DSDdPMR::processSuperFrame()
     }
     else // shouldn´t go there => out of sync error
     {
-        m_hasSync = false;
+    	m_frameType = DPMRNoFrame;
         m_dsdDecoder->resetFrameSync(); // end
     }
 }
@@ -269,18 +277,20 @@ void DSDdPMR::processSuperFrame()
 void DSDdPMR::processEvenFrame()
 {
     // TODO
+	m_frameType == DPMRVoiceSuperframe; // assume voice for the moment
 }
 
 void DSDdPMR::processOddFrame()
 {
     // TODO
+	m_frameType == DPMRVoiceSuperframe; // assume voice for the moment
 }
 
 void DSDdPMR::processEndFrame()
 {
     if (m_symbolIndex == 0)
     {
-        m_hasSync = true;
+    	m_frameType = DPMREndFrame;
         m_dsdDecoder->getLogger().log("DSDdPMR::processEndFrame: start\n"); // DEBUG
     }
 
@@ -294,7 +304,7 @@ void DSDdPMR::processEndFrame()
     }
     else // terminated
     {
-        m_hasSync = false;
+    	m_frameType = DPMRNoFrame;
         m_dsdDecoder->resetFrameSync(); // end
     }
 }
@@ -316,7 +326,7 @@ void DSDdPMR::processColourCode()
 
 void DSDdPMR::processPayload(int symbolIndex, int dibit)
 {
-    if (m_superframeType == DPMRVoiceSuperframe)
+    if (m_frameType == DPMRVoiceSuperframe)
     {
         if ((symbolIndex == 0) && (m_dsdDecoder->m_opts.errorbars == 1))
         {

@@ -78,8 +78,9 @@
 
 // dPMR symbol mapping: 01(1):+3, 00(0):+1, 10(2):-1, 11(3):-3
 #define DPMR_FS1_SYNC "111333331133131131111313" // 57 FF 5F 75 D5 77 - non packet data header
-#define DPMR_FS2_SYNC "113333131331"// 5F F7 7D                       - superframe sync (each 2 384 bit frames)
-#define DPMR_FS3_SYNC "133131333311"// 7D DF F5                       - end frame sync
+#define DPMR_FS2_SYNC "113333131331" // 5F F7 7D                      - superframe sync (each 2 384 bit frames)
+#define DPMR_FS3_SYNC "133131333311" // 7D DF F5                      - end frame sync
+#define DPMR_PREAMBLE "113311331133" // 5F 5F 5F ...                  - preamble sequence
 #define DPMR_FS4_SYNC "333111113311313313333131"// FD 55 F5 DF 7F DD  - packet data header
 
 #define YSF_SYNC "31111311313113131131" // D4 71 C9 63 4D => D5 75 DD 77 5D
