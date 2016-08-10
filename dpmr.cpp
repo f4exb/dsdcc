@@ -15,6 +15,7 @@
 ///////////////////////////////////////////////////////////////////////////////////
 
 #include <stdlib.h>
+#include <iostream>
 #include "dpmr.h"
 #include "dsd_decoder.h"
 
@@ -124,14 +125,8 @@ void DSDdPMR::processHeader()
     }
     else if (m_symbolIndex < 60 + 12) // Accumulate colour code di-bits
     {
-        m_colourBuffer[m_symbolIndex - 72] = dibit;
+        processColourCode(m_symbolIndex - 60, dibit);
         m_symbolIndex++;
-
-        if (m_symbolIndex == 60 + 12) // colour code complete
-        {
-            m_colourBuffer[12] = '\0';
-            processColourCode();
-        }
     }
     else if (m_symbolIndex < 60 + 12 + 60) // HI1: TODO just pass for now
     {
@@ -141,7 +136,7 @@ void DSDdPMR::processHeader()
         {
             m_state = DPMRPostFrame;
             m_symbolIndex = 0;
-            m_frameIndex = -1;
+            m_frameIndex = 0;
         }
     }
     else // out of sync => terminate
@@ -217,54 +212,76 @@ void DSDdPMR::processSuperFrame()
 {
     int dibit = m_dsdDecoder->m_dsdSymbol.getDibit(); // get di-bit from symbol
 
-    if (m_symbolIndex < 36) // frame 0 or 2
+    if (m_symbolIndex == 0) // new frame
     {
-        if (m_symbolIndex == 0) // new frame
-        {
-            m_frameType = DPMRPayloadFrame;
-            m_frameIndex++;
-            m_dsdDecoder->getLogger().log("DSDdPMR::processSuperFrame: start even frame %d\n", m_frameIndex); // DEBUG
-        }
+        m_frameType = DPMRPayloadFrame;
+        m_dsdDecoder->getLogger().log("DSDdPMR::processSuperFrame: start\n"); // DEBUG
+    }
 
-        processEvenFrame();
+    if (m_symbolIndex < 36) // Start of frame 0 - CCH0
+    {
+        processCCH(m_symbolIndex, dibit);
         m_symbolIndex++;
     }
-    else if (m_symbolIndex < 36 + 144) // // 4*36 di-bits payload
+    else if (m_symbolIndex < 36 + 144) // TCH0
     {
-        processPayload(m_symbolIndex - 36, dibit);
+        processTCH(m_symbolIndex - 36, dibit);
         m_symbolIndex++;
     }
-    else if (m_symbolIndex < 36 + 144 + 12) // frame 1 or 3 colour code
+    else if (m_symbolIndex < 36 + 144 + 12) // Start of frame 1 - CC0
     {
-        if (m_symbolIndex == 36 + 144) // new frame
-        {
-            m_frameIndex++;
-            m_dsdDecoder->getLogger().log("DSDdPMR::processSuperFrame: start odd frame %d\n", m_frameIndex); // DEBUG
-        }
-
-        m_colourBuffer[m_symbolIndex - (36 + 144)] = dibit;
-        m_symbolIndex++;
-
-        if (m_symbolIndex == 36 + 144 + 12) // colour code complete
-        {
-            m_colourBuffer[12] = '\0';
-            processColourCode();
-        }
-    }
-    else if (m_symbolIndex < 36 + 144 + 12 + 36) // frame 1 or 3
-    {
-        processOddFrame();
+        m_frameIndex++;
+        processColourCode(m_symbolIndex - (36 + 144), dibit);
         m_symbolIndex++;
     }
-    else if (m_symbolIndex < 36 + 144 + 12 + 36 + 144) // 4*36 di-bits payload
+    else if (m_symbolIndex < 36 + 144 + 12 + 36) // CCH1
     {
-        processPayload(m_symbolIndex - (36  + 144 + 12 + 36), dibit);
+        processCCH(m_symbolIndex - (36 + 144 + 12), dibit);
+        m_symbolIndex++;
+    }
+    else if (m_symbolIndex < 36 + 144 + 12 + 36 + 144) // TCH1
+    {
+        processTCH(m_symbolIndex - (36 + 144 + 12 + 36), dibit);
+        m_symbolIndex++;
+    }
+    else if (m_symbolIndex < 36 + 144 + 12 + 36 + 144 + 12) // Start of frame 2 - FS2-1
+    {
+        m_frameIndex++;
+        processFS2(m_symbolIndex - (36 + 144 + 12 + 36 + 144), dibit);
+        m_symbolIndex++;
+    }
+    else if (m_symbolIndex < 36 + 144 + 12 + 36 + 144 + 12 + 36) // CCH2
+    {
+        processCCH(m_symbolIndex - (36 + 144 + 12 + 36 + 144 + 12), dibit);
+        m_symbolIndex++;
+    }
+    else if (m_symbolIndex < 36 + 144 + 12 + 36 + 144 + 12 + 36 + 144) // TCH2
+    {
+        processTCH(m_symbolIndex - (36 + 144 + 12 + 36 + 144 + 12 + 36), dibit);
+        m_symbolIndex++;
+    }
+    else if (m_symbolIndex < 36 + 144 + 12 + 36 + 144 + 12 + 36 + 144 + 12) // Start of frame 3 - CC1
+    {
+        m_frameIndex++;
+        processColourCode(m_symbolIndex - (36 + 144 + 12 + 36 + 144 + 12 + 36 + 144), dibit);
+        m_symbolIndex++;
+    }
+    else if (m_symbolIndex < 36 + 144 + 12 + 36 + 144 + 12 + 36 + 144 + 12 + 36) // CCH3
+    {
+        processCCH(m_symbolIndex - (36 + 144 + 12 + 36 + 144 + 12 + 36 + 144 + 12), dibit);
+        m_symbolIndex++;
+    }
+    else if (m_symbolIndex < 36 + 144 + 12 + 36 + 144 + 12 + 36 + 144 + 12 + 36 + 144) // TCH3
+    {
+        processTCH(m_symbolIndex - (36 + 144 + 12 + 36 + 144 + 12 + 36 + 144 + 12 + 36), dibit);
         m_symbolIndex++;
 
-        if (m_symbolIndex == 36 + 144 + 12 + 36 + 144) // frame complete
+        if (m_symbolIndex == 36 + 144 + 12 + 36 + 144 + 12 + 36 + 144 + 12 + 36 + 144) // end of super frame
         {
-            m_state = DPMRPostFrame; // check frame FS2 or FS3
+            m_frameType = DPMRNoFrame; // look for continuation or end
+            m_state = DPMRPostFrame;
             m_symbolIndex = 0;
+            m_frameIndex = 0;
         }
     }
     else // shouldn´t go there => out of sync error
@@ -272,18 +289,6 @@ void DSDdPMR::processSuperFrame()
     	m_frameType = DPMRNoFrame;
         m_dsdDecoder->resetFrameSync(); // end
     }
-}
-
-void DSDdPMR::processEvenFrame()
-{
-    // TODO
-	m_frameType == DPMRVoiceSuperframe; // assume voice for the moment
-}
-
-void DSDdPMR::processOddFrame()
-{
-    // TODO
-	m_frameType == DPMRVoiceSuperframe; // assume voice for the moment
 }
 
 void DSDdPMR::processEndFrame()
@@ -309,62 +314,104 @@ void DSDdPMR::processEndFrame()
     }
 }
 
-void DSDdPMR::processColourCode()
+void DSDdPMR::processColourCode(int symbolIndex, int dibit)
 {
-    m_colourCode = 0;
+    m_colourBuffer[symbolIndex] = dibit;
 
-    for (int i = 11, n = 0; i >= 0; i--, n++) // colour code is stored MSB first
+    if (symbolIndex == 11) // last symbol
     {
-        if ((m_colourBuffer[i] == 2) || (m_colourBuffer[i] == 3)) // -3 (11) => 1
-        {
-            m_colourCode += (1<<n); // bit is 1
-        }
-    }
+        m_colourCode = 0;
 
-    m_dsdDecoder->getLogger().log("DSDdPMR::processColourCode: %d\n", m_colourCode); // DEBUG
+        for (int i = 11, n = 0; i >= 0; i--, n++) // colour code is stored MSB first
+        {
+            if ((m_colourBuffer[i] == 2) || (m_colourBuffer[i] == 3)) // -3 (11) => 1
+            {
+                m_colourCode += (1<<n); // bit is 1
+            }
+        }
+
+        m_dsdDecoder->getLogger().log("DSDdPMR::processColourCode: %d\n", m_colourCode); // DEBUG
+    }
 }
 
-void DSDdPMR::processPayload(int symbolIndex, int dibit)
+void DSDdPMR::processFS2(int symbolIndex, int dibit)
+{
+    if ((dibit == 0) || (dibit == 1)) // positives (+1 or +3) => store 1 which maps to +3
+    {
+        m_syncBuffer[symbolIndex] = '1';
+    }
+    else
+    {
+        m_syncBuffer[symbolIndex] = '3';
+    }
+
+    if (symbolIndex == 11) // last symbol
+    {
+        m_syncBuffer[12] = '\0';
+
+        if (strcmp(m_syncBuffer, DPMR_FS2_SYNC))
+        {
+            m_dsdDecoder->getLogger().log("DSDdPMR::processFS2: out of sync: %s\n", m_syncBuffer); // DEBUG
+        }
+    }
+}
+
+void DSDdPMR::processCCH(int symbolIndex, int dibit)
+{
+    // TODO: do the real stuff. Turn on voice frame for now
+
+    if (symbolIndex == 0)
+    {
+        m_frameType = DPMRVoiceSuperframe;
+    }
+}
+
+void DSDdPMR::processTCH(int symbolIndex, int dibit)
 {
     if (m_frameType == DPMRVoiceSuperframe)
     {
-        if ((symbolIndex == 0) && (m_dsdDecoder->m_opts.errorbars == 1))
-        {
-            m_dsdDecoder->getLogger().log("\nMBE: ");
-        }
-
-        if (symbolIndex % 36 == 0)
-        {
-            w = rW;
-            x = rX;
-            y = rY;
-            z = rZ;
-            memset((void *) m_dsdDecoder->m_mbeDVFrame, 0, 9); // initialize DVSI frame
-        }
-
-        m_dsdDecoder->ambe_fr[*w][*x] = (1 & (dibit >> 1)); // bit 1
-        m_dsdDecoder->ambe_fr[*y][*z] = (1 & dibit);        // bit 0
-        w++;
-        x++;
-        y++;
-        z++;
-
-        storeSymbolDV(symbolIndex % 36, dibit); // store dibit for DVSI hardware decoder
-
-        if (symbolIndex % 36 == 35)
-        {
-            m_dsdDecoder->m_mbeDecoder.processFrame(0, m_dsdDecoder->ambe_fr, 0);
-            m_dsdDecoder->m_mbeDVReady = true; // Indicate that a DVSI frame is available
-
-            if (m_dsdDecoder->m_opts.errorbars == 1)
-            {
-                m_dsdDecoder->getLogger().log(".");
-            }
-        }
+        processVoiceFrame(symbolIndex % 36, dibit);
     }
     else
     {
         // TODO: assume only voice for new
+    }
+}
+
+void DSDdPMR::processVoiceFrame(int symbolIndex, int dibit)
+{
+    if ((symbolIndex == 0) && (m_dsdDecoder->m_opts.errorbars == 1))
+    {
+        m_dsdDecoder->getLogger().log("\nMBE: ");
+    }
+
+    if (symbolIndex % 36 == 0)
+    {
+        w = rW;
+        x = rX;
+        y = rY;
+        z = rZ;
+        memset((void *) m_dsdDecoder->m_mbeDVFrame, 0, 9); // initialize DVSI frame
+    }
+
+    m_dsdDecoder->ambe_fr[*w][*x] = (1 & (dibit >> 1)); // bit 1
+    m_dsdDecoder->ambe_fr[*y][*z] = (1 & dibit);        // bit 0
+    w++;
+    x++;
+    y++;
+    z++;
+
+    storeSymbolDV(symbolIndex % 36, dibit); // store dibit for DVSI hardware decoder
+
+    if (symbolIndex % 36 == 35)
+    {
+        m_dsdDecoder->m_mbeDecoder.processFrame(0, m_dsdDecoder->ambe_fr, 0);
+        m_dsdDecoder->m_mbeDVReady = true; // Indicate that a DVSI frame is available
+
+        if (m_dsdDecoder->m_opts.errorbars == 1)
+        {
+            m_dsdDecoder->getLogger().log(".");
+        }
     }
 }
 

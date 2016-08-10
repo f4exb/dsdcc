@@ -56,12 +56,13 @@ private:
 
     void processHeader();
     void processSuperFrame(); // process super frame
-    void processEvenFrame();  // process 0 or 2 frames of a super frame
-    void processOddFrame();   // process 1 or 3 frames of a super frame
     void processEndFrame();
     void processPostFrame();
-    void processColourCode();
-    void processPayload(int symbolIndex, int dibit);
+    void processColourCode(int symbolIndex, int dibit);
+    void processFS2(int symbolIndex, int dibit);
+    void processCCH(int symbolIndex, int dibit);
+    void processTCH(int symbolIndex, int dibit);
+    void processVoiceFrame(int symbolIndex, int dibit);
     void storeSymbolDV(int dibitindex, unsigned char dibit, bool invertDibit = false);
 
     DSDDecoder *m_dsdDecoder;
