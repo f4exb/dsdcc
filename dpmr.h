@@ -28,6 +28,7 @@ public:
     typedef enum
     {
     	DPMRNoFrame,         // no sync
+        DPMRExtSearchFrame,  // no sync - extensive search
     	DPMRHeaderFrame,     // header
 		DPMRPayloadFrame,    // payload superframe not yet determined
         DPMRVoiceSuperframe, // voice superframe
@@ -50,6 +51,7 @@ private:
     {
        DPMRHeader,         // FS1 sync header frame (sync detected at upper level)
        DPMRPostFrame,      // frame(s) have been processed and we are looking for a FS2 or FS3 sync
+       DPMRExtSearch,      // FS2 or FS3 extensive search
        DPMRSuperFrame,     // process superframe
        DPMREnd             // FS3 sync end frame
     } DPMRState;
@@ -58,6 +60,7 @@ private:
     void processSuperFrame(); // process super frame
     void processEndFrame();
     void processPostFrame();
+    void processExtSearch();
     void processColourCode(int symbolIndex, int dibit);
     void processFS2(int symbolIndex, int dibit);
     void processCCH(int symbolIndex, int dibit);
@@ -68,16 +71,19 @@ private:
     DSDDecoder *m_dsdDecoder;
     DPMRState   m_state;
     DPMRFrameType m_frameType;
-    char m_syncBuffer[13];   //!< buffer for frame sync: 12  dibits + \0
-    char m_colourBuffer[13]; //!< buffer for colour code: 12  dibits + \0
-    int m_symbolIndex;       //!< current symbol index in non HD sequence
-    int m_frameIndex;        //!< count of frames in superframes since header
-    int m_colourCode;        //!< calculated colour code
+    char m_syncBuffer[13];                //!< buffer for frame sync: 12  dibits + \0
+    unsigned char m_syncDoubleBuffer[24]; //!< double buffer for frame sync extensive search
+    char m_colourBuffer[13];              //!< buffer for colour code: 12  dibits + \0
+    int  m_symbolIndex;                   //!< current symbol index in non HD sequence
+    int  m_frameIndex;                    //!< count of frames in superframes since header
+    int  m_colourCode;                    //!< calculated colour code
 
     static const int rW[36];
     static const int rX[36];
     static const int rY[36];
     static const int rZ[36];
+    static const unsigned char m_fs2[12];
+    static const unsigned char m_preamble[12];
     const int *w, *x, *y, *z;
 };
 

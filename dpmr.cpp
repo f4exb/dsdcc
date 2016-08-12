@@ -63,6 +63,8 @@ const int DSDdPMR::rZ[36] = {
   13, 2, 12, 1, 11, 0
 };
 
+const unsigned char DSDdPMR::m_fs2[12]      = {1, 1, 3, 3, 3, 3, 1, 3, 1, 3, 3, 1};
+const unsigned char DSDdPMR::m_preamble[12] = {1, 1, 3, 3, 1, 1, 3, 3, 1, 1, 3, 3};
 
 DSDdPMR::DSDdPMR(DSDDecoder *dsdDecoder) :
         m_dsdDecoder(dsdDecoder),
@@ -97,6 +99,9 @@ void DSDdPMR::process() // just pass the frames for now
         break;
     case DPMRPostFrame:
         processPostFrame();
+        break;
+    case DPMRExtSearch:
+        processExtSearch();
         break;
     case DPMRSuperFrame:
         processSuperFrame();
@@ -160,10 +165,12 @@ void DSDdPMR::processPostFrame()
         if ((dibit == 0) || (dibit == 1)) // positives (+1 or +3) => store 1 which maps to +3
         {
             m_syncBuffer[m_symbolIndex] = '1';
+            m_syncDoubleBuffer[m_symbolIndex] = 1; // pre-fill extensive search buffer
         }
         else // negatives (-1 or -3) => store 3 which maps to -3
         {
             m_syncBuffer[m_symbolIndex] = '3';
+            m_syncDoubleBuffer[m_symbolIndex] = 3; // pre-fill extensive search buffer
         }
 
         m_symbolIndex++;
@@ -192,9 +199,12 @@ void DSDdPMR::processPostFrame()
             	m_frameType = DPMRNoFrame;
             	m_dsdDecoder->resetFrameSync(); // trigger a full resync
             }
-            else // look for sync on next expected place
+            else // look for sync extensively
             {
-            	m_frameType = DPMRNoFrame;
+                std::cerr << "DSDdPMR::processPostFrame: start extensive sync search" << std::endl;
+                m_frameType = DPMRExtSearchFrame;
+                m_state = DPMRExtSearch;
+                m_symbolIndex = 0;
             }
         }
     }
@@ -205,6 +215,51 @@ void DSDdPMR::processPostFrame()
     else
     {
         m_symbolIndex = 0; // back to FS2 or FS3 sync search
+    }
+}
+
+void DSDdPMR::processExtSearch()
+{
+    int dibit = m_dsdDecoder->m_dsdSymbol.getDibit(); // get di-bit from symbol
+
+    // compare
+    if (memcmp((const void *) &m_syncDoubleBuffer[m_symbolIndex], m_fs2, 12) == 0)
+    {
+        m_dsdDecoder->getLogger().log("DSDdPMR::processExtSearch: stop extensive sync search (sync found)\n"); // DEBUG
+        m_state = DPMRSuperFrame;
+        m_symbolIndex = 0;
+        return;
+    }
+    // not sure it is in ETSI standard but some repeaters insert complete re-synchronization sequences in the flow
+    else if (memcmp((const void *) &m_syncDoubleBuffer[m_symbolIndex], DPMR_PREAMBLE, 8) == 0)
+    {
+        m_frameType = DPMRNoFrame;
+        m_dsdDecoder->resetFrameSync(); // trigger a full resync
+    }
+
+    // store
+    m_syncDoubleBuffer[m_symbolIndex] = dibit;
+    m_syncDoubleBuffer[m_symbolIndex + 12] = dibit;
+
+//    if ((dibit == 0) || (dibit == 1)) // positives (+1 or +3) => store 1 which maps to +3
+//    {
+//        m_syncDoubleBuffer[m_symbolIndex] = 1;
+//        m_syncDoubleBuffer[m_symbolIndex + 12] = 1;
+//    }
+//    else // negatives (-1 or -3) => store 3 which maps to -3
+//    {
+//        m_syncDoubleBuffer[m_symbolIndex] = 3;
+//        m_syncDoubleBuffer[m_symbolIndex + 12] = 3;
+//    }
+
+    // move pointer
+    if (m_symbolIndex < 11)
+    {
+        m_symbolIndex++;
+    }
+    else
+    {
+        m_symbolIndex = 0;
     }
 }
 
@@ -339,19 +394,34 @@ void DSDdPMR::processFS2(int symbolIndex, int dibit)
     if ((dibit == 0) || (dibit == 1)) // positives (+1 or +3) => store 1 which maps to +3
     {
         m_syncBuffer[symbolIndex] = '1';
+        m_syncDoubleBuffer[symbolIndex] = 1; // pre-fill extensive search buffer
     }
     else
     {
         m_syncBuffer[symbolIndex] = '3';
+        m_syncDoubleBuffer[symbolIndex] = 3; // pre-fill extensive search buffer
     }
 
     if (symbolIndex == 11) // last symbol
     {
         m_syncBuffer[12] = '\0';
 
-        if (strcmp(m_syncBuffer, DPMR_FS2_SYNC))
+        if (strcmp(m_syncBuffer, DPMR_FS2_SYNC) == 0)
         {
-            m_dsdDecoder->getLogger().log("DSDdPMR::processFS2: out of sync: %s\n", m_syncBuffer); // DEBUG
+            // nothing
+            m_frameType = DPMRPayloadFrame;
+        }
+        else if (strcmp(m_syncBuffer, DPMR_FS3_SYNC) == 0) // end frame if resync occurred in middle of super frame
+        {
+            m_state = DPMREnd;
+            m_symbolIndex = 0;
+        }
+        else
+        {
+            m_dsdDecoder->getLogger().log("DSDdPMR::processFS2: start extensive sync search\n"); // DEBUG
+            m_frameType = DPMRExtSearchFrame;
+            m_state = DPMRExtSearch;
+            m_symbolIndex = 0;
         }
     }
 }
