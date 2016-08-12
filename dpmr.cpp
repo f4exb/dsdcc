@@ -222,45 +222,43 @@ void DSDdPMR::processExtSearch()
 {
     int dibit = m_dsdDecoder->m_dsdSymbol.getDibit(); // get di-bit from symbol
 
-    // compare
-    if (memcmp((const void *) &m_syncDoubleBuffer[m_symbolIndex], m_fs2, 12) == 0)
+    if (m_symbolIndex >= 12)
     {
-        m_dsdDecoder->getLogger().log("DSDdPMR::processExtSearch: stop extensive sync search (sync found)\n"); // DEBUG
-        m_state = DPMRSuperFrame;
-        m_symbolIndex = 0;
-        return;
-    }
-    // not sure it is in ETSI standard but some repeaters insert complete re-synchronization sequences in the flow
-    else if (memcmp((const void *) &m_syncDoubleBuffer[m_symbolIndex], DPMR_PREAMBLE, 8) == 0)
-    {
-        m_frameType = DPMRNoFrame;
-        m_dsdDecoder->resetFrameSync(); // trigger a full resync
+    	m_symbolIndex = 0; // new cycle
     }
 
-    // store
-    m_syncDoubleBuffer[m_symbolIndex] = dibit;
-    m_syncDoubleBuffer[m_symbolIndex + 12] = dibit;
+	// compare
+	if (memcmp((const void *) &m_syncDoubleBuffer[m_symbolIndex], m_fs2, 12) == 0)
+	{
+		m_dsdDecoder->getLogger().log("DSDdPMR::processExtSearch: stop extensive sync search (sync found)\n"); // DEBUG
+		m_state = DPMRSuperFrame;
+		m_symbolIndex = 0;
+		return;
+	}
+	// not sure it is in ETSI standard but some repeaters insert complete re-synchronization sequences in the flow
+	else if (memcmp((const void *) &m_syncDoubleBuffer[m_symbolIndex], DPMR_PREAMBLE, 8) == 0)
+	{
+		m_frameType = DPMRNoFrame;
+		m_dsdDecoder->resetFrameSync(); // trigger a full resync
+		return;
+	}
 
-//    if ((dibit == 0) || (dibit == 1)) // positives (+1 or +3) => store 1 which maps to +3
-//    {
-//        m_syncDoubleBuffer[m_symbolIndex] = 1;
-//        m_syncDoubleBuffer[m_symbolIndex + 12] = 1;
-//    }
-//    else // negatives (-1 or -3) => store 3 which maps to -3
-//    {
-//        m_syncDoubleBuffer[m_symbolIndex] = 3;
-//        m_syncDoubleBuffer[m_symbolIndex + 12] = 3;
-//    }
+	// store
+	m_syncDoubleBuffer[m_symbolIndex] = dibit;
+	m_syncDoubleBuffer[m_symbolIndex + 12] = dibit;
 
-    // move pointer
-    if (m_symbolIndex < 11)
-    {
-        m_symbolIndex++;
-    }
-    else
-    {
-        m_symbolIndex = 0;
-    }
+	//    if ((dibit == 0) || (dibit == 1)) // positives (+1 or +3) => store 1 which maps to +3
+	//    {
+	//        m_syncDoubleBuffer[m_symbolIndex] = 1;
+	//        m_syncDoubleBuffer[m_symbolIndex + 12] = 1;
+	//    }
+	//    else // negatives (-1 or -3) => store 3 which maps to -3
+	//    {
+	//        m_syncDoubleBuffer[m_symbolIndex] = 3;
+	//        m_syncDoubleBuffer[m_symbolIndex + 12] = 3;
+	//    }
+
+	m_symbolIndex++;
 }
 
 void DSDdPMR::processSuperFrame()
@@ -371,7 +369,7 @@ void DSDdPMR::processEndFrame()
 
 void DSDdPMR::processColourCode(int symbolIndex, int dibit)
 {
-    m_colourBuffer[symbolIndex] = dibit;
+    m_colourBuffer[symbolIndex] = (dibit > 1 ? 1 : 0); // 01->0, 11->1 with 00 and 01 on the same positive side and 10 and 11 on the same negative side
 
     if (symbolIndex == 11) // last symbol
     {
@@ -379,7 +377,7 @@ void DSDdPMR::processColourCode(int symbolIndex, int dibit)
 
         for (int i = 11, n = 0; i >= 0; i--, n++) // colour code is stored MSB first
         {
-            if ((m_colourBuffer[i] == 2) || (m_colourBuffer[i] == 3)) // -3 (11) => 1
+            if (m_colourBuffer[i] == 1)
             {
                 m_colourCode += (1<<n); // bit is 1
             }

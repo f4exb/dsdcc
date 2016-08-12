@@ -73,7 +73,8 @@ private:
     DPMRFrameType m_frameType;
     char m_syncBuffer[13];                //!< buffer for frame sync: 12  dibits + \0
     unsigned char m_syncDoubleBuffer[24]; //!< double buffer for frame sync extensive search
-    char m_colourBuffer[13];              //!< buffer for colour code: 12  dibits + \0
+    unsigned char  m_colourBuffer[12];    //!< buffer for colour code: 12  dibits
+    int  m_syncCycle;
     int  m_symbolIndex;                   //!< current symbol index in non HD sequence
     int  m_frameIndex;                    //!< count of frames in superframes since header
     int  m_colourCode;                    //!< calculated colour code
