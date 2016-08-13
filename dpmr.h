@@ -71,7 +71,6 @@ private:
     DSDDecoder *m_dsdDecoder;
     DPMRState   m_state;
     DPMRFrameType m_frameType;
-    char m_syncBuffer[13];                //!< buffer for frame sync: 12  dibits + \0
     unsigned char m_syncDoubleBuffer[24]; //!< double buffer for frame sync extensive search
     unsigned char  m_colourBuffer[12];    //!< buffer for colour code: 12  dibits
     int  m_syncCycle;
@@ -84,6 +83,7 @@ private:
     static const int rY[36];
     static const int rZ[36];
     static const unsigned char m_fs2[12];
+    static const unsigned char m_fs3[12];
     static const unsigned char m_preamble[12];
     const int *w, *x, *y, *z;
 };

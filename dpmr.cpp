@@ -64,12 +64,14 @@ const int DSDdPMR::rZ[36] = {
 };
 
 const unsigned char DSDdPMR::m_fs2[12]      = {1, 1, 3, 3, 3, 3, 1, 3, 1, 3, 3, 1};
+const unsigned char DSDdPMR::m_fs3[12]      = {1, 3, 3, 1, 3, 1, 3, 3, 3, 3, 1, 1};
 const unsigned char DSDdPMR::m_preamble[12] = {1, 1, 3, 3, 1, 1, 3, 3, 1, 1, 3, 3};
 
 DSDdPMR::DSDdPMR(DSDDecoder *dsdDecoder) :
         m_dsdDecoder(dsdDecoder),
         m_state(DPMRHeader),
         m_frameType(DPMRNoFrame),
+        m_syncCycle(0),
         m_symbolIndex(0),
         m_frameIndex(-1),
         m_colourCode(0),
@@ -162,42 +164,39 @@ void DSDdPMR::processPostFrame()
 
     if (m_symbolIndex < 12) // look for a sync
     {
-        if ((dibit == 0) || (dibit == 1)) // positives (+1 or +3) => store 1 which maps to +3
+        if (dibit > 1) // negatives (-1 or -3) => store 3 which maps to -3
         {
-            m_syncBuffer[m_symbolIndex] = '1';
-            m_syncDoubleBuffer[m_symbolIndex] = 1; // pre-fill extensive search buffer
+            m_syncDoubleBuffer[m_symbolIndex] = 3;
         }
-        else // negatives (-1 or -3) => store 3 which maps to -3
+        else // positives (+1 or +3) => store 1 which maps to +3
         {
-            m_syncBuffer[m_symbolIndex] = '3';
-            m_syncDoubleBuffer[m_symbolIndex] = 3; // pre-fill extensive search buffer
+            m_syncDoubleBuffer[m_symbolIndex] = 1;
         }
 
         m_symbolIndex++;
 
         if (m_symbolIndex == 12) // sync complete
         {
-            m_syncBuffer[12] = '\0';
-            m_dsdDecoder->getLogger().log("DSDdPMR::processPostFrame: sync: %s\n", m_syncBuffer); // DEBUG
+            m_dsdDecoder->getLogger().log("DSDdPMR::processPostFrame\n"); // DEBUG
 
-            if (strcmp(m_syncBuffer, DPMR_FS2_SYNC) == 0) // start of superframes
+            if (memcmp((const void *) m_syncDoubleBuffer, (const void *) m_fs2, 12) == 0) // start of superframes
             {
                 m_state = DPMRSuperFrame;
                 m_symbolIndex = 0;
             }
-            else if (strcmp(m_syncBuffer, DPMR_FS3_SYNC) == 0) // end frame
+            else if (memcmp((const void *) m_syncDoubleBuffer, (const void *) m_fs3, 12) == 0) // end frame
             {
                 m_state = DPMREnd;
                 m_symbolIndex = 0;
             }
             // not sure it is in ETSI standard but some repeaters insert complete re-synchronization sequences in the flow
-            else if ((strncmp(m_syncBuffer, DPMR_PREAMBLE, 8) == 0)
-            		|| (strncmp(&m_syncBuffer[1], DPMR_PREAMBLE, 8) == 0)
-					|| (strncmp(&m_syncBuffer[2], DPMR_PREAMBLE, 8) == 0)
-					|| (strncmp(&m_syncBuffer[3], DPMR_PREAMBLE, 8) == 0))
+            else if ((memcmp((const void *) &m_syncDoubleBuffer[0], (const void *) m_preamble, 8) == 0)
+                    || (memcmp((const void *) &m_syncDoubleBuffer[1], (const void *) m_preamble, 8) == 0)
+                    || (memcmp((const void *) &m_syncDoubleBuffer[2], (const void *) m_preamble, 8) == 0)
+                    || (memcmp((const void *) &m_syncDoubleBuffer[3], (const void *) m_preamble, 8) == 0))
             {
-            	m_frameType = DPMRNoFrame;
-            	m_dsdDecoder->resetFrameSync(); // trigger a full resync
+                m_frameType = DPMRNoFrame;
+                m_dsdDecoder->resetFrameSync(); // trigger a full resync
             }
             else // look for sync extensively
             {
@@ -205,6 +204,7 @@ void DSDdPMR::processPostFrame()
                 m_frameType = DPMRExtSearchFrame;
                 m_state = DPMRExtSearch;
                 m_symbolIndex = 0;
+                m_syncCycle = 0;
             }
         }
     }
@@ -225,38 +225,42 @@ void DSDdPMR::processExtSearch()
     if (m_symbolIndex >= 12)
     {
     	m_symbolIndex = 0; // new cycle
+
+    	// a complete frame is 16*12 bytes i.e. 16 times a sync interval
+    	// hence syncCycle goes from 0 to 15 inclusive
+    	if (m_syncCycle < 15)
+    	{
+    	    m_syncCycle++;
+    	}
+    	else
+    	{
+    	    m_syncCycle = 0;
+    	}
     }
 
-	// compare
-	if (memcmp((const void *) &m_syncDoubleBuffer[m_symbolIndex], m_fs2, 12) == 0)
-	{
-		m_dsdDecoder->getLogger().log("DSDdPMR::processExtSearch: stop extensive sync search (sync found)\n"); // DEBUG
-		m_state = DPMRSuperFrame;
-		m_symbolIndex = 0;
-		return;
-	}
-	// not sure it is in ETSI standard but some repeaters insert complete re-synchronization sequences in the flow
-	else if (memcmp((const void *) &m_syncDoubleBuffer[m_symbolIndex], DPMR_PREAMBLE, 8) == 0)
-	{
-		m_frameType = DPMRNoFrame;
-		m_dsdDecoder->resetFrameSync(); // trigger a full resync
-		return;
-	}
+	// compare around expected spot
+    if ((m_syncCycle < 1) || (m_syncCycle > 14))
+    {
+        if (memcmp((const void *) &m_syncDoubleBuffer[m_symbolIndex], (const void *) m_fs2, 12) == 0)
+        {
+            m_dsdDecoder->getLogger().log("DSDdPMR::processExtSearch: stop extensive sync search (sync found)\n"); // DEBUG
+            m_state = DPMRSuperFrame;
+            m_symbolIndex = 0;
+            processSuperFrame();
+            return;
+        }
+        // not sure it is in ETSI standard but some repeaters insert complete re-synchronization sequences in the flow
+        else if (memcmp((const void *) &m_syncDoubleBuffer[m_symbolIndex], (const void *) m_preamble, 12) == 0)
+        {
+            m_frameType = DPMRNoFrame;
+            m_dsdDecoder->resetFrameSync(); // trigger a full resync
+            return;
+        }
+    }
 
 	// store
-	m_syncDoubleBuffer[m_symbolIndex] = dibit;
-	m_syncDoubleBuffer[m_symbolIndex + 12] = dibit;
-
-	//    if ((dibit == 0) || (dibit == 1)) // positives (+1 or +3) => store 1 which maps to +3
-	//    {
-	//        m_syncDoubleBuffer[m_symbolIndex] = 1;
-	//        m_syncDoubleBuffer[m_symbolIndex + 12] = 1;
-	//    }
-	//    else // negatives (-1 or -3) => store 3 which maps to -3
-	//    {
-	//        m_syncDoubleBuffer[m_symbolIndex] = 3;
-	//        m_syncDoubleBuffer[m_symbolIndex + 12] = 3;
-	//    }
+	m_syncDoubleBuffer[m_symbolIndex] = (dibit > 1 ? 3 : 1);
+	m_syncDoubleBuffer[m_symbolIndex + 12] = (dibit > 1 ? 3 : 1);
 
 	m_symbolIndex++;
 }
@@ -391,25 +395,21 @@ void DSDdPMR::processFS2(int symbolIndex, int dibit)
 {
     if ((dibit == 0) || (dibit == 1)) // positives (+1 or +3) => store 1 which maps to +3
     {
-        m_syncBuffer[symbolIndex] = '1';
-        m_syncDoubleBuffer[symbolIndex] = 1; // pre-fill extensive search buffer
+        m_syncDoubleBuffer[symbolIndex] = 1;
     }
     else
     {
-        m_syncBuffer[symbolIndex] = '3';
-        m_syncDoubleBuffer[symbolIndex] = 3; // pre-fill extensive search buffer
+        m_syncDoubleBuffer[symbolIndex] = 3;
     }
 
     if (symbolIndex == 11) // last symbol
     {
-        m_syncBuffer[12] = '\0';
-
-        if (strcmp(m_syncBuffer, DPMR_FS2_SYNC) == 0)
+        if (memcmp((const void *) m_syncDoubleBuffer, (const void *) m_fs2, 12) == 0) // start of superframes
         {
             // nothing
             m_frameType = DPMRPayloadFrame;
         }
-        else if (strcmp(m_syncBuffer, DPMR_FS3_SYNC) == 0) // end frame if resync occurred in middle of super frame
+        else if (memcmp((const void *) m_syncDoubleBuffer, (const void *) m_fs3, 12) == 0) // end frame
         {
             m_state = DPMREnd;
             m_symbolIndex = 0;
@@ -420,6 +420,7 @@ void DSDdPMR::processFS2(int symbolIndex, int dibit)
             m_frameType = DPMRExtSearchFrame;
             m_state = DPMRExtSearch;
             m_symbolIndex = 0;
+            m_syncCycle = 0;
         }
     }
 }
