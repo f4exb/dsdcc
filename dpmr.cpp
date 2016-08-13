@@ -80,6 +80,8 @@ DSDdPMR::DSDdPMR(DSDDecoder *dsdDecoder) :
         y(0),
         z(0)
 {
+    initScrambling();
+    initInterleaveIndexes();
 }
 
 DSDdPMR::~DSDdPMR()
@@ -497,6 +499,55 @@ void DSDdPMR::storeSymbolDV(int dibitindex, unsigned char dibit, bool invertDibi
     }
 
     m_dsdDecoder->m_mbeDVFrame[dibitindex/4] |= (dibit << (6 - 2*(dibitindex % 4)));
+}
+
+void DSDdPMR::initScrambling()
+{
+    unsigned char dibit;
+
+    m_scramblingGenerator.init();
+
+    for (int i = 0; i < 120; i++)
+    {
+        m_scrambleBits[i] = m_scramblingGenerator.next() & 1;
+    }
+}
+
+void DSDdPMR::initInterleaveIndexes()
+{
+    for (int i = 0; i < 72; i++)
+    {
+        dI72[i] = 6 * (i % 12) + (i / 12);
+    }
+
+    for (int i = 0; i < 120; i++)
+    {
+        dI120[i] = 10 * (i % 12) + (i / 12);
+    }
+}
+
+DSDdPMR::LFSRGenerator::LFSRGenerator()
+{
+    init();
+}
+
+DSDdPMR::LFSRGenerator::~LFSRGenerator()
+{
+}
+
+void DSDdPMR::LFSRGenerator::init()
+{
+    m_sr = 0x3FF; // all ones
+}
+
+unsigned int DSDdPMR::LFSRGenerator::next()
+{
+    unsigned int res = (m_sr >> 1) && 1;
+    unsigned int feedback = ((((m_sr >> 4) & 1) ^ res) << 9);
+
+    m_sr = (m_sr & 0x1FF) | feedback; // insert feedback bit
+
+    return res;
 }
 
 } // namespace DSDcc

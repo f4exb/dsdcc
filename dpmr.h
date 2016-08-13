@@ -47,6 +47,19 @@ public:
     DPMRFrameType getFrameType() const { return m_frameType; }
 
 private:
+    class LFSRGenerator
+    {
+    public:
+        LFSRGenerator();
+        ~LFSRGenerator();
+
+        void init();
+        unsigned int next();
+
+    private:
+        unsigned int m_sr;
+    };
+
     typedef enum
     {
        DPMRHeader,         // FS1 sync header frame (sync detected at upper level)
@@ -67,6 +80,8 @@ private:
     void processTCH(int symbolIndex, int dibit);
     void processVoiceFrame(int symbolIndex, int dibit);
     void storeSymbolDV(int dibitindex, unsigned char dibit, bool invertDibit = false);
+    void initScrambling();
+    void initInterleaveIndexes();
 
     DSDDecoder *m_dsdDecoder;
     DPMRState   m_state;
@@ -77,6 +92,11 @@ private:
     int  m_symbolIndex;                   //!< current symbol index in non HD sequence
     int  m_frameIndex;                    //!< count of frames in superframes since header
     int  m_colourCode;                    //!< calculated colour code
+    LFSRGenerator m_scramblingGenerator;
+    unsigned char m_scrambleBits[120];
+    unsigned char m_bitBuffer[120];
+    unsigned int dI72[72];
+    unsigned int dI120[120];
 
     static const int rW[36];
     static const int rX[36];
