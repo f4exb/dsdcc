@@ -60,6 +60,20 @@ private:
         unsigned int m_sr;
     };
 
+    class Hamming_12_8
+    {
+    public:
+        Hamming_12_8();
+        ~Hamming_12_8();
+
+        void init();
+        bool decode(unsigned char *rxBits, unsigned char *decodedBits, int nbCodewords);
+
+    private:
+        unsigned char m_corr[16];                       //!< single bit error correction by syndrome index
+        static const unsigned char m_H[12*4]; //!< Parity check matrix of bits
+    };
+
     typedef enum
     {
        DPMRHeader,         // FS1 sync header frame (sync detected at upper level)
@@ -82,6 +96,8 @@ private:
     void storeSymbolDV(int dibitindex, unsigned char dibit, bool invertDibit = false);
     void initScrambling();
     void initInterleaveIndexes();
+    bool checkCRC7(unsigned char *bits, int nbBits);
+    bool checkCRC8(unsigned char *bits, int nbBits);
 
     DSDDecoder *m_dsdDecoder;
     DPMRState   m_state;
@@ -93,8 +109,11 @@ private:
     int  m_frameIndex;                    //!< count of frames in superframes since header
     int  m_colourCode;                    //!< calculated colour code
     LFSRGenerator m_scramblingGenerator;
+    Hamming_12_8  m_hamming;
     unsigned char m_scrambleBits[120];
-    unsigned char m_bitBuffer[120];
+    unsigned char m_bitBufferRx[120];
+    unsigned char m_bitBuffer[80];
+    unsigned char m_bitWork[80];
     unsigned int dI72[72];
     unsigned int dI120[120];
 

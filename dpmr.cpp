@@ -67,6 +67,28 @@ const unsigned char DSDdPMR::m_fs2[12]      = {1, 1, 3, 3, 3, 3, 1, 3, 1, 3, 3, 
 const unsigned char DSDdPMR::m_fs3[12]      = {1, 3, 3, 1, 3, 1, 3, 3, 3, 3, 1, 1};
 const unsigned char DSDdPMR::m_preamble[12] = {1, 1, 3, 3, 1, 1, 3, 3, 1, 1, 3, 3};
 
+const unsigned char DSDdPMR::Hamming_12_8::m_H[12*4] = {
+        1, 0, 1, 0, 1, 1, 0, 0,   1, 0, 0, 0,
+        1, 1, 0, 1, 0, 1, 1, 0,   0, 1, 0, 0,
+        1, 1, 1, 0, 1, 0, 1, 1,   0, 0, 1, 0,
+        0, 1, 0, 1, 1, 0, 0, 1,   0, 0, 0, 1
+//      0  1  2  3  4  5  6  7 <- correctable bit positions
+};
+
+void DSDdPMR::Hamming_12_8::init()
+{
+    // correctable bit positions given syndrome bits as index (see above)
+    memset(m_corr, 0xFF, 16); // initialize with all invalid positions
+    m_corr[0b1110] = 0;
+    m_corr[0b0111] = 1;
+    m_corr[0b1010] = 2;
+    m_corr[0b0101] = 3;
+    m_corr[0b1011] = 4;
+    m_corr[0b1100] = 5;
+    m_corr[0b0110] = 6;
+    m_corr[0b0011] = 7;
+}
+
 DSDdPMR::DSDdPMR(DSDDecoder *dsdDecoder) :
         m_dsdDecoder(dsdDecoder),
         m_state(DPMRHeader),
@@ -429,11 +451,31 @@ void DSDdPMR::processFS2(int symbolIndex, int dibit)
 
 void DSDdPMR::processCCH(int symbolIndex, int dibit)
 {
-    // TODO: do the real stuff. Turn on voice frame for now
-
     if (symbolIndex == 0)
     {
-        m_frameType = DPMRVoiceSuperframe;
+        m_scramblingGenerator.init();
+    }
+
+    m_bitBufferRx[dI72[2*symbolIndex]]     = ((dibit >> 1) & 1) ^ m_scramblingGenerator.next(); // MSB
+    m_bitBufferRx[dI72[2*symbolIndex + 1]] = (dibit & 1) ^ m_scramblingGenerator.next();        // LSB
+
+    if (symbolIndex == 35)
+    {
+        if (m_hamming.decode(m_bitBufferRx, m_bitBuffer, 6)) // Hamming decode successful
+        {
+            if (checkCRC7(m_bitBuffer, 41)) // CRC7 check OK
+            {
+                m_frameType = DPMRVoiceSuperframe; // TODO
+            }
+            else
+            {
+                m_frameType = DPMRVoiceSuperframe; // TODO
+            }
+        }
+        else
+        {
+            m_frameType = DPMRVoiceSuperframe; // TODO
+        }
     }
 }
 
@@ -526,6 +568,57 @@ void DSDdPMR::initInterleaveIndexes()
     }
 }
 
+bool DSDdPMR::checkCRC7(unsigned char *bits, int nbBits)
+{
+    memcpy(m_bitWork, bits, nbBits);
+    memset(&m_bitWork[nbBits], 0, 7);
+
+    for (int i = 0; i < nbBits; i++)
+    {
+        if (m_bitWork[i] == 1) // divide by X⁷+X³+1 (10001001)
+        {
+            m_bitWork[i]    = 0; // X⁷
+            m_bitWork[i+4] ^= 1; // X³
+            m_bitWork[i+7] ^= 1; // 1
+        }
+    }
+
+    if (memcmp(&bits[nbBits], &m_bitWork[nbBits], 7) == 0) // CRC OK
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+bool DSDdPMR::checkCRC8(unsigned char *bits, int nbBits)
+{
+    memcpy(m_bitWork, bits, nbBits);
+    memset(&m_bitWork[nbBits], 0, 8);
+
+    for (int i = 0; i < nbBits; i++)
+    {
+        if (m_bitWork[i] == 1) // divide by X⁸+X²+X+1  (100000111)
+        {
+            m_bitWork[i]    = 0; // X⁸
+            m_bitWork[i+6] ^= 1; // X²
+            m_bitWork[i+7] ^= 1; // X
+            m_bitWork[i+8] ^= 1; // 1
+        }
+    }
+
+    if (memcmp(&bits[nbBits], &m_bitWork[nbBits], 8) == 0) // CRC OK
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
 DSDdPMR::LFSRGenerator::LFSRGenerator()
 {
     init();
@@ -548,6 +641,65 @@ unsigned int DSDdPMR::LFSRGenerator::next()
     m_sr = (m_sr & 0x1FF) | feedback; // insert feedback bit
 
     return res;
+}
+
+DSDdPMR::Hamming_12_8::Hamming_12_8()
+{
+    init();
+}
+
+DSDdPMR::Hamming_12_8::~Hamming_12_8()
+{
+}
+
+bool DSDdPMR::Hamming_12_8::decode(unsigned char *rxBits, unsigned char *decodedBits, int nbCodewords)
+{
+    bool correctable = true;
+
+    for (int ic = 0; ic < nbCodewords; ic++)
+    {
+        // calculate syndrome
+
+        int ihrow = 0;
+        bool error = false;
+        int syndromeI = 0; // syndrome index
+
+        for (int is = 0; is < 4; is++)
+        {
+            syndromeI += (((rxBits[ihrow+0] * m_H[ihrow+0])
+                    + (rxBits[ihrow+1] * m_H[ihrow+1])
+                    + (rxBits[ihrow+2] * m_H[ihrow+2])
+                    + (rxBits[ihrow+3] * m_H[ihrow+3])
+                    + (rxBits[ihrow+4] * m_H[ihrow+4])
+                    + (rxBits[ihrow+5] * m_H[ihrow+5])
+                    + (rxBits[ihrow+6] * m_H[ihrow+7])
+                    + (rxBits[ihrow+7] * m_H[ihrow+7])
+                    + (rxBits[ihrow+8] * m_H[ihrow+8])
+                    + (rxBits[ihrow+9] * m_H[ihrow+9])
+                    + (rxBits[ihrow+10] * m_H[ihrow+10])
+                    + (rxBits[ihrow+11] * m_H[ihrow+11])) % 2) << is;
+            ihrow += 12;
+        }
+
+        // correct bit
+
+        if (syndromeI > 0) // single bit error correction
+        {
+            if (m_corr[syndromeI] == 0xFF) // uncorrectable error
+            {
+                correctable = false;
+            }
+            else
+            {
+                rxBits[m_corr[syndromeI]] = (rxBits[m_corr[syndromeI]] + 1) % 2; // flip bit
+            }
+        }
+
+        // move information bits
+        memcpy(&decodedBits[8*ic], &rxBits[12*ic], 8);
+    }
+
+    return correctable;
 }
 
 } // namespace DSDcc
