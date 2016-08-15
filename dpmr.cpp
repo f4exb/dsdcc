@@ -97,6 +97,8 @@ DSDdPMR::DSDdPMR(DSDDecoder *dsdDecoder) :
         m_symbolIndex(0),
         m_frameIndex(-1),
         m_colourCode(0),
+        m_calledId(0),
+        m_ownId(0),
         w(0),
         x(0),
         y(0),
@@ -152,7 +154,7 @@ void DSDdPMR::processHeader()
 
     if (m_symbolIndex < 60) // HI0: TODO just pass for now
     {
-        //processHIn(m_symbolIndex, dibit); FIXME
+        processHIn(m_symbolIndex, dibit);
         m_symbolIndex++;
     }
     else if (m_symbolIndex < 60 + 12) // Accumulate colour code di-bits
@@ -162,7 +164,7 @@ void DSDdPMR::processHeader()
     }
     else if (m_symbolIndex < 60 + 12 + 60) // HI1: TODO just pass for now
     {
-        //processHIn(m_symbolIndex - (60 + 12), dibit); FIXME
+        processHIn(m_symbolIndex - (60 + 12), dibit);
         m_symbolIndex++;
 
         if (m_symbolIndex == 60 + 12 + 60) // header complete
@@ -186,40 +188,62 @@ void DSDdPMR::processHIn(int symbolIndex, int dibit) // FIXME
 
     if (symbolIndex == 59)
     {
-        if (m_hamming.decode(m_bitBufferRx, m_bitBuffer, 10)) // Hamming decode successful
+        bool hammingStatus = m_hamming.decode(m_bitBufferRx, m_bitBuffer, 10);
+
+        if (checkCRC8(m_bitBuffer, 72)) // CRC8 check OK
         {
-            if (checkCRC8(m_bitBuffer, 72)) // CRC8 check OK
+            // collect data
+            int ht     = (m_bitBuffer[0]<<3) + (m_bitBuffer[1]<<2) + (m_bitBuffer[2]<<1) + m_bitBuffer[3];
+            int mode   = (m_bitBuffer[52]<<2) + (m_bitBuffer[53]<<1) + m_bitBuffer[54];
+            int format = (m_bitBuffer[55]<<3) + (m_bitBuffer[56]<<2) + (m_bitBuffer[57]<<1) + m_bitBuffer[58];
+            int calledId = 0, ownId = 0;
+
+            for (int i = 0; i < 24; i++)
             {
-                std::cerr << "DSDdPMR::processHIn: success" << std::endl;
-                // TODO: collect data
+                calledId += (m_bitBuffer[4+23-i]) << i;
+                ownId    += (m_bitBuffer[28+23-i]) << i;
             }
-            else
-            {
-                std::cerr << "DSDdPMR::processHIn: invalid CRC8" << std::endl;
+
+            m_dsdDecoder->getLogger().log("DSDdPMR::processHIn: HT: %d CID: %06X OID: %06X M: %d F: %02d\n",
+                    ht, calledId, ownId, mode, format); // DEBUG
+//            std::cerr << "DSDdPMR::processHIn:"
+//                    << " HT: " << ht
+//                    << " CID: " << calledId
+//                    << " OID: " << ownId
+//                    << " M: " << mode
+//                    << " F: " << format << std::endl;
+
+            if (calledId) {
+                m_calledId = calledId;
+            }
+
+            if (ownId) {
+                m_ownId = ownId;
+            }
+
+            if (ht < 9) {
+                m_headerType = (DPMRHeaderType) ht;
+            } else {
+                m_headerType = DPMRReservedHeader;
+            }
+
+            if (mode < 6) {
+                m_commMode = (DPMRCommMode) mode;
+            } else {
+                m_commMode = DPMRReservedMode;
+            }
+
+            if (format < 2) {
+                m_commFormat = (DPMRCommFormat) format;
+            } else {
+                m_commFormat = DPMRReservedFormat;
             }
         }
         else
         {
-            std::cerr << "DSDdPMR::processHIn: Hamming(12,8) failed" << std::endl;
+            m_dsdDecoder->getLogger().log("DSDdPMR::processHIn: invalid CRC8 - Hamming: %d\n", hammingStatus); // DEBUG
+            //std::cerr << "DSDdPMR::processHIn: invalid CRC8 - Hamming: "  << hammingStatus << std::endl; // DEBUG
         }
-
-        int ht     = (m_bitBuffer[0]<<3) + (m_bitBuffer[1]<<2) + (m_bitBuffer[2]<<1) + m_bitBuffer[3];
-        int mode   = (m_bitBuffer[52]<<2) + (m_bitBuffer[53]<<1) + m_bitBuffer[54];
-        int format = (m_bitBuffer[55]<<3) + (m_bitBuffer[56]<<2) + (m_bitBuffer[57]<<1) + m_bitBuffer[58];
-        int calledId = 0, ownId = 0;
-
-        for (int i = 0; i < 24; i++)
-        {
-            calledId += (m_bitBuffer[4+23-i]) << i;
-            ownId    += (m_bitBuffer[28+23-i]) << i;
-        }
-
-        std::cerr << "DSDdPMR::processHIn:"
-                << " HT: " << ht
-                << " CID: " << calledId
-                << " OID: " << ownId
-                << " M: " << mode
-                << " F: " << format << std::endl;
     }
 }
 
@@ -603,12 +627,12 @@ void DSDdPMR::initInterleaveIndexes()
 {
     for (int i = 0; i < 72; i++)
     {
-        dI72[i] = 6 * (i % 12) + (i / 12);
+        dI72[i] = 12 * (i % 6) + (i / 6);
     }
 
     for (int i = 0; i < 120; i++)
     {
-        dI120[i] = 10 * (i % 12) + (i / 12);
+        dI120[i] = 12 * (i % 10) + (i / 10);
     }
 }
 

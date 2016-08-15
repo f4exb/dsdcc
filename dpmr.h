@@ -49,7 +49,7 @@ public:
         DPMRAckReplyHeader,  //!< ACK header reply to a system request (a superframe follows)
         DPMRSysDelivHeader,  //!< System delivery header (a superframe follows)
         DPMRStatRespHeader,  //!< Status response header (an END frame follows)
-        DPMRStatReqHeader,   //!< Status request heade
+        DPMRStatReqHeader,   //!< Status request header
         DPMRReservedHeader,  //!< Reserved
         DPMRUndefinedHeader  //!< Undefined
     } DPMRHeaderType;
@@ -82,6 +82,8 @@ public:
 
     int getColorCode() const { return m_colourCode; }
     DPMRFrameType getFrameType() const { return m_frameType; }
+    unsigned int getCalledId() const { return m_calledId; }
+    unsigned int getOwnId() const { return m_ownId; }
 
 private:
     class LFSRGenerator
@@ -157,6 +159,8 @@ private:
     DPMRHeaderType m_headerType;
     DPMRCommMode m_commMode;
     DPMRCommFormat m_commFormat;
+    unsigned int m_calledId;
+    unsigned int m_ownId;
 
     static const int rW[36];
     static const int rX[36];
