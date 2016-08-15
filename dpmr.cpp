@@ -190,36 +190,36 @@ void DSDdPMR::processHIn(int symbolIndex, int dibit) // FIXME
         {
             if (checkCRC8(m_bitBuffer, 72)) // CRC8 check OK
             {
-                //std::cerr << "DSDdPMR::processHIn: success" << std::endl;
+                std::cerr << "DSDdPMR::processHIn: success" << std::endl;
                 // TODO: collect data
-                int ht     = (m_bitBuffer[0]<<3) + (m_bitBuffer[1]<<2) + (m_bitBuffer[2]<<1) + m_bitBuffer[3];
-                int mode   = (m_bitBuffer[52]<<2) + (m_bitBuffer[53]<<1) + m_bitBuffer[54];
-                int format = (m_bitBuffer[55]<<3) + (m_bitBuffer[56]<<2) + (m_bitBuffer[57]<<1) + m_bitBuffer[58];
-                int calledId = 0, ownId = 0;
-
-                for (int i = 0; i < 24; i++)
-                {
-                    calledId += (m_bitBuffer[4+23-i]) << i;
-                    ownId    += (m_bitBuffer[28+23-i]) << i;
-                }
-
-                std::cerr << "DSDdPMR::processHIn:"
-                        << " HT: " << ht
-                        << " CID: " << calledId
-                        << " OID: " << ownId
-                        << " M: " << mode
-                        << " F: " << format << std::endl;
             }
             else
             {
-                //std::cerr << "DSDdPMR::processHIn: invalid CRC8" << std::endl;
+                std::cerr << "DSDdPMR::processHIn: invalid CRC8" << std::endl;
             }
         }
         else
         {
-            //std::cerr << "DSDdPMR::processHIn: Hamming(12,8) failed" << std::endl;
+            std::cerr << "DSDdPMR::processHIn: Hamming(12,8) failed" << std::endl;
         }
 
+        int ht     = (m_bitBuffer[0]<<3) + (m_bitBuffer[1]<<2) + (m_bitBuffer[2]<<1) + m_bitBuffer[3];
+        int mode   = (m_bitBuffer[52]<<2) + (m_bitBuffer[53]<<1) + m_bitBuffer[54];
+        int format = (m_bitBuffer[55]<<3) + (m_bitBuffer[56]<<2) + (m_bitBuffer[57]<<1) + m_bitBuffer[58];
+        int calledId = 0, ownId = 0;
+
+        for (int i = 0; i < 24; i++)
+        {
+            calledId += (m_bitBuffer[4+23-i]) << i;
+            ownId    += (m_bitBuffer[28+23-i]) << i;
+        }
+
+        std::cerr << "DSDdPMR::processHIn:"
+                << " HT: " << ht
+                << " CID: " << calledId
+                << " OID: " << ownId
+                << " M: " << mode
+                << " F: " << format << std::endl;
     }
 }
 
@@ -679,7 +679,9 @@ void DSDdPMR::LFSRGenerator::init()
 
 unsigned int DSDdPMR::LFSRGenerator::next()
 {
-    unsigned int res = (m_sr >> 1) & 1;
+    m_sr >>= 1;
+
+    unsigned int res = m_sr & 1;
     unsigned int feedback = ((((m_sr >> 4) & 1) ^ res) << 9);
 
     m_sr = (m_sr & 0x1FF) | feedback; // insert feedback bit
