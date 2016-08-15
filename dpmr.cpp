@@ -95,10 +95,11 @@ DSDdPMR::DSDdPMR(DSDDecoder *dsdDecoder) :
         m_frameType(DPMRNoFrame),
         m_syncCycle(0),
         m_symbolIndex(0),
-        m_frameIndex(-1),
+        m_frameIndex(0),
         m_colourCode(0),
         m_calledId(0),
         m_ownId(0),
+        m_frameNumber(0xFF),
         w(0),
         x(0),
         y(0),
@@ -114,7 +115,16 @@ DSDdPMR::~DSDdPMR()
 
 void DSDdPMR::init()
 {
+    m_syncCycle = 0;
     m_symbolIndex = 0;
+    m_colourCode = 0;
+    m_calledId = 0;
+    m_ownId = 0;
+    m_frameNumber = 0xFF;
+    m_headerType = DPMRUndefinedHeader;
+    m_commMode = DPMRUndefinedMode;
+    m_commFormat = DPMRUndefinedFormat;
+    m_frameType = DPMRNoFrame;
     m_state = DPMRHeader;
 }
 
@@ -526,30 +536,72 @@ void DSDdPMR::processCCH(int symbolIndex, int dibit)
 
     if (symbolIndex == 35)
     {
-// FIXME
-//        if (m_hamming.decode(m_bitBufferRx, m_bitBuffer, 6)) // Hamming decode successful
-//        {
-//            if (checkCRC7(m_bitBuffer, 41)) // CRC7 check OK
-//            {
-//                std::cerr << "DSDdPMR::processCCH: success" << std::endl;
-//            }
-//            else
-//            {
-//                std::cerr << "DSDdPMR::processCCH: invalid CRC7" << std::endl;
-//            }
-//        }
-//        else
-//        {
-//            //std::cerr << "DSDdPMR::processCCH: Hamming(12,8) failed" << std::endl;
-//        }
+        bool hammingStatus = m_hamming.decode(m_bitBufferRx, m_bitBuffer, 6);
 
-        m_frameType = DPMRVoiceframe; // TODO
+        if (checkCRC7(m_bitBuffer, 41)) // CRC7 check OK
+        {
+            std::cerr << "DSDdPMR::processCCH: success" << std::endl;
+
+            m_frameNumber = (m_bitBuffer[0]<<1) + m_bitBuffer[1];
+            int mode   = (m_bitBuffer[14]<<2) + (m_bitBuffer[15]<<1) + m_bitBuffer[16];
+            int format = (m_bitBuffer[17]<<3) + (m_bitBuffer[18]<<2) + (m_bitBuffer[19]<<1) + m_bitBuffer[20];
+
+            if ((m_frameIndex % 4) != m_frameNumber) { // DEBUG
+                std::cerr << "DSDdPMR::processCCH: frame resync: count: " << m_frameIndex << " frame: " << (int) m_frameNumber << std::endl;
+            }
+
+            m_frameIndex = m_frameNumber; // re-sync frame index
+
+            if (mode < 6) {
+                m_commMode = (DPMRCommMode) mode;
+            } else {
+                m_commMode = DPMRReservedMode;
+            }
+
+            if (format < 2) {
+                m_commFormat = (DPMRCommFormat) format;
+            } else {
+                m_commFormat = DPMRReservedFormat;
+            }
+
+            // TODO: process slow data
+        }
+        else
+        {
+            std::cerr << "DSDdPMR::processCCH: invalid CRC7 - Hamming: " << hammingStatus << std::endl;
+            m_frameNumber = 0xFF; // invalid
+        }
+
+        switch (m_commFormat)
+        {
+        case DPMRVoiceMode:
+            m_frameType = DPMRVoiceframe;
+            break;
+        case DPMRVoiceSLDMode:
+            m_frameType = DPMRVoiceframe;
+            break;
+        case DPMRVoiceDataMode:
+            m_frameType = DPMRDataVoiceframe;
+            break;
+        case DPMRData1Mode:
+            m_frameType = DPMRData1frame;
+            break;
+        case DPMRData2Mode:
+            m_frameType = DPMRData2frame;
+            break;
+        case DPMRData3Mode:
+            m_frameType = DPMRPayloadFrame; // invalid if not packet mode
+            break;
+        default:
+            m_frameType = DPMRPayloadFrame; // invalid
+            break;
+        }
     }
 }
 
 void DSDdPMR::processTCH(int symbolIndex, int dibit)
 {
-    if (m_frameType == DPMRVoiceframe)
+    if ((m_frameType == DPMRVoiceframe) || (m_frameType == DPMRDataVoiceframe))
     {
         processVoiceFrame(symbolIndex % 36, dibit);
     }

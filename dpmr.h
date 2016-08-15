@@ -30,9 +30,8 @@ public:
     	DPMRNoFrame,         //!< no sync
         DPMRExtSearchFrame,  //!< no sync - extensive search
     	DPMRHeaderFrame,     //!< header
-		DPMRPayloadFrame,    //!< payload superframe not yet determined
+		DPMRPayloadFrame,    //!< payload superframe with undetermined type
         DPMRVoiceframe,      //!< voice superframe (no SLD)
-        DPMRVoiceSLDframe,   //!< voice superframe (with SLD)
         DPMRDataVoiceframe,  //!< data and voice superframe (type 2)
         DPMRData1frame,      //!< data superframe wihout FEC
         DPMRData2frame,      //!< data superframe with FEC
@@ -146,7 +145,7 @@ private:
     unsigned char  m_colourBuffer[12];    //!< buffer for colour code: 12  dibits
     int  m_syncCycle;
     int  m_symbolIndex;                   //!< current symbol index in non HD sequence
-    int  m_frameIndex;                    //!< count of frames in superframes since header
+    unsigned int  m_frameIndex;           //!< count of frames in superframes with best effort
     int  m_colourCode;                    //!< calculated colour code
     LFSRGenerator m_scramblingGenerator;
     Hamming_12_8  m_hamming;
@@ -161,6 +160,7 @@ private:
     DPMRCommFormat m_commFormat;
     unsigned int m_calledId;
     unsigned int m_ownId;
+    unsigned char m_frameNumber;
 
     static const int rW[36];
     static const int rX[36];
