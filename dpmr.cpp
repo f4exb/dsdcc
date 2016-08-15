@@ -152,6 +152,7 @@ void DSDdPMR::processHeader()
 
     if (m_symbolIndex < 60) // HI0: TODO just pass for now
     {
+        //processHIn(m_symbolIndex, dibit); FIXME
         m_symbolIndex++;
     }
     else if (m_symbolIndex < 60 + 12) // Accumulate colour code di-bits
@@ -161,6 +162,7 @@ void DSDdPMR::processHeader()
     }
     else if (m_symbolIndex < 60 + 12 + 60) // HI1: TODO just pass for now
     {
+        //processHIn(m_symbolIndex - (60 + 12), dibit); FIXME
         m_symbolIndex++;
 
         if (m_symbolIndex == 60 + 12 + 60) // header complete
@@ -174,6 +176,50 @@ void DSDdPMR::processHeader()
     {
     	m_frameType = DPMRNoFrame;
         m_dsdDecoder->resetFrameSync(); // end
+    }
+}
+
+void DSDdPMR::processHIn(int symbolIndex, int dibit) // FIXME
+{
+    m_bitBufferRx[dI120[2*symbolIndex]]     = ((dibit >> 1) & 1) ^ m_scrambleBits[2*symbolIndex]; // MSB
+    m_bitBufferRx[dI120[2*symbolIndex + 1]] = (dibit & 1) ^ m_scrambleBits[2*symbolIndex + 1];    // LSB
+
+    if (symbolIndex == 59)
+    {
+        if (m_hamming.decode(m_bitBufferRx, m_bitBuffer, 10)) // Hamming decode successful
+        {
+            if (checkCRC8(m_bitBuffer, 72)) // CRC8 check OK
+            {
+                //std::cerr << "DSDdPMR::processHIn: success" << std::endl;
+                // TODO: collect data
+                int ht     = (m_bitBuffer[0]<<3) + (m_bitBuffer[1]<<2) + (m_bitBuffer[2]<<1) + m_bitBuffer[3];
+                int mode   = (m_bitBuffer[52]<<2) + (m_bitBuffer[53]<<1) + m_bitBuffer[54];
+                int format = (m_bitBuffer[55]<<3) + (m_bitBuffer[56]<<2) + (m_bitBuffer[57]<<1) + m_bitBuffer[58];
+                int calledId = 0, ownId = 0;
+
+                for (int i = 0; i < 24; i++)
+                {
+                    calledId += (m_bitBuffer[4+23-i]) << i;
+                    ownId    += (m_bitBuffer[28+23-i]) << i;
+                }
+
+                std::cerr << "DSDdPMR::processHIn:"
+                        << " HT: " << ht
+                        << " CID: " << calledId
+                        << " OID: " << ownId
+                        << " M: " << mode
+                        << " F: " << format << std::endl;
+            }
+            else
+            {
+                //std::cerr << "DSDdPMR::processHIn: invalid CRC8" << std::endl;
+            }
+        }
+        else
+        {
+            //std::cerr << "DSDdPMR::processHIn: Hamming(12,8) failed" << std::endl;
+        }
+
     }
 }
 
@@ -451,37 +497,35 @@ void DSDdPMR::processFS2(int symbolIndex, int dibit)
 
 void DSDdPMR::processCCH(int symbolIndex, int dibit)
 {
-    if (symbolIndex == 0)
-    {
-        m_scramblingGenerator.init();
-    }
-
-    m_bitBufferRx[dI72[2*symbolIndex]]     = ((dibit >> 1) & 1) ^ m_scramblingGenerator.next(); // MSB
-    m_bitBufferRx[dI72[2*symbolIndex + 1]] = (dibit & 1) ^ m_scramblingGenerator.next();        // LSB
+    m_bitBufferRx[dI72[2*symbolIndex]]     = ((dibit >> 1) & 1) ^ m_scrambleBits[2*symbolIndex]; // MSB
+    m_bitBufferRx[dI72[2*symbolIndex + 1]] = (dibit & 1) ^ m_scrambleBits[2*symbolIndex + 1];    // LSB
 
     if (symbolIndex == 35)
     {
-        if (m_hamming.decode(m_bitBufferRx, m_bitBuffer, 6)) // Hamming decode successful
-        {
-            if (checkCRC7(m_bitBuffer, 41)) // CRC7 check OK
-            {
-                m_frameType = DPMRVoiceSuperframe; // TODO
-            }
-            else
-            {
-                m_frameType = DPMRVoiceSuperframe; // TODO
-            }
-        }
-        else
-        {
-            m_frameType = DPMRVoiceSuperframe; // TODO
-        }
+// FIXME
+//        if (m_hamming.decode(m_bitBufferRx, m_bitBuffer, 6)) // Hamming decode successful
+//        {
+//            if (checkCRC7(m_bitBuffer, 41)) // CRC7 check OK
+//            {
+//                std::cerr << "DSDdPMR::processCCH: success" << std::endl;
+//            }
+//            else
+//            {
+//                std::cerr << "DSDdPMR::processCCH: invalid CRC7" << std::endl;
+//            }
+//        }
+//        else
+//        {
+//            //std::cerr << "DSDdPMR::processCCH: Hamming(12,8) failed" << std::endl;
+//        }
+
+        m_frameType = DPMRVoiceframe; // TODO
     }
 }
 
 void DSDdPMR::processTCH(int symbolIndex, int dibit)
 {
-    if (m_frameType == DPMRVoiceSuperframe)
+    if (m_frameType == DPMRVoiceframe)
     {
         processVoiceFrame(symbolIndex % 36, dibit);
     }
@@ -635,7 +679,7 @@ void DSDdPMR::LFSRGenerator::init()
 
 unsigned int DSDdPMR::LFSRGenerator::next()
 {
-    unsigned int res = (m_sr >> 1) && 1;
+    unsigned int res = (m_sr >> 1) & 1;
     unsigned int feedback = ((((m_sr >> 4) & 1) ^ res) << 9);
 
     m_sr = (m_sr & 0x1FF) | feedback; // insert feedback bit
@@ -660,25 +704,23 @@ bool DSDdPMR::Hamming_12_8::decode(unsigned char *rxBits, unsigned char *decoded
     {
         // calculate syndrome
 
-        int ihrow = 0;
         bool error = false;
         int syndromeI = 0; // syndrome index
 
         for (int is = 0; is < 4; is++)
         {
-            syndromeI += (((rxBits[ihrow+0] * m_H[ihrow+0])
-                    + (rxBits[ihrow+1] * m_H[ihrow+1])
-                    + (rxBits[ihrow+2] * m_H[ihrow+2])
-                    + (rxBits[ihrow+3] * m_H[ihrow+3])
-                    + (rxBits[ihrow+4] * m_H[ihrow+4])
-                    + (rxBits[ihrow+5] * m_H[ihrow+5])
-                    + (rxBits[ihrow+6] * m_H[ihrow+7])
-                    + (rxBits[ihrow+7] * m_H[ihrow+7])
-                    + (rxBits[ihrow+8] * m_H[ihrow+8])
-                    + (rxBits[ihrow+9] * m_H[ihrow+9])
-                    + (rxBits[ihrow+10] * m_H[ihrow+10])
-                    + (rxBits[ihrow+11] * m_H[ihrow+11])) % 2) << is;
-            ihrow += 12;
+            syndromeI += (((rxBits[12*ic +  0] * m_H[12*is +  0])
+                         + (rxBits[12*ic +  1] * m_H[12*is +  1])
+                         + (rxBits[12*ic +  2] * m_H[12*is +  2])
+                         + (rxBits[12*ic +  3] * m_H[12*is +  3])
+                         + (rxBits[12*ic +  4] * m_H[12*is +  4])
+                         + (rxBits[12*ic +  5] * m_H[12*is +  5])
+                         + (rxBits[12*ic +  6] * m_H[12*is +  6])
+                         + (rxBits[12*ic +  7] * m_H[12*is +  7])
+                         + (rxBits[12*ic +  8] * m_H[12*is +  8])
+                         + (rxBits[12*ic +  9] * m_H[12*is +  9])
+                         + (rxBits[12*ic + 10] * m_H[12*is + 10])
+                         + (rxBits[12*ic + 11] * m_H[12*is + 11])) % 2) << is;
         }
 
         // correct bit
@@ -691,7 +733,7 @@ bool DSDdPMR::Hamming_12_8::decode(unsigned char *rxBits, unsigned char *decoded
             }
             else
             {
-                rxBits[m_corr[syndromeI]] = (rxBits[m_corr[syndromeI]] + 1) % 2; // flip bit
+                rxBits[m_corr[syndromeI]] ^= 1; // flip bit
             }
         }
 

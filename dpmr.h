@@ -27,15 +27,52 @@ class DSDdPMR
 public:
     typedef enum
     {
-    	DPMRNoFrame,         // no sync
-        DPMRExtSearchFrame,  // no sync - extensive search
-    	DPMRHeaderFrame,     // header
-		DPMRPayloadFrame,    // payload superframe not yet determined
-        DPMRVoiceSuperframe, // voice superframe
-        DPMRData1Superframe, // data superframe wihout FEC
-        DPMRData2Superframe, // data superframe with FEC
-		DPMREndFrame,        // end frame
+    	DPMRNoFrame,         //!< no sync
+        DPMRExtSearchFrame,  //!< no sync - extensive search
+    	DPMRHeaderFrame,     //!< header
+		DPMRPayloadFrame,    //!< payload superframe not yet determined
+        DPMRVoiceframe,      //!< voice superframe (no SLD)
+        DPMRVoiceSLDframe,   //!< voice superframe (with SLD)
+        DPMRDataVoiceframe,  //!< data and voice superframe (type 2)
+        DPMRData1frame,      //!< data superframe wihout FEC
+        DPMRData2frame,      //!< data superframe with FEC
+		DPMREndFrame,        //!< end frame
     } DPMRFrameType;
+
+    typedef enum
+    {
+        DPMRCommStartHeader, //!< Communication start header (a superframe follows)
+        DPMRConnReqHeader,   //!< Connection request header (an END frame follows)
+        DPMRUnConnReqHeader, //!< Unconnect request header (an END frame follows)
+        DPMRAckHeader,       //!< ACK (this a single frame, ACK or NACK is differentiated by the CI bits setting)
+        DPMRSysReqHeader,    //!< System request header (an END frame follows)
+        DPMRAckReplyHeader,  //!< ACK header reply to a system request (a superframe follows)
+        DPMRSysDelivHeader,  //!< System delivery header (a superframe follows)
+        DPMRStatRespHeader,  //!< Status response header (an END frame follows)
+        DPMRStatReqHeader,   //!< Status request heade
+        DPMRReservedHeader,  //!< Reserved
+        DPMRUndefinedHeader  //!< Undefined
+    } DPMRHeaderType;
+
+    typedef enum
+    {
+        DPMRVoiceMode,       //!< Voice communication (no user data in SLD field)
+        DPMRVoiceSLDMode,    //!< Voice + slow data (user data in SLD field)
+        DPMRData1Mode,       //!< Data communication type 1 (Payload is user data without FEC)
+        DPMRData2Mode,       //!< Data communication type 2 (Payload is user data with FEC)
+        DPMRData3Mode,       //!< Data communication type 3 (Packet data, ARQ method)
+        DPMRVoiceDataMode,   //!< Voice and appended data (Type 2)
+        DPMRReservedMode,    //!< Reserved
+        DPMRUndefinedMode    //!< Undefined
+    } DPMRCommMode;
+
+    typedef enum
+    {
+        DPMRCallAllFormat,   //!< Call ALL (Broadcast)
+        DPMRP2PFormat,       //!< Peer-to-peer communication
+        DPMRReservedFormat,  //!< Reserved
+        DPMRUndefinedFormat  //!< Undefined
+    } DPMRCommFormat;
 
     DSDdPMR(DSDDecoder *dsdDecoder);
     ~DSDdPMR();
@@ -84,6 +121,7 @@ private:
     } DPMRState;
 
     void processHeader();
+    void processHIn(int symbolIndex, int dibit);
     void processSuperFrame(); // process super frame
     void processEndFrame();
     void processPostFrame();
@@ -116,6 +154,9 @@ private:
     unsigned char m_bitWork[80];
     unsigned int dI72[72];
     unsigned int dI120[120];
+    DPMRHeaderType m_headerType;
+    DPMRCommMode m_commMode;
+    DPMRCommFormat m_commFormat;
 
     static const int rW[36];
     static const int rX[36];
