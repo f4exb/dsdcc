@@ -58,7 +58,7 @@ bool DSDSymbol::pushSample(short sample, int have_sync)
                 m_sampleIndex++;
             }
         }
-        else if (m_dsdDecoder->m_state.rf_mod == 1)
+        else if (m_dsdDecoder->m_state.rf_mod == 1) // QPSK
         {
             if ((m_dsdDecoder->m_state.jitter >= 0)
              && (m_dsdDecoder->m_state.jitter < m_dsdDecoder->m_state.symbolCenter))
@@ -71,7 +71,7 @@ bool DSDSymbol::pushSample(short sample, int have_sync)
                 m_sampleIndex--;          // catch up
             }
         }
-        else if (m_dsdDecoder->m_state.rf_mod == 2)
+        else if (m_dsdDecoder->m_state.rf_mod == 2) // GFSK
         {
             if ((m_dsdDecoder->m_state.jitter >= m_dsdDecoder->m_state.symbolCenter - 1)
              && (m_dsdDecoder->m_state.jitter <= m_dsdDecoder->m_state.symbolCenter))
@@ -84,7 +84,7 @@ bool DSDSymbol::pushSample(short sample, int have_sync)
                 m_sampleIndex++;
             }
         }
-        else if (m_dsdDecoder->m_state.rf_mod == 0)
+        else if (m_dsdDecoder->m_state.rf_mod == 0) // C4FM
         {
             if ((m_dsdDecoder->m_state.jitter > 0)
              && (m_dsdDecoder->m_state.jitter <= m_dsdDecoder->m_state.symbolCenter))
@@ -108,9 +108,8 @@ bool DSDSymbol::pushSample(short sample, int have_sync)
         {
             sample = m_dsdFilters.dmr_filter(sample);  // 12.5 kHz for DMR
         }
-        else if (m_dsdDecoder->m_state.lastsynctype == 8  || m_dsdDecoder->m_state.lastsynctype == 9           // +/-NXDN voice
-              || m_dsdDecoder->m_state.lastsynctype == 16 || m_dsdDecoder->m_state.lastsynctype == 17          // +/-NXDN data
-              || ((m_dsdDecoder->m_state.lastsynctype >= 20) && (m_dsdDecoder->m_state.lastsynctype >= 23)))   // +DPMR FS1,2,3,4
+        else if (m_dsdDecoder->m_state.lastsynctype == 8  || m_dsdDecoder->m_state.lastsynctype == 9       // +/-NXDN
+              || (m_dsdDecoder->m_state.lastsynctype == 20 || m_dsdDecoder->m_state.lastsynctype == 21))   // +DPMR FS1,4
         {
             if (m_dsdDecoder->m_state.samplesPerSymbol == 20) {
                 sample = m_dsdFilters.nxdn_filter(sample); // 6.25 kHz for NXDN48 / DPMR
