@@ -501,7 +501,7 @@ void DSDDecoder::processFrameInit()
         {
             if (m_opts.verbose > 0)
             {
-                int level = (int) m_state.max / 164;
+                int level = m_dsdSymbol.getLevel();
                 m_dsdLogger.log("inlvl: %2i%% ", level);
             }
         }
@@ -531,7 +531,7 @@ void DSDDecoder::processFrameInit()
         {
             if (m_opts.verbose > 0)
             {
-                int level = (int) m_state.max / 164;
+                int level = m_dsdSymbol.getLevel();
                 printf("inlvl: %2i%% ", level);
             }
         }
@@ -552,7 +552,7 @@ void DSDDecoder::processFrameInit()
         {
             if (m_opts.verbose > 0)
             {
-                int level = (int) m_state.max / 164;
+                int level = m_dsdSymbol.getLevel();
                 printf("inlvl: %2i%% ", level);
             }
         }
@@ -573,7 +573,7 @@ void DSDDecoder::processFrameInit()
         {
             if (m_opts.verbose > 0)
             {
-                int level = (int) m_state.max / 164;
+                int level = m_dsdSymbol.getLevel();
                 m_dsdLogger.log("inlvl: %2i%% ", level);
             }
         }
@@ -594,7 +594,7 @@ void DSDDecoder::processFrameInit()
         {
             if (m_opts.verbose > 0)
             {
-                int level = (int) m_state.max / 164;
+                int level = m_dsdSymbol.getLevel();
                 m_dsdLogger.log("inlvl: %2i%% ", level);
             }
         }
@@ -615,7 +615,7 @@ void DSDDecoder::processFrameInit()
         {
             if (m_opts.verbose > 0)
             {
-                int level = (int) m_state.max / 164;
+                int level = m_dsdSymbol.getLevel();
                 m_dsdLogger.log("inlvl: %2i%% ", level);
             }
         }
@@ -1472,8 +1472,6 @@ void DSDDecoder::noCarrier()
 
     m_state.lastsynctype = -1;
     m_state.carrier = 0;
-    m_state.max = 15000;
-    m_state.min = -15000;
     m_state.err_str[0] = 0;
 
     sprintf(m_state.fsubtype, "              ");
@@ -1509,7 +1507,7 @@ void DSDDecoder::noCarrier()
 void DSDDecoder::printFrameInfo()
 {
 
-    int level = (int) m_state.max / 164;
+    int level = m_dsdSymbol.getLevel();
 
     if (m_opts.verbose > 0)
     {

@@ -39,6 +39,7 @@ public:
     int getDibit(); //!< from the last retrieved symbol Returns either the bit (0,1) or the dibit value (0,1,2,3)
     static int invert_dibit(int dibit);
     void print_datascope(int* sbuf2);
+    int getLevel() const { return (int) m_max / 164; }
 
     static void compressBits(const char *bitArray, unsigned char *byteArray, int nbBytes)
     {
@@ -74,8 +75,8 @@ private:
     int m_lbuf[32*2], m_lbuf2[32]; //!< symbol buffers for min/max
     int m_lidx; //!< index in min/max symbol buffer
     int m_lmin, m_lmax;
-    int m_minref;
-    int m_maxref;
+    int m_min, m_max;
+    int m_minref, m_maxref;
     int m_center;
     int m_umid, m_lmid;
 };

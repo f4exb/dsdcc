@@ -41,8 +41,8 @@ DSDSymbol::~DSDSymbol()
 void DSDSymbol::noCarrier()
 {
     m_jitter = -1;
-    m_dsdDecoder->m_state.max = 15000;
-    m_dsdDecoder->m_state.min = -15000;
+    m_max = 15000;
+    m_min = -15000;
     m_center = 0;
 }
 
@@ -126,14 +126,14 @@ bool DSDSymbol::pushSample(short sample, bool have_sync)
         }
     }
 
-    if ((sample > m_dsdDecoder->m_state.max) && (have_sync) && (m_dsdDecoder->m_state.rf_mod == 0))
+    if ((sample > m_max) && (have_sync) && (m_dsdDecoder->m_state.rf_mod == 0))
     {
-        sample = m_dsdDecoder->m_state.max;
+        sample = m_max;
     }
-    else if ((sample < m_dsdDecoder->m_state.min) && (have_sync)
+    else if ((sample < m_min) && (have_sync)
             && (m_dsdDecoder->m_state.rf_mod == 0))
     {
-        sample = m_dsdDecoder->m_state.min;
+        sample = m_min;
     }
 
     if (sample > m_center)
@@ -316,15 +316,15 @@ void DSDSymbol::snapSync(int nbSymbols)
     m_lmin = (m_lbuf2[2] + m_lbuf2[3] + m_lbuf2[4]) / 3;
     m_lmax = (m_lbuf2[nbSymbols-3] + m_lbuf2[nbSymbols-4] + m_lbuf2[nbSymbols-5]) / 3;
 
-    m_dsdDecoder->m_state.max = ((m_dsdDecoder->m_state.max) + m_lmax) / 2;
-    m_dsdDecoder->m_state.min = ((m_dsdDecoder->m_state.min) + m_lmin) / 2;
+    m_max = ((m_max) + m_lmax) / 2;
+    m_min = ((m_min) + m_lmin) / 2;
     // recalibrate center/umid/lmid
-    m_center = ((m_dsdDecoder->m_state.max) + (m_dsdDecoder->m_state.min)) / 2;
-    m_umid = (((m_dsdDecoder->m_state.max) - m_center) * 5 / 8) + m_center;
-    m_lmid = (((m_dsdDecoder->m_state.min) - m_center) * 5 / 8) + m_center;
+    m_center = ((m_max) + (m_min)) / 2;
+    m_umid = (((m_max) - m_center) * 5 / 8) + m_center;
+    m_lmid = (((m_min) - m_center) * 5 / 8) + m_center;
     // store ref TODO: merge with min/max
-    m_maxref = m_dsdDecoder->m_state.max;
-    m_minref = m_dsdDecoder->m_state.min;
+    m_maxref = m_max;
+    m_minref = m_min;
 }
 
 int DSDSymbol::get_dibit_and_analog_signal(int* out_analog_signal)
@@ -607,8 +607,8 @@ void DSDSymbol::print_datascope(int* sbuf2)
             {
                 if (i == 0)
                 {
-                    if ((j == ((m_dsdDecoder->m_state.min) + 32768) / 1024)
-                            || (j == ((m_dsdDecoder->m_state.max) + 32768) / 1024))
+                    if ((j == ((m_min) + 32768) / 1024)
+                            || (j == ((m_max) + 32768) / 1024))
                     {
                         m_dsdDecoder->getLogger().log("#");
                     }
