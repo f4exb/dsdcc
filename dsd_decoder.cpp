@@ -230,7 +230,6 @@ void DSDDecoder::setDecodeMode(DSDDecodeMode mode, bool on)
 
 void DSDDecoder::setModulationOptimizations(DSDModulationOptim mode)
 {
-    m_state.rf_mod = 2;
     m_dsdLogger.log("Enabling only GFSK modulation optimizations.\n");
 }
 
@@ -673,14 +672,7 @@ int DSDDecoder::getFrameSync()
     {
         // Just update for display
 
-        if (m_state.rf_mod == 0)
-        {
-            sprintf(m_modulation, "C4FM");
-        }
-        else if (m_state.rf_mod == 2)
-        {
-            sprintf(m_modulation, "GFSK");
-        }
+        sprintf(m_modulation, "GFSK");
 
         // Sync identification starts here
 

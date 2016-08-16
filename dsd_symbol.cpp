@@ -78,31 +78,16 @@ bool DSDSymbol::pushSample(short sample, bool have_sync)
                 m_sampleIndex++;
             }
         }
-        else if (m_dsdDecoder->m_state.rf_mod == 2) // GFSK
+
+        if ((m_jitter >= m_dsdDecoder->m_state.symbolCenter - 1)
+         && (m_jitter <= m_dsdDecoder->m_state.symbolCenter))
         {
-            if ((m_jitter >= m_dsdDecoder->m_state.symbolCenter - 1)
-             && (m_jitter <= m_dsdDecoder->m_state.symbolCenter))
-            {
-                m_sampleIndex--;
-            }
-            else if ((m_jitter >= m_dsdDecoder->m_state.symbolCenter + 1)
-                  && (m_jitter <= m_dsdDecoder->m_state.symbolCenter + 2))
-            {
-                m_sampleIndex++;
-            }
+            m_sampleIndex--;
         }
-        else if (m_dsdDecoder->m_state.rf_mod == 0) // C4FM
+        else if ((m_jitter >= m_dsdDecoder->m_state.symbolCenter + 1)
+              && (m_jitter <= m_dsdDecoder->m_state.symbolCenter + 2))
         {
-            if ((m_jitter > 0)
-             && (m_jitter <= m_dsdDecoder->m_state.symbolCenter))
-            {
-                m_sampleIndex--;          // catch up
-            }
-            else if ((m_jitter > m_dsdDecoder->m_state.symbolCenter)
-                  && (m_jitter < m_dsdDecoder->m_state.samplesPerSymbol))
-            {
-                m_sampleIndex++;          // fall back
-            }
+            m_sampleIndex++;
         }
 
         m_jitter = -1;
@@ -124,16 +109,6 @@ bool DSDSymbol::pushSample(short sample, bool have_sync)
                 sample = m_dsdFilters.dmr_filter(sample);  // 12.5 kHz for NXDN96
             }
         }
-    }
-
-    if ((sample > m_max) && (have_sync) && (m_dsdDecoder->m_state.rf_mod == 0))
-    {
-        sample = m_max;
-    }
-    else if ((sample < m_min) && (have_sync)
-            && (m_dsdDecoder->m_state.rf_mod == 0))
-    {
-        sample = m_min;
     }
 
     if (sample > m_center)
@@ -218,43 +193,11 @@ bool DSDSymbol::pushSample(short sample, bool have_sync)
     }
     else
     {
-        // gr-dsd:
-//        if (((m_sampleIndex >= m_dsdDecoder->m_state.symbolCenter - 1)
-//          && (m_sampleIndex <= m_dsdDecoder->m_state.symbolCenter + 2)
-//          && (m_dsdDecoder->m_state.rf_mod == 0))
-//        || (((m_sampleIndex == m_dsdDecoder->m_state.symbolCenter)
-//          || (m_sampleIndex == m_dsdDecoder->m_state.symbolCenter + 1))
-//          && (m_dsdDecoder->m_state.rf_mod != 0)))
-//        {
-//            m_sum += sample;
-//            m_count++;
-//        }
-        if (m_dsdDecoder->m_state.rf_mod == 0)
+        if ((m_sampleIndex == m_dsdDecoder->m_state.symbolCenter - 1)
+         || (m_sampleIndex == m_dsdDecoder->m_state.symbolCenter + 1))
         {
-            // 0: C4FM modulation
-            if ((m_sampleIndex >= m_dsdDecoder->m_state.symbolCenter - 1)
-             && (m_sampleIndex <= m_dsdDecoder->m_state.symbolCenter + 2))
-            {
-                m_sum += sample;
-                m_count++;
-            }
-        }
-        else
-        {
-            // 1: QPSK modulation
-            // 2: GFSK modulation
-            // Note: this has been changed to use an additional symbol to the left
-            // On the p25_raw_unencrypted.flac it is evident that the timing
-            // comes one sample too late.
-            // This change makes a significant improvement in the BER, at least for
-            // this file.
-            //if ((i == state->symbolCenter) || (i == state->symbolCenter + 1))
-            if ((m_sampleIndex == m_dsdDecoder->m_state.symbolCenter - 1)
-             || (m_sampleIndex == m_dsdDecoder->m_state.symbolCenter + 1))
-            {
-                m_sum += sample;
-                m_count++;
-            }
+            m_sum += sample;
+            m_count++;
         }
     }
 
@@ -442,7 +385,7 @@ int DSDSymbol::digitize(int symbol)
         if (m_dsdDecoder->m_state.synctype == 1)
         {
             // Use the P25 heuristics if available
-            valid = DSDP25Heuristics::estimate_symbol(m_dsdDecoder->m_state.rf_mod, &(m_dsdDecoder->m_state.inv_p25_heuristics),
+            valid = DSDP25Heuristics::estimate_symbol(2, &(m_dsdDecoder->m_state.inv_p25_heuristics),
                     m_dsdDecoder->m_state.last_dibit, symbol, &dibit);
         }
 
@@ -499,7 +442,7 @@ int DSDSymbol::digitize(int symbol)
         if (m_dsdDecoder->m_state.synctype == 0)
         {
             // Use the P25 heuristics if available
-            valid = DSDP25Heuristics::estimate_symbol(m_dsdDecoder->m_state.rf_mod, &(m_dsdDecoder->m_state.p25_heuristics),
+            valid = DSDP25Heuristics::estimate_symbol(2, &(m_dsdDecoder->m_state.p25_heuristics),
                     m_dsdDecoder->m_state.last_dibit, symbol, &dibit);
         }
 
@@ -564,14 +507,7 @@ void DSDSymbol::print_datascope(int* sbuf2)
     char modulation[8];
     int spectrum[64];
 
-    if (m_dsdDecoder->m_state.rf_mod == 0)
-    {
-        sprintf(modulation, "C4FM");
-    }
-    else if (m_dsdDecoder->m_state.rf_mod == 2)
-    {
-        sprintf(modulation, "GFSK");
-    }
+    sprintf(modulation, "GFSK");
 
     for (i = 0; i < 64; i++)
     {
