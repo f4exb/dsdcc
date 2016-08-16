@@ -49,12 +49,9 @@ public:
     float *audio_out_temp_buf_p;
     int audio_out_idx;
     int audio_out_idx2;
-    int center;
     int synctype;
     int min;
     int max;
-    int lmid;
-    int umid;
     int lastsample;
     int sbuf[128];
     int sidx;

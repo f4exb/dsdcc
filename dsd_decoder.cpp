@@ -435,10 +435,6 @@ void DSDDecoder::run(short sample)
             if (m_sync > -2) // -1 and above means syncing has been processed (sync found or not but not searching)
             {
                 m_dsdLogger.log("DSDDecoder::run: sync found: %d symbol %d (%d)\n", m_sync, m_state.symbolcnt, m_dsdSymbol.getSymbol());
-                // recalibrate center/umid/lmid
-                m_state.center = ((m_state.max) + (m_state.min)) / 2;
-                m_state.umid = (((m_state.max) - m_state.center) * 5 / 8) + m_state.center;
-                m_state.lmid = (((m_state.min) - m_state.center) * 5 / 8) + m_state.center;
 
                 if (m_sync > -1) // good sync found
                 {
@@ -1478,7 +1474,6 @@ void DSDDecoder::noCarrier()
     m_state.carrier = 0;
     m_state.max = 15000;
     m_state.min = -15000;
-    m_state.center = 0;
     m_state.err_str[0] = 0;
 
     sprintf(m_state.fsubtype, "              ");

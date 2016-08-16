@@ -76,6 +76,8 @@ private:
     int m_lmin, m_lmax;
     int m_minref;
     int m_maxref;
+    int m_center;
+    int m_umid, m_lmid;
 };
 
 } // namespace DSDcc

@@ -30,6 +30,8 @@ DSDSymbol::DSDSymbol(DSDDecoder *dsdDecoder) :
     resetSymbol();
     m_jitter = -1;
     m_symCount1 = 0;
+    m_umid = 0;
+    m_lmid = 0;
 }
 
 DSDSymbol::~DSDSymbol()
@@ -39,6 +41,9 @@ DSDSymbol::~DSDSymbol()
 void DSDSymbol::noCarrier()
 {
     m_jitter = -1;
+    m_dsdDecoder->m_state.max = 15000;
+    m_dsdDecoder->m_state.min = -15000;
+    m_center = 0;
 }
 
 void DSDSymbol::resetFrameSync()
@@ -131,9 +136,9 @@ bool DSDSymbol::pushSample(short sample, bool have_sync)
         sample = m_dsdDecoder->m_state.min;
     }
 
-    if (sample > m_dsdDecoder->m_state.center)
+    if (sample > m_center)
     {
-        if (m_dsdDecoder->m_state.lastsample < m_dsdDecoder->m_state.center)
+        if (m_dsdDecoder->m_state.lastsample < m_center)
         {
             m_dsdDecoder->m_state.numflips += 1;
         }
@@ -157,7 +162,7 @@ bool DSDSymbol::pushSample(short sample, bool have_sync)
                 m_dsdDecoder->getLogger().log("+");
             }
             if ((m_jitter < 0)
-             && (m_dsdDecoder->m_state.lastsample < m_dsdDecoder->m_state.center))
+             && (m_dsdDecoder->m_state.lastsample < m_center))
             {               // first transition edge
                 m_jitter = m_sampleIndex;
             }
@@ -165,7 +170,7 @@ bool DSDSymbol::pushSample(short sample, bool have_sync)
     }
     else
     {                       // sample < 0
-        if (m_dsdDecoder->m_state.lastsample > m_dsdDecoder->m_state.center)
+        if (m_dsdDecoder->m_state.lastsample > m_center)
         {
             m_dsdDecoder->m_state.numflips += 1;
         }
@@ -189,7 +194,7 @@ bool DSDSymbol::pushSample(short sample, bool have_sync)
                 m_dsdDecoder->getLogger().log("-");
             }
             if ((m_jitter < 0)
-             && (m_dsdDecoder->m_state.lastsample > m_dsdDecoder->m_state.center))
+             && (m_dsdDecoder->m_state.lastsample > m_center))
             {               // first transition edge
                 m_jitter = m_sampleIndex;
             }
@@ -313,6 +318,11 @@ void DSDSymbol::snapSync(int nbSymbols)
 
     m_dsdDecoder->m_state.max = ((m_dsdDecoder->m_state.max) + m_lmax) / 2;
     m_dsdDecoder->m_state.min = ((m_dsdDecoder->m_state.min) + m_lmin) / 2;
+    // recalibrate center/umid/lmid
+    m_center = ((m_dsdDecoder->m_state.max) + (m_dsdDecoder->m_state.min)) / 2;
+    m_umid = (((m_dsdDecoder->m_state.max) - m_center) * 5 / 8) + m_center;
+    m_lmid = (((m_dsdDecoder->m_state.min) - m_center) * 5 / 8) + m_center;
+    // store ref TODO: merge with min/max
     m_maxref = m_dsdDecoder->m_state.max;
     m_minref = m_dsdDecoder->m_state.min;
 }
@@ -381,7 +391,7 @@ int DSDSymbol::digitize(int symbol)
         // 14 +ProVoice
         // 18 +D-STAR_HD
 
-        if (symbol > m_dsdDecoder->m_state.center)
+        if (symbol > m_center)
         {
             *m_dsdDecoder->m_state.dibit_buf_p = 1;
             m_dsdDecoder->m_state.dibit_buf_p++;
@@ -401,7 +411,7 @@ int DSDSymbol::digitize(int symbol)
         // 15 -ProVoice
         // 19 -D-STAR_HD
 
-        if (symbol > m_dsdDecoder->m_state.center)
+        if (symbol > m_center)
         {
             *m_dsdDecoder->m_state.dibit_buf_p = 1;
             m_dsdDecoder->m_state.dibit_buf_p++;
@@ -443,9 +453,9 @@ int DSDSymbol::digitize(int symbol)
         {
             // Revert to the original approach: choose the symbol according to the regions delimited
             // by center, umid and lmid
-            if (symbol > m_dsdDecoder->m_state.center)
+            if (symbol > m_center)
             {
-                if (symbol > m_dsdDecoder->m_state.umid)
+                if (symbol > m_umid)
                 {
                     dibit = 3;               // -3
                 }
@@ -456,7 +466,7 @@ int DSDSymbol::digitize(int symbol)
             }
             else
             {
-                if (symbol < m_dsdDecoder->m_state.lmid)
+                if (symbol < m_lmid)
                 {
                     dibit = 1;               // +3
                 }
@@ -500,9 +510,9 @@ int DSDSymbol::digitize(int symbol)
         {
             // Revert to the original approach: choose the symbol according to the regions delimited
             // by center, umid and lmid
-            if (symbol > m_dsdDecoder->m_state.center)
+            if (symbol > m_center)
             {
-                if (symbol > m_dsdDecoder->m_state.umid)
+                if (symbol > m_umid)
                 {
                     dibit = 1;               // +3
                 }
@@ -513,7 +523,7 @@ int DSDSymbol::digitize(int symbol)
             }
             else
             {
-                if (symbol < m_dsdDecoder->m_state.lmid)
+                if (symbol < m_lmid)
                 {
                     dibit = 3;               // -3
                 }
@@ -602,12 +612,12 @@ void DSDSymbol::print_datascope(int* sbuf2)
                     {
                         m_dsdDecoder->getLogger().log("#");
                     }
-                    else if ((j == ((m_dsdDecoder->m_state.lmid) + 32768) / 1024)
-                            || (j == ((m_dsdDecoder->m_state.umid) + 32768) / 1024))
+                    else if ((j == ((m_lmid) + 32768) / 1024)
+                            || (j == ((m_umid) + 32768) / 1024))
                     {
                         m_dsdDecoder->getLogger().log("^");
                     }
-                    else if (j == (m_dsdDecoder->m_state.center + 32768) / 1024)
+                    else if (j == (m_center + 32768) / 1024)
                     {
                         m_dsdDecoder->getLogger().log("!");
                     }
