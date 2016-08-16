@@ -70,19 +70,6 @@ bool DSDSymbol::pushSample(short sample, int have_sync)
                 m_sampleIndex++;
             }
         }
-        else if (m_dsdDecoder->m_state.rf_mod == 1) // QPSK
-        {
-            if ((m_jitter >= 0)
-             && (m_jitter < m_dsdDecoder->m_state.symbolCenter))
-            {
-                m_sampleIndex++;          // fall back
-            }
-            else if ((m_jitter > m_dsdDecoder->m_state.symbolCenter)
-                  && (m_jitter < 10))
-            {
-                m_sampleIndex--;          // catch up
-            }
-        }
         else if (m_dsdDecoder->m_state.rf_mod == 2) // GFSK
         {
             if ((m_jitter >= m_dsdDecoder->m_state.symbolCenter - 1)
@@ -153,10 +140,6 @@ bool DSDSymbol::pushSample(short sample, int have_sync)
             {
                 m_dsdDecoder->m_state.numflips += 1;
             }
-            if ((m_jitter < 0) && (m_dsdDecoder->m_state.rf_mod == 1))
-            {               // first spike out of place
-                m_jitter = m_sampleIndex;
-            }
             if ((m_dsdDecoder->m_opts.symboltiming == 1) && (have_sync == 0)
              && (m_dsdDecoder->m_state.lastsynctype != -1))
             {
@@ -171,8 +154,7 @@ bool DSDSymbol::pushSample(short sample, int have_sync)
                 m_dsdDecoder->getLogger().log("+");
             }
             if ((m_jitter < 0)
-             && (m_dsdDecoder->m_state.lastsample < m_dsdDecoder->m_state.center)
-             && (m_dsdDecoder->m_state.rf_mod != 1))
+             && (m_dsdDecoder->m_state.lastsample < m_dsdDecoder->m_state.center))
             {               // first transition edge
                 m_jitter = m_sampleIndex;
             }
@@ -190,10 +172,6 @@ bool DSDSymbol::pushSample(short sample, int have_sync)
             {
                 m_dsdDecoder->m_state.numflips += 1;
             }
-            if ((m_jitter < 0) && (m_dsdDecoder->m_state.rf_mod == 1))
-            {               // first spike out of place
-                m_jitter = m_sampleIndex;
-            }
             if ((m_dsdDecoder->m_opts.symboltiming == 1) && (have_sync == 0)
              && (m_dsdDecoder->m_state.lastsynctype != -1))
             {
@@ -208,8 +186,7 @@ bool DSDSymbol::pushSample(short sample, int have_sync)
                 m_dsdDecoder->getLogger().log("-");
             }
             if ((m_jitter < 0)
-             && (m_dsdDecoder->m_state.lastsample > m_dsdDecoder->m_state.center)
-             && (m_dsdDecoder->m_state.rf_mod != 1))
+             && (m_dsdDecoder->m_state.lastsample > m_dsdDecoder->m_state.center))
             {               // first transition edge
                 m_jitter = m_sampleIndex;
             }
@@ -308,14 +285,7 @@ bool DSDSymbol::pushSample(short sample, int have_sync)
         }
         else
         {
-            if (m_dsdDecoder->m_state.numflips > m_dsdDecoder->m_opts.mod_threshold)
-            {
-                if (m_dsdDecoder->m_opts.mod_qpsk == 1)
-                {
-                    m_dsdDecoder->m_state.rf_mod = 1;
-                }
-            }
-            else if (m_dsdDecoder->m_state.numflips > 18)
+            if (m_dsdDecoder->m_state.numflips > 18)
             {
                 if (m_dsdDecoder->m_opts.mod_gfsk == 1)
                 {
@@ -376,45 +346,9 @@ void DSDSymbol::use_symbol(int symbol)
 
     qsort(sbuf2, m_dsdDecoder->m_opts.ssize, sizeof(int), m_dsdDecoder->comp);
 
-    // continuous update of min/max in rf_mod=1 (QPSK) mode
     // in c4fm min/max must only be updated during sync
-    if (m_dsdDecoder->m_state.rf_mod == 1)
-    {
-        lmin = (sbuf2[0] + sbuf2[1]) / 2;
-        lmax = (sbuf2[(m_dsdDecoder->m_opts.ssize - 1)] + sbuf2[(m_dsdDecoder->m_opts.ssize - 2)]) / 2;
-        m_dsdDecoder->m_state.minbuf[m_dsdDecoder->m_state.midx] = lmin;
-        m_dsdDecoder->m_state.maxbuf[m_dsdDecoder->m_state.midx] = lmax;
-        if (m_dsdDecoder->m_state.midx == (m_dsdDecoder->m_opts.msize - 1))
-        {
-            m_dsdDecoder->m_state.midx = 0;
-        }
-        else
-        {
-            m_dsdDecoder->m_state.midx++;
-        }
-        lsum = 0;
-        for (i = 0; i < m_dsdDecoder->m_opts.msize; i++)
-        {
-            lsum += m_dsdDecoder->m_state.minbuf[i];
-        }
-        m_dsdDecoder->m_state.min = lsum / m_dsdDecoder->m_opts.msize;
-        lsum = 0;
-        for (i = 0; i < m_dsdDecoder->m_opts.msize; i++)
-        {
-            lsum += m_dsdDecoder->m_state.maxbuf[i];
-        }
-        m_dsdDecoder->m_state.max = lsum / m_dsdDecoder->m_opts.msize;
-        m_dsdDecoder->m_state.center = ((m_dsdDecoder->m_state.max) + (m_dsdDecoder->m_state.min)) / 2;
-        m_dsdDecoder->m_state.umid = (((m_dsdDecoder->m_state.max) - m_dsdDecoder->m_state.center) * 5 / 8) + m_dsdDecoder->m_state.center;
-        m_dsdDecoder->m_state.lmid = (((m_dsdDecoder->m_state.min) - m_dsdDecoder->m_state.center) * 5 / 8) + m_dsdDecoder->m_state.center;
-        m_dsdDecoder->m_state.maxref = (int) ((m_dsdDecoder->m_state.max) * 0.80F);
-        m_dsdDecoder->m_state.minref = (int) ((m_dsdDecoder->m_state.min) * 0.80F);
-    }
-    else
-    {
-        m_dsdDecoder->m_state.maxref = m_dsdDecoder->m_state.max;
-        m_dsdDecoder->m_state.minref = m_dsdDecoder->m_state.min;
-    }
+	m_dsdDecoder->m_state.maxref = m_dsdDecoder->m_state.max;
+	m_dsdDecoder->m_state.minref = m_dsdDecoder->m_state.min;
 
     // Increase sidx
     if (m_dsdDecoder->m_state.sidx == (m_dsdDecoder->m_opts.ssize - 1))
@@ -626,10 +560,6 @@ void DSDSymbol::print_datascope(int* sbuf2)
     if (m_dsdDecoder->m_state.rf_mod == 0)
     {
         sprintf(modulation, "C4FM");
-    }
-    else if (m_dsdDecoder->m_state.rf_mod == 1)
-    {
-        sprintf(modulation, "QPSK");
     }
     else if (m_dsdDecoder->m_state.rf_mod == 2)
     {

@@ -125,7 +125,6 @@ public:
     {
         DSDModulationOptimAuto,
         DSDModulationOptimGFSK,
-        DSDModulationOptimQPSK,
         DSDModulationOptimC4FM,
     } DSDModulationOptim;
 

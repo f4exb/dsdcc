@@ -246,13 +246,6 @@ void DSDDecoder::setModulationOptimizations(DSDModulationOptim mode)
         m_state.rf_mod = 2;
         m_dsdLogger.log("Enabling only GFSK modulation optimizations.\n");
         break;
-    case DSDModulationOptimQPSK:
-        m_opts.mod_c4fm = 0;
-        m_opts.mod_qpsk = 1;
-        m_opts.mod_gfsk = 0;
-        m_state.rf_mod = 1;
-        m_dsdLogger.log("Enabling only QPSK modulation optimizations.\n");
-        break;
     case DSDModulationOptimC4FM:
         m_opts.mod_c4fm = 1;
         m_opts.mod_qpsk = 0;
@@ -495,16 +488,8 @@ void DSDDecoder::run(short sample)
 
 void DSDDecoder::processFrameInit()
 {
-    if (m_state.rf_mod == 1)
-    {
-        m_state.maxref = (m_state.max * 0.80);
-        m_state.minref = (m_state.min * 0.80);
-    }
-    else
-    {
-        m_state.maxref = m_state.max;
-        m_state.minref = m_state.min;
-    }
+	m_state.maxref = m_state.max;
+	m_state.minref = m_state.min;
 
     if ((m_state.synctype >= 10) && (m_state.synctype <= 13)) // DMR
     {
@@ -739,55 +724,14 @@ int DSDDecoder::getFrameSync()
         m_lmin = (m_lbuf2[2] + m_lbuf2[3] + m_lbuf2[4]) / 3;
         m_lmax = (m_lbuf2[21] + m_lbuf2[20] + m_lbuf2[19]) / 3;
 
-        if (m_state.rf_mod == 1)
-        {
-            m_state.minbuf[m_state.midx] = m_lmin;
-            m_state.maxbuf[m_state.midx] = m_lmax;
-
-            if (m_state.midx == (m_opts.msize - 1))
-            {
-                m_state.midx = 0;
-            }
-            else
-            {
-                m_state.midx++;
-            }
-
-            m_lsum = 0;
-
-            for (int i = 0; i < m_opts.msize; i++)
-            {
-                m_lsum += m_state.minbuf[i];
-            }
-
-            m_state.min = m_lsum / m_opts.msize;
-            m_lsum = 0;
-
-            for (int i = 0; i < m_opts.msize; i++)
-            {
-                m_lsum += m_state.maxbuf[i];
-            }
-
-            m_state.max = m_lsum / m_opts.msize;
-            m_state.center = ((m_state.max) + (m_state.min)) / 2;
-            m_state.maxref = ((m_state.max) * 0.80);
-            m_state.minref = ((m_state.min) * 0.80);
-        }
-        else
-        {
-            m_state.maxref = m_state.max;
-            m_state.minref = m_state.min;
-        }
+		m_state.maxref = m_state.max;
+		m_state.minref = m_state.min;
 
         // Just update for display
 
         if (m_state.rf_mod == 0)
         {
             sprintf(m_modulation, "C4FM");
-        }
-        else if (m_state.rf_mod == 1)
-        {
-            sprintf(m_modulation, "QPSK");
         }
         else if (m_state.rf_mod == 2)
         {
