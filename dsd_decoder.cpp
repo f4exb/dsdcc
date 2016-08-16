@@ -704,39 +704,6 @@ int DSDDecoder::getFrameSync()
         m_state.sidx++;
     }
 
-    if (m_lastt == 23)
-    {
-        m_lastt = 0;
-
-        if (m_state.numflips > m_opts.mod_threshold)
-        {
-            if (m_opts.mod_qpsk == 1)
-            {
-                m_state.rf_mod = 1;
-            }
-        }
-        else if (m_state.numflips > 18)
-        {
-            if (m_opts.mod_gfsk == 1)
-            {
-                m_state.rf_mod = 2;
-            }
-        }
-        else
-        {
-            if (m_opts.mod_c4fm == 1)
-            {
-                m_state.rf_mod = 0;
-            }
-        }
-
-        m_state.numflips = 0;
-    }
-    else
-    {
-        m_lastt++;
-    }
-
     if (m_state.dibit_buf_p > m_state.dibit_buf + 900000)
     {
         m_state.dibit_buf_p = m_state.dibit_buf + 200;
@@ -747,19 +714,21 @@ int DSDDecoder::getFrameSync()
     {
         *m_state.dibit_buf_p = 1;
         m_state.dibit_buf_p++;
-        m_dibit = 49;
+        m_dibit = 49; // ASCII character '1'
     }
     else
     {
         *m_state.dibit_buf_p = 3;
         m_state.dibit_buf_p++;
-        m_dibit = 51;
+        m_dibit = 51; // ASCII character '3'
     }
 
     *m_synctest_p = m_dibit;
 
     if (m_t >= 18)
     {
+    	// What is this and why is it there ?
+
         for (int i = 0; i < 24; i++)
         {
             m_lbuf2[i] = m_lbuf[i];
@@ -810,6 +779,8 @@ int DSDDecoder::getFrameSync()
             m_state.minref = m_state.min;
         }
 
+        // Just update for display
+
         if (m_state.rf_mod == 0)
         {
             sprintf(m_modulation, "C4FM");
@@ -823,97 +794,7 @@ int DSDDecoder::getFrameSync()
             sprintf(m_modulation, "GFSK");
         }
 
-        if (m_opts.datascope == 1)
-        {
-            if (m_lidx == 0)
-            {
-                for (int i = 0; i < 64; i++)
-                {
-                    m_spectrum[i] = 0;
-                }
-
-                for (int i = 0; i < 24; i++)
-                {
-                    int o = (m_lbuf2[i] + 32768) / 1024;
-                    m_spectrum[o]++;
-                }
-                if (m_state.symbolcnt > (4800 / m_opts.scoperate))
-                {
-                    m_state.symbolcnt = 0;
-
-                    m_dsdLogger.log("\n");
-                    m_dsdLogger.log(
-                            "Demod mode:     %s                Nac:                     %4X\n",
-                            m_modulation, m_state.nac);
-                    m_dsdLogger.log(
-                            "Frame Type:    %s        Talkgroup:            %7i\n",
-                            m_state.ftype, m_state.lasttg);
-                    m_dsdLogger.log(
-                            "Frame Subtype: %s       Source:          %12i\n",
-                            m_state.fsubtype, m_state.lastsrc);
-                    m_dsdLogger.log(
-                            "TDMA activity:  %s %s     Voice errors: %s\n",
-                            m_state.slot0light, m_state.slot1light,
-                            m_state.err_str);
-                    m_dsdLogger.log(
-                            "+----------------------------------------------------------------+\n");
-
-                    for (int i = 0; i < 10; i++)
-                    {
-                        m_dsdLogger.log("|");
-
-                        for (int j = 0; j < 64; j++)
-                        {
-                            if (i == 0)
-                            {
-                                if ((j == ((m_state.min) + 32768) / 1024) || (j == ((m_state.max) + 32768) / 1024))
-                                {
-                                    m_dsdLogger.log("#");
-                                }
-                                else if (j == (m_state.center + 32768) / 1024)
-                                {
-                                    m_dsdLogger.log("!");
-                                }
-                                else
-                                {
-                                    if (j == 32)
-                                    {
-                                        m_dsdLogger.log("|");
-                                    }
-                                    else
-                                    {
-                                        m_dsdLogger.log(" ");
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                if (m_spectrum[j] > 9 - i)
-                                {
-                                    m_dsdLogger.log("*");
-                                }
-                                else
-                                {
-                                    if (j == 32)
-                                    {
-                                        m_dsdLogger.log("|");
-                                    }
-                                    else
-                                    {
-                                        m_dsdLogger.log(" ");
-                                    }
-                                }
-                            }
-                        }
-
-                        m_dsdLogger.log("|\n");
-                    }
-
-                    m_dsdLogger.log(
-                            "+----------------------------------------------------------------+\n");
-                }
-            }
-        } // m_opts.datascope == 1
+        // Sync identification starts here
 
         strncpy(m_synctest, (m_synctest_p - 23), 24);
         m_stationType = DSDStationTypeNotApplicable;
@@ -1642,6 +1523,8 @@ void DSDDecoder::resetFrameSync()
 {
     m_dsdLogger.log("DSDDecoder::resetFrameSync: symbol %d (%d)\n", m_state.symbolcnt, m_dsdSymbol.getSymbol());
 
+    m_dsdSymbol.resetFrameSync();
+
     for (int i = 18; i < 24; i++)
     {
         m_lbuf[i] = 0;
@@ -1658,7 +1541,6 @@ void DSDDecoder::resetFrameSync()
     m_lmin = 0;
     m_lmax = 0;
     m_lidx = 0;
-    m_lastt = 0;
     m_state.numflips = 0;
 
     m_sync = -2;   // mark in progress
@@ -1696,7 +1578,9 @@ void DSDDecoder::noCarrier()
 {
     m_state.dibit_buf_p = m_state.dibit_buf + 200;
     memset(m_state.dibit_buf, 0, sizeof(int) * 200);
+
     m_dsdSymbol.noCarrier();
+
     m_state.lastsynctype = -1;
     m_state.carrier = 0;
     m_state.max = 15000;

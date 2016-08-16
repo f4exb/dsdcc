@@ -309,7 +309,7 @@ private:
     DSDStationType m_stationType;
     // sync engine:
     int m_sync; //!< The current internal sync type
-    int m_dibit, m_synctest_pos, m_lastt;
+    int m_dibit, m_synctest_pos;
     char m_synctest[25];   //!< for default 24 dibits sync word
     char m_synctest18[19]; //!< for 18 dibits sync word
     char m_synctest32[33]; //!< for 32 dibits sync word

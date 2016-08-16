@@ -29,6 +29,7 @@ DSDSymbol::DSDSymbol(DSDDecoder *dsdDecoder) :
 {
     resetSymbol();
     m_jitter = -1;
+    m_symCount1 = 0;
 }
 
 DSDSymbol::~DSDSymbol()
@@ -38,6 +39,11 @@ DSDSymbol::~DSDSymbol()
 void DSDSymbol::noCarrier()
 {
     m_jitter = -1;
+}
+
+void DSDSymbol::resetFrameSync()
+{
+    m_symCount1 = 0;
 }
 
 void DSDSymbol::resetSymbol()
@@ -293,6 +299,41 @@ bool DSDSymbol::pushSample(short sample, int have_sync)
 //        }
 
         resetSymbol();
+
+        // moved here what was done at symbol retrieval in the decoder
+
+        if (m_symCount1 < 23)
+        {
+            m_symCount1++;
+        }
+        else
+        {
+            if (m_dsdDecoder->m_state.numflips > m_dsdDecoder->m_opts.mod_threshold)
+            {
+                if (m_dsdDecoder->m_opts.mod_qpsk == 1)
+                {
+                    m_dsdDecoder->m_state.rf_mod = 1;
+                }
+            }
+            else if (m_dsdDecoder->m_state.numflips > 18)
+            {
+                if (m_dsdDecoder->m_opts.mod_gfsk == 1)
+                {
+                    m_dsdDecoder->m_state.rf_mod = 2;
+                }
+            }
+            else
+            {
+                if (m_dsdDecoder->m_opts.mod_c4fm == 1)
+                {
+                    m_dsdDecoder->m_state.rf_mod = 0;
+                }
+            }
+
+            m_dsdDecoder->m_state.numflips = 0;
+            m_symCount1 = 0;
+        }
+
         return true; // new symbol available
     }
     else

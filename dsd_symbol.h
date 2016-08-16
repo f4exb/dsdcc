@@ -31,6 +31,7 @@ public:
     ~DSDSymbol();
 
     void noCarrier();
+    void resetFrameSync();
 
     int getSymbol() const { return m_symbol; }
     bool pushSample(short sample, int have_sync); //!< push a new sample into the decoder. Returns true if a new symbol is available
@@ -79,7 +80,7 @@ private:
     int m_sum;
     int m_count;
     int m_jitter;
-
+    int m_symCount1;   //!< Symbol counter #1
 };
 
 } // namespace DSDcc
