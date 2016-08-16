@@ -137,9 +137,9 @@ bool DSDSymbol::pushSample(short sample, bool have_sync)
         {
             m_dsdDecoder->m_state.numflips += 1;
         }
-        if (sample > (m_dsdDecoder->m_state.maxref * 1.25))
+        if (sample > (m_maxref * 1.25))
         {
-            if (m_dsdDecoder->m_state.lastsample < (m_dsdDecoder->m_state.maxref * 1.25))
+            if (m_dsdDecoder->m_state.lastsample < (m_maxref * 1.25))
             {
                 m_dsdDecoder->m_state.numflips += 1;
             }
@@ -169,9 +169,9 @@ bool DSDSymbol::pushSample(short sample, bool have_sync)
         {
             m_dsdDecoder->m_state.numflips += 1;
         }
-        if (sample < (m_dsdDecoder->m_state.minref * 1.25))
+        if (sample < (m_minref * 1.25))
         {
-            if (m_dsdDecoder->m_state.lastsample > (m_dsdDecoder->m_state.minref * 1.25))
+            if (m_dsdDecoder->m_state.lastsample > (m_minref * 1.25))
             {
                 m_dsdDecoder->m_state.numflips += 1;
             }
@@ -311,11 +311,10 @@ void DSDSymbol::snapSync(int nbSymbols)
     m_lmin = (m_lbuf2[2] + m_lbuf2[3] + m_lbuf2[4]) / 3;
     m_lmax = (m_lbuf2[nbSymbols-3] + m_lbuf2[nbSymbols-4] + m_lbuf2[nbSymbols-5]) / 3;
 
-    m_dsdDecoder->m_state.maxref = m_dsdDecoder->m_state.max;
-    m_dsdDecoder->m_state.minref = m_dsdDecoder->m_state.min;
-
     m_dsdDecoder->m_state.max = ((m_dsdDecoder->m_state.max) + m_lmax) / 2;
     m_dsdDecoder->m_state.min = ((m_dsdDecoder->m_state.min) + m_lmin) / 2;
+    m_maxref = m_dsdDecoder->m_state.max;
+    m_minref = m_dsdDecoder->m_state.min;
 }
 
 int DSDSymbol::get_dibit_and_analog_signal(int* out_analog_signal)
@@ -350,10 +349,6 @@ void DSDSymbol::use_symbol(int symbol)
     }
 
     qsort(sbuf2, m_dsdDecoder->m_opts.ssize, sizeof(int), m_dsdDecoder->comp);
-
-    // in c4fm min/max must only be updated during sync
-	m_dsdDecoder->m_state.maxref = m_dsdDecoder->m_state.max;
-	m_dsdDecoder->m_state.minref = m_dsdDecoder->m_state.min;
 
     // Increase sidx
     if (m_dsdDecoder->m_state.sidx == (m_dsdDecoder->m_opts.ssize - 1))

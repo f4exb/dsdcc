@@ -74,6 +74,8 @@ private:
     int m_lbuf[32*2], m_lbuf2[32]; //!< symbol buffers for min/max
     int m_lidx; //!< index in min/max symbol buffer
     int m_lmin, m_lmax;
+    int m_minref;
+    int m_maxref;
 };
 
 } // namespace DSDcc

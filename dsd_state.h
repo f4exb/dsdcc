@@ -55,8 +55,6 @@ public:
     int max;
     int lmid;
     int umid;
-    int minref;
-    int maxref;
     int lastsample;
     int sbuf[128];
     int sidx;

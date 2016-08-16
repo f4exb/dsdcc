@@ -50,8 +50,6 @@ DSDState::DSDState()
     max = 15000;
     lmid = 0;
     umid = 0;
-    minref = -12000;
-    maxref = 12000;
     lastsample = 0;
 
     for (i = 0; i < 128; i++)

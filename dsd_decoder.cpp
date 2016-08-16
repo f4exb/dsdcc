@@ -495,9 +495,6 @@ void DSDDecoder::run(short sample)
 
 void DSDDecoder::processFrameInit()
 {
-	m_state.maxref = m_state.max;
-	m_state.minref = m_state.min;
-
     if ((m_state.synctype >= 10) && (m_state.synctype <= 13)) // DMR
     {
         m_state.nac = 0;
