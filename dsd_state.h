@@ -50,7 +50,6 @@ public:
     int audio_out_idx;
     int audio_out_idx2;
     int center;
-    int jitter;
     int synctype;
     int min;
     int max;

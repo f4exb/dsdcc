@@ -45,7 +45,6 @@ DSDState::DSDState()
     audio_out_idx2 = 0;
 
     center = 0;
-    jitter = -1;
     synctype = -1;
     min = -15000;
     max = 15000;

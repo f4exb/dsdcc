@@ -30,6 +30,8 @@ public:
     DSDSymbol(DSDDecoder *dsdDecoder);
     ~DSDSymbol();
 
+    void noCarrier();
+
     int getSymbol() const { return m_symbol; }
     bool pushSample(short sample, int have_sync); //!< push a new sample into the decoder. Returns true if a new symbol is available
     int getDibit(); //!< from the last retrieved symbol Returns either the bit (0,1) or the dibit value (0,1,2,3)
@@ -76,6 +78,7 @@ private:
     int m_sampleIndex; //!< the current sample index for the symbol in progress
     int m_sum;
     int m_count;
+    int m_jitter;
 
 };
 

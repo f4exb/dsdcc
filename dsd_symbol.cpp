@@ -28,10 +28,16 @@ DSDSymbol::DSDSymbol(DSDDecoder *dsdDecoder) :
         m_symbol(0)
 {
     resetSymbol();
+    m_jitter = -1;
 }
 
 DSDSymbol::~DSDSymbol()
 {
+}
+
+void DSDSymbol::noCarrier()
+{
+    m_jitter = -1;
 }
 
 void DSDSymbol::resetSymbol()
@@ -49,56 +55,56 @@ bool DSDSymbol::pushSample(short sample, int have_sync)
     {
         if (m_dsdDecoder->m_state.samplesPerSymbol == 20)
         {
-            if ((m_dsdDecoder->m_state.jitter >= 7) && (m_dsdDecoder->m_state.jitter <= 10))
+            if ((m_jitter >= 7) && (m_jitter <= 10))
             {
                 m_sampleIndex--;
             }
-            else if ((m_dsdDecoder->m_state.jitter >= 11) && (m_dsdDecoder->m_state.jitter <= 14))
+            else if ((m_jitter >= 11) && (m_jitter <= 14))
             {
                 m_sampleIndex++;
             }
         }
         else if (m_dsdDecoder->m_state.rf_mod == 1) // QPSK
         {
-            if ((m_dsdDecoder->m_state.jitter >= 0)
-             && (m_dsdDecoder->m_state.jitter < m_dsdDecoder->m_state.symbolCenter))
+            if ((m_jitter >= 0)
+             && (m_jitter < m_dsdDecoder->m_state.symbolCenter))
             {
                 m_sampleIndex++;          // fall back
             }
-            else if ((m_dsdDecoder->m_state.jitter > m_dsdDecoder->m_state.symbolCenter)
-                  && (m_dsdDecoder->m_state.jitter < 10))
+            else if ((m_jitter > m_dsdDecoder->m_state.symbolCenter)
+                  && (m_jitter < 10))
             {
                 m_sampleIndex--;          // catch up
             }
         }
         else if (m_dsdDecoder->m_state.rf_mod == 2) // GFSK
         {
-            if ((m_dsdDecoder->m_state.jitter >= m_dsdDecoder->m_state.symbolCenter - 1)
-             && (m_dsdDecoder->m_state.jitter <= m_dsdDecoder->m_state.symbolCenter))
+            if ((m_jitter >= m_dsdDecoder->m_state.symbolCenter - 1)
+             && (m_jitter <= m_dsdDecoder->m_state.symbolCenter))
             {
                 m_sampleIndex--;
             }
-            else if ((m_dsdDecoder->m_state.jitter >= m_dsdDecoder->m_state.symbolCenter + 1)
-                  && (m_dsdDecoder->m_state.jitter <= m_dsdDecoder->m_state.symbolCenter + 2))
+            else if ((m_jitter >= m_dsdDecoder->m_state.symbolCenter + 1)
+                  && (m_jitter <= m_dsdDecoder->m_state.symbolCenter + 2))
             {
                 m_sampleIndex++;
             }
         }
         else if (m_dsdDecoder->m_state.rf_mod == 0) // C4FM
         {
-            if ((m_dsdDecoder->m_state.jitter > 0)
-             && (m_dsdDecoder->m_state.jitter <= m_dsdDecoder->m_state.symbolCenter))
+            if ((m_jitter > 0)
+             && (m_jitter <= m_dsdDecoder->m_state.symbolCenter))
             {
                 m_sampleIndex--;          // catch up
             }
-            else if ((m_dsdDecoder->m_state.jitter > m_dsdDecoder->m_state.symbolCenter)
-                  && (m_dsdDecoder->m_state.jitter < m_dsdDecoder->m_state.samplesPerSymbol))
+            else if ((m_jitter > m_dsdDecoder->m_state.symbolCenter)
+                  && (m_jitter < m_dsdDecoder->m_state.samplesPerSymbol))
             {
                 m_sampleIndex++;          // fall back
             }
         }
 
-        m_dsdDecoder->m_state.jitter = -1;
+        m_jitter = -1;
     }
 
     // process sample
@@ -141,9 +147,9 @@ bool DSDSymbol::pushSample(short sample, int have_sync)
             {
                 m_dsdDecoder->m_state.numflips += 1;
             }
-            if ((m_dsdDecoder->m_state.jitter < 0) && (m_dsdDecoder->m_state.rf_mod == 1))
+            if ((m_jitter < 0) && (m_dsdDecoder->m_state.rf_mod == 1))
             {               // first spike out of place
-                m_dsdDecoder->m_state.jitter = m_sampleIndex;
+                m_jitter = m_sampleIndex;
             }
             if ((m_dsdDecoder->m_opts.symboltiming == 1) && (have_sync == 0)
              && (m_dsdDecoder->m_state.lastsynctype != -1))
@@ -158,11 +164,11 @@ bool DSDSymbol::pushSample(short sample, int have_sync)
             {
                 m_dsdDecoder->getLogger().log("+");
             }
-            if ((m_dsdDecoder->m_state.jitter < 0)
+            if ((m_jitter < 0)
              && (m_dsdDecoder->m_state.lastsample < m_dsdDecoder->m_state.center)
              && (m_dsdDecoder->m_state.rf_mod != 1))
             {               // first transition edge
-                m_dsdDecoder->m_state.jitter = m_sampleIndex;
+                m_jitter = m_sampleIndex;
             }
         }
     }
@@ -178,9 +184,9 @@ bool DSDSymbol::pushSample(short sample, int have_sync)
             {
                 m_dsdDecoder->m_state.numflips += 1;
             }
-            if ((m_dsdDecoder->m_state.jitter < 0) && (m_dsdDecoder->m_state.rf_mod == 1))
+            if ((m_jitter < 0) && (m_dsdDecoder->m_state.rf_mod == 1))
             {               // first spike out of place
-                m_dsdDecoder->m_state.jitter = m_sampleIndex;
+                m_jitter = m_sampleIndex;
             }
             if ((m_dsdDecoder->m_opts.symboltiming == 1) && (have_sync == 0)
              && (m_dsdDecoder->m_state.lastsynctype != -1))
@@ -195,11 +201,11 @@ bool DSDSymbol::pushSample(short sample, int have_sync)
             {
                 m_dsdDecoder->getLogger().log("-");
             }
-            if ((m_dsdDecoder->m_state.jitter < 0)
+            if ((m_jitter < 0)
              && (m_dsdDecoder->m_state.lastsample > m_dsdDecoder->m_state.center)
              && (m_dsdDecoder->m_state.rf_mod != 1))
             {               // first transition edge
-                m_dsdDecoder->m_state.jitter = m_sampleIndex;
+                m_jitter = m_sampleIndex;
             }
         }
     }
@@ -269,9 +275,9 @@ bool DSDSymbol::pushSample(short sample, int have_sync)
         if ((m_dsdDecoder->m_opts.symboltiming == 1) && (have_sync == 0)
                 && (m_dsdDecoder->m_state.lastsynctype != -1))
         {
-            if (m_dsdDecoder->m_state.jitter >= 0)
+            if (m_jitter >= 0)
             {
-                m_dsdDecoder->getLogger().log(" %i\n", m_dsdDecoder->m_state.jitter);
+                m_dsdDecoder->getLogger().log(" %i\n", m_jitter);
             }
             else
             {

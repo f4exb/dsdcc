@@ -1696,7 +1696,7 @@ void DSDDecoder::noCarrier()
 {
     m_state.dibit_buf_p = m_state.dibit_buf + 200;
     memset(m_state.dibit_buf, 0, sizeof(int) * 200);
-    m_state.jitter = -1;
+    m_dsdSymbol.noCarrier();
     m_state.lastsynctype = -1;
     m_state.carrier = 0;
     m_state.max = 15000;
