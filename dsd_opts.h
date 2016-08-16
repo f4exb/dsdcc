@@ -49,9 +49,6 @@ public:
     int frame_provoice;
     int frame_dpmr;
     int frame_ysf;
-    int mod_c4fm;
-    int mod_qpsk;
-    int mod_gfsk;
     int uvquality;
     int inverted_x2tdma;
     int inverted_dmr;

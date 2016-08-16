@@ -42,9 +42,6 @@ DSDOpts::DSDOpts()
     frame_nxdn96 = 1;
     frame_dmr = 1;
     frame_provoice = 0;
-    mod_c4fm = 1;
-    mod_qpsk = 1;
-    mod_gfsk = 1;
     uvquality = 3;
     inverted_x2tdma = 1; // most transmitter + scanner + sound card combinations show inverted signals for this
     inverted_dmr = 0; // most transmitter + scanner + sound card combinations show non-inverted signals for this
