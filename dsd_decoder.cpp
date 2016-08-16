@@ -228,11 +228,6 @@ void DSDDecoder::setDecodeMode(DSDDecodeMode mode, bool on)
     }
 }
 
-void DSDDecoder::setModulationOptimizations(DSDModulationOptim mode)
-{
-    m_dsdLogger.log("Enabling only GFSK modulation optimizations.\n");
-}
-
 void DSDDecoder::setAudioGain(float gain)
 {
     m_opts.audio_gain = gain;

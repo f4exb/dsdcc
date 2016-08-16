@@ -123,13 +123,6 @@ public:
 
     typedef enum
     {
-        DSDModulationOptimAuto,
-        DSDModulationOptimGFSK,
-        DSDModulationOptimC4FM,
-    } DSDModulationOptim;
-
-    typedef enum
-    {
         DSDShowP25EncryptionSyncBits,
         DSDShowP25LinkControlBits,
         DSDShowP25StatusBitsAndLowSpeedData,
@@ -274,7 +267,6 @@ public:
     void setP25DisplayOptions(DSDShowP25 mode, bool on);
     void muteEncryptedP25(bool on);
     void setDecodeMode(DSDDecodeMode mode, bool on);
-    void setModulationOptimizations(DSDModulationOptim mode);
     void setAudioGain(float gain);
     void setUvQuality(int uvquality);
     void setUpsampling(int upsampling);

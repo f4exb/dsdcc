@@ -90,10 +90,6 @@ void usage()
     fprintf(stderr, "  -fm           Decode only DPMR Tier 1 or 2 (6.25 kHz)\n");
     fprintf(stderr, "  -fy           Decode only YSF\n");
     fprintf(stderr, "  -l            Disable DMR/MOTOTRBO and NXDN input filtering\n");
-    fprintf(stderr, "  -ma           Auto-select modulation optimizations (default)\n");
-    fprintf(stderr, "  -mc           Use only C4FM modulation optimizations\n");
-    fprintf(stderr, "  -mg           Use only GFSK modulation optimizations\n");
-    fprintf(stderr, "  -mq           Use only QPSK modulation optimizations\n");
     fprintf(stderr, "  -pu           Unmute Encrypted P25\n");
     fprintf(stderr, "  -u <num>      Unvoiced speech quality (default=3)\n");
     fprintf(stderr, "  -xx           Expect non-inverted X2-TDMA signal\n");
@@ -140,7 +136,7 @@ int main(int argc, char **argv)
     signal(SIGINT, sigfun);
 
     while ((c = getopt(argc, argv,
-            "hep:qstv:z:i:o:g:nR:f:m:u:U:x:A:S:M:lL:D:d:")) != -1)
+            "hep:qstv:z:i:o:g:nR:f:u:U:x:A:S:M:lL:D:d:")) != -1)
     {
         opterr = 0;
         switch (c)
@@ -246,7 +242,6 @@ int main(int argc, char **argv)
             else if (optarg[0] == 'r') // DMR/MOTOTRBO
             {
                 dsdDecoder.setDecodeMode(DSDcc::DSDDecoder::DSDDecodeDMR, true);
-                dsdDecoder.setModulationOptimizations(DSDcc::DSDDecoder::DSDModulationOptimGFSK); // new
             }
             else if (optarg[0] == 'd') // D-Star
             {
@@ -259,7 +254,6 @@ int main(int argc, char **argv)
             else if (optarg[0] == 'p') // ProVoice
             {
                 dsdDecoder.setDecodeMode(DSDcc::DSDDecoder::DSDDecodeProVoice, true);
-                dsdDecoder.setModulationOptimizations(DSDcc::DSDDecoder::DSDModulationOptimGFSK);
             }
             else if (optarg[0] == '0') // P25 Phase 1
             {
@@ -268,36 +262,18 @@ int main(int argc, char **argv)
             else if (optarg[0] == 'i') // NXDN48 IDAS
             {
                 dsdDecoder.setDecodeMode(DSDcc::DSDDecoder::DSDDecodeNXDN48, true);
-                dsdDecoder.setModulationOptimizations(DSDcc::DSDDecoder::DSDModulationOptimGFSK);
             }
             else if (optarg[0] == 'n') // NXDN96
             {
                 dsdDecoder.setDecodeMode(DSDcc::DSDDecoder::DSDDecodeNXDN96, true);
-                dsdDecoder.setModulationOptimizations(DSDcc::DSDDecoder::DSDModulationOptimGFSK);
             }
             else if (optarg[0] == 'm') // DPMR Tier 1 or 2
             {
                 dsdDecoder.setDecodeMode(DSDcc::DSDDecoder::DSDDecodeDPMR, true);
-                dsdDecoder.setModulationOptimizations(DSDcc::DSDDecoder::DSDModulationOptimGFSK);
             }
             else if (optarg[0] == 'y') // YSF
             {
                 dsdDecoder.setDecodeMode(DSDcc::DSDDecoder::DSDDecodeYSF, true);
-                dsdDecoder.setModulationOptimizations(DSDcc::DSDDecoder::DSDModulationOptimC4FM);
-            }
-            break;
-        case 'm':
-            if (optarg[0] == 'a')
-            {
-                dsdDecoder.setModulationOptimizations(DSDcc::DSDDecoder::DSDModulationOptimGFSK);
-            }
-            else if (optarg[0] == 'c')
-            {
-                dsdDecoder.setModulationOptimizations(DSDcc::DSDDecoder::DSDModulationOptimGFSK);
-            }
-            else if (optarg[0] == 'g')
-            {
-                dsdDecoder.setModulationOptimizations(DSDcc::DSDDecoder::DSDModulationOptimGFSK);
             }
             break;
         case 'u':
