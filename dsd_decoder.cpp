@@ -665,10 +665,6 @@ int DSDDecoder::getFrameSync()
 
     if (m_t >= 18)
     {
-        // Just update for display
-
-        sprintf(m_modulation, "GFSK");
-
         // Sync identification starts here
 
         strncpy(m_synctest, (m_synctest_p - 23), 24);
@@ -686,7 +682,7 @@ int DSDDecoder::getFrameSync()
 
                 if (m_opts.errorbars == 1)
                 {
-                    printFrameSync(" +P25p1    ", m_synctest_pos + 1, m_modulation);
+                    printFrameSync(" +P25p1    ", m_synctest_pos + 1);
                 }
 
                 m_state.lastsynctype = 0;
@@ -703,7 +699,7 @@ int DSDDecoder::getFrameSync()
 
                 if (m_opts.errorbars == 1)
                 {
-                    printFrameSync(" -P25p1    ", m_synctest_pos + 1, m_modulation);
+                    printFrameSync(" -P25p1    ", m_synctest_pos + 1);
                 }
 
                 m_state.lastsynctype = 1;
@@ -733,7 +729,7 @@ int DSDDecoder::getFrameSync()
 
                     if (m_opts.errorbars == 1)
                     {
-                        printFrameSync(" +X2-TDMA  ", m_synctest_pos + 1, m_modulation);
+                        printFrameSync(" +X2-TDMA  ", m_synctest_pos + 1);
                     }
 
                     m_state.lastsynctype = 2;
@@ -747,7 +743,7 @@ int DSDDecoder::getFrameSync()
 
                     if (m_opts.errorbars == 1)
                     {
-                        printFrameSync(" -X2-TDMA  ", m_synctest_pos + 1, m_modulation);
+                        printFrameSync(" -X2-TDMA  ", m_synctest_pos + 1);
                     }
 
                     if (m_state.lastsynctype != 3)
@@ -780,7 +776,7 @@ int DSDDecoder::getFrameSync()
 
                     if (m_opts.errorbars == 1)
                     {
-                        printFrameSync(" +X2-TDMA  ", m_synctest_pos + 1, m_modulation);
+                        printFrameSync(" +X2-TDMA  ", m_synctest_pos + 1);
                     }
 
                     if (m_state.lastsynctype != 4)
@@ -799,7 +795,7 @@ int DSDDecoder::getFrameSync()
 
                     if (m_opts.errorbars == 1)
                     {
-                        printFrameSync(" -X2-TDMA  ", m_synctest_pos + 1, m_modulation);
+                        printFrameSync(" -X2-TDMA  ", m_synctest_pos + 1);
                     }
 
                     m_state.lastsynctype = 5;
@@ -822,7 +818,7 @@ int DSDDecoder::getFrameSync()
 
                 if (m_opts.errorbars == 1)
                 {
-                    printFrameSync("+YSF       ", m_synctest_pos + 1, m_modulation);
+                    printFrameSync("+YSF       ", m_synctest_pos + 1);
                 }
 
                 m_state.lastsynctype = 24;
@@ -851,7 +847,7 @@ int DSDDecoder::getFrameSync()
 
                     if (m_opts.errorbars == 1)
                     {
-                        printFrameSync(" +DMRd     ",  m_synctest_pos + 1, m_modulation);
+                        printFrameSync(" +DMRd     ",  m_synctest_pos + 1);
                     }
 
                     m_state.lastsynctype = 10;
@@ -865,7 +861,7 @@ int DSDDecoder::getFrameSync()
 
                     if (m_opts.errorbars == 1)
                     {
-                        printFrameSync(" -DMRv     ", m_synctest_pos + 1, m_modulation);
+                        printFrameSync(" -DMRv     ", m_synctest_pos + 1);
                     }
 
                     if (m_state.lastsynctype != 11)
@@ -898,7 +894,7 @@ int DSDDecoder::getFrameSync()
 
                     if (m_opts.errorbars == 1)
                     {
-                        printFrameSync(" +DMRv     ", m_synctest_pos + 1, m_modulation);
+                        printFrameSync(" +DMRv     ", m_synctest_pos + 1);
                     }
 
                     if (m_state.lastsynctype != 12)
@@ -917,7 +913,7 @@ int DSDDecoder::getFrameSync()
 
                     if (m_opts.errorbars == 1)
                     {
-                        printFrameSync(" -DMRd     ", m_synctest_pos + 1, m_modulation);
+                        printFrameSync(" -DMRd     ", m_synctest_pos + 1);
                     }
 
                     m_state.lastsynctype = 13;
@@ -941,7 +937,7 @@ int DSDDecoder::getFrameSync()
 
                 if (m_opts.errorbars == 1)
                 {
-                    printFrameSync(" +ProVoice ", m_synctest_pos + 1, m_modulation);
+                    printFrameSync(" +ProVoice ", m_synctest_pos + 1);
                 }
 
                 m_state.lastsynctype = 14;
@@ -959,7 +955,7 @@ int DSDDecoder::getFrameSync()
 
                 if (m_opts.errorbars == 1)
                 {
-                    printFrameSync(" -ProVoice ",  m_synctest_pos + 1, m_modulation);
+                    printFrameSync(" -ProVoice ",  m_synctest_pos + 1);
                 }
 
                 m_state.lastsynctype = 15;
@@ -984,7 +980,7 @@ int DSDDecoder::getFrameSync()
 
 					if (m_opts.errorbars == 1)
 					{
-						printFrameSync(" +NXDN48   ", m_synctest_pos + 1, m_modulation);
+						printFrameSync(" +NXDN48   ", m_synctest_pos + 1);
 					}
 				}
 				else
@@ -993,7 +989,7 @@ int DSDDecoder::getFrameSync()
 
 					if (m_opts.errorbars == 1)
 					{
-						printFrameSync(" +NXDN96   ", m_synctest_pos + 1, m_modulation);
+						printFrameSync(" +NXDN96   ", m_synctest_pos + 1);
 					}
 				}
 
@@ -1013,7 +1009,7 @@ int DSDDecoder::getFrameSync()
 
 					if (m_opts.errorbars == 1)
 					{
-						printFrameSync(" -NXDN48   ", m_synctest_pos + 1, m_modulation);
+						printFrameSync(" -NXDN48   ", m_synctest_pos + 1);
 					}
 				}
 				else
@@ -1022,7 +1018,7 @@ int DSDDecoder::getFrameSync()
 
 					if (m_opts.errorbars == 1)
 					{
-						printFrameSync(" -NXDN96   ", m_synctest_pos + 1, m_modulation);
+						printFrameSync(" -NXDN96   ", m_synctest_pos + 1);
 					}
 				}
 
@@ -1065,8 +1061,7 @@ int DSDDecoder::getFrameSync()
 //                            printFrameSync(" +NXDN96   ", m_synctest_pos + 1, m_modulation);
 //                        }
 //                    }
-//
-//                    m_state.lastsynctype = 16;
+////                    m_state.lastsynctype = 16;
 //                    m_mbeRate = DSDMBERate3600x2450;
 //                    return(16); // done
 //                }
@@ -1136,7 +1131,7 @@ int DSDDecoder::getFrameSync()
 
                 if (m_opts.errorbars == 1)
                 {
-                    printFrameSync("+dPMR      ", m_synctest_pos + 1, m_modulation);
+                    printFrameSync("+dPMR      ", m_synctest_pos + 1);
                 }
 
                 m_state.lastsynctype = 20;
@@ -1153,7 +1148,7 @@ int DSDDecoder::getFrameSync()
 
                 if (m_opts.errorbars == 1)
                 {
-                    printFrameSync("+dPMRpkt   ", m_synctest_pos + 1, m_modulation);
+                    printFrameSync("+dPMRpkt   ", m_synctest_pos + 1);
                 }
 
                 m_state.lastsynctype = 21;
@@ -1172,7 +1167,7 @@ int DSDDecoder::getFrameSync()
 
                 if (m_opts.errorbars == 1)
                 {
-                    printFrameSync(" +D-STAR   ",  m_synctest_pos + 1, m_modulation);
+                    printFrameSync(" +D-STAR   ",  m_synctest_pos + 1);
                 }
 
                 m_state.lastsynctype = 6;
@@ -1189,7 +1184,7 @@ int DSDDecoder::getFrameSync()
 
                 if (m_opts.errorbars == 1)
                 {
-                    printFrameSync(" -D-STAR   ", m_synctest_pos + 1, m_modulation);
+                    printFrameSync(" -D-STAR   ", m_synctest_pos + 1);
                 }
 
                 m_state.lastsynctype = 7;
@@ -1206,7 +1201,7 @@ int DSDDecoder::getFrameSync()
 
                 if (m_opts.errorbars == 1)
                 {
-                    printFrameSync(" +D-STAR_HD   ", m_synctest_pos + 1, m_modulation);
+                    printFrameSync(" +D-STAR_HD   ", m_synctest_pos + 1);
                 }
 
                 m_state.lastsynctype = 18;
@@ -1223,7 +1218,7 @@ int DSDDecoder::getFrameSync()
 
                 if (m_opts.errorbars == 1)
                 {
-                    printFrameSync(" -D-STAR_HD   ", m_synctest_pos + 1, m_modulation);
+                    printFrameSync(" -D-STAR_HD   ", m_synctest_pos + 1);
                 }
 
                 m_state.lastsynctype = 19;
@@ -1246,7 +1241,7 @@ int DSDDecoder::getFrameSync()
 
                 if (m_opts.errorbars == 1)
                 {
-                    printFrameSync("(+P25p1)   ", m_synctest_pos + 1, m_modulation);
+                    printFrameSync("(+P25p1)   ", m_synctest_pos + 1);
                 }
 
                 m_state.lastsynctype = -1;
@@ -1263,7 +1258,7 @@ int DSDDecoder::getFrameSync()
 
                 if (m_opts.errorbars == 1)
                 {
-                    printFrameSync("(-P25p1)   ",  m_synctest_pos + 1, m_modulation);
+                    printFrameSync("(-P25p1)   ",  m_synctest_pos + 1);
                 }
 
                 m_state.lastsynctype = -1;
@@ -1280,7 +1275,7 @@ int DSDDecoder::getFrameSync()
 
                 if (m_opts.errorbars == 1)
                 {
-                    printFrameSync("(-X2-TDMA) ", m_synctest_pos + 1, m_modulation);
+                    printFrameSync("(-X2-TDMA) ", m_synctest_pos + 1);
                 }
 
                 m_state.lastsynctype = -1;
@@ -1297,7 +1292,7 @@ int DSDDecoder::getFrameSync()
 
                 if (m_opts.errorbars == 1)
                 {
-                    printFrameSync("(+X2-TDMA) ", m_synctest_pos + 1, m_modulation);
+                    printFrameSync("(+X2-TDMA) ", m_synctest_pos + 1);
                 }
 
                 m_state.lastsynctype = -1;
@@ -1314,7 +1309,7 @@ int DSDDecoder::getFrameSync()
 
                 if (m_opts.errorbars == 1)
                 {
-                    printFrameSync("(-DMR)     ", m_synctest_pos + 1, m_modulation);
+                    printFrameSync("(-DMR)     ", m_synctest_pos + 1);
                 }
 
                 m_state.lastsynctype = -1;
@@ -1331,7 +1326,7 @@ int DSDDecoder::getFrameSync()
 
                 if (m_opts.errorbars == 1)
                 {
-                    printFrameSync("(+DMR)     ", m_synctest_pos + 1, m_modulation);
+                    printFrameSync("(+DMR)     ", m_synctest_pos + 1);
                 }
 
                 m_state.lastsynctype = -1;
@@ -1399,7 +1394,7 @@ void DSDDecoder::resetFrameSync()
     m_fsmState = DSDLookForSync;
 }
 
-void DSDDecoder::printFrameSync(const char *frametype, int offset, char *modulation)
+void DSDDecoder::printFrameSync(const char *frametype, int offset)
 {
     if (m_opts.verbose > 0)
     {
@@ -1408,10 +1403,6 @@ void DSDDecoder::printFrameSync(const char *frametype, int offset, char *modulat
     if (m_opts.verbose > 2)
     {
         m_dsdLogger.log("o: %4i ", offset);
-    }
-    if (m_opts.verbose > 1)
-    {
-        m_dsdLogger.log("mod: %s ", modulation);
     }
     if (m_opts.verbose > 2)
     {

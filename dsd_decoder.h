@@ -246,7 +246,7 @@ public:
     const DSDStationType getStationType() const { return m_stationType; }
     const char *getFrameTypeText() const { return m_state.ftype; }
     const char *getFrameSubtypeText() const { return m_state.fsubtype; }
-    const char *getModulationText() const { return m_modulation; }
+//    const char *getModulationText() const { return m_modulation; }
     const char *getSlot0Text() const { return m_state.slot0light; }
     const char *getSlot1Text() const { return m_state.slot1light; }
     unsigned char getColorCode() const { return m_state.ccnum; }
@@ -287,7 +287,7 @@ public:
 private:
     int getFrameSync();
     void resetFrameSync();
-    void printFrameSync(const char *frametype, int offset, char *modulation);
+    void printFrameSync(const char *frametype, int offset);
     void noCarrier();
     void printFrameInfo();
     void processFrameInit();
@@ -306,7 +306,7 @@ private:
     char m_synctest32[33]; //!< for 32 dibits sync word
     char m_synctest12[13]; //!< for 12 dibits sync word
     char m_synctest20[21]; //!< for 20 dibits sync word
-    char m_modulation[8];
+//    char m_modulation[8];
     char *m_synctest_p;
     char m_synctest_buf[10240];
     int m_lsum;
