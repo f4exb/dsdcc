@@ -230,32 +230,39 @@ void DSDDecoder::setDecodeMode(DSDDecodeMode mode, bool on)
 
 void DSDDecoder::setModulationOptimizations(DSDModulationOptim mode)
 {
-    switch (mode)
-    {
-    case DSDModulationOptimAuto:
-        m_opts.mod_c4fm = 1;
-        m_opts.mod_qpsk = 1;
-        m_opts.mod_gfsk = 1;
-        m_state.rf_mod = 0;
-        m_dsdLogger.log("Enabling Auto modulation optimizations.\n");
-        break;
-    case DSDModulationOptimGFSK:
-        m_opts.mod_c4fm = 0;
-        m_opts.mod_qpsk = 0;
-        m_opts.mod_gfsk = 1;
-        m_state.rf_mod = 2;
-        m_dsdLogger.log("Enabling only GFSK modulation optimizations.\n");
-        break;
-    case DSDModulationOptimC4FM:
-        m_opts.mod_c4fm = 1;
-        m_opts.mod_qpsk = 0;
-        m_opts.mod_gfsk = 0;
-        m_state.rf_mod = 0;
-        m_dsdLogger.log("Enabling only C4FM modulation optimizations.\n");
-        break;
-    default:
-        break;
-    }
+    m_opts.mod_c4fm = 0;
+    m_opts.mod_qpsk = 0;
+    m_opts.mod_gfsk = 1;
+    m_state.rf_mod = 2;
+    m_dsdLogger.log("Enabling only GFSK modulation optimizations.\n");
+//
+//
+//    switch (mode)
+//    {
+//    case DSDModulationOptimAuto:
+//        m_opts.mod_c4fm = 1;
+//        m_opts.mod_qpsk = 1;
+//        m_opts.mod_gfsk = 1;
+//        m_state.rf_mod = 0;
+//        m_dsdLogger.log("Enabling Auto modulation optimizations.\n");
+//        break;
+//    case DSDModulationOptimGFSK:
+//        m_opts.mod_c4fm = 0;
+//        m_opts.mod_qpsk = 0;
+//        m_opts.mod_gfsk = 1;
+//        m_state.rf_mod = 2;
+//        m_dsdLogger.log("Enabling only GFSK modulation optimizations.\n");
+//        break;
+//    case DSDModulationOptimC4FM:
+//        m_opts.mod_c4fm = 1;
+//        m_opts.mod_qpsk = 0;
+//        m_opts.mod_gfsk = 0;
+//        m_state.rf_mod = 0;
+//        m_dsdLogger.log("Enabling only C4FM modulation optimizations.\n");
+//        break;
+//    default:
+//        break;
+//    }
 }
 
 void DSDDecoder::setAudioGain(float gain)

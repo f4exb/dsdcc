@@ -289,7 +289,7 @@ int main(int argc, char **argv)
         case 'm':
             if (optarg[0] == 'a')
             {
-                dsdDecoder.setModulationOptimizations(DSDcc::DSDDecoder::DSDModulationOptimAuto);
+                dsdDecoder.setModulationOptimizations(DSDcc::DSDDecoder::DSDModulationOptimGFSK);
 //                opts->mod_c4fm = 1;
 //                opts->mod_qpsk = 1;
 //                opts->mod_gfsk = 1;
@@ -297,7 +297,7 @@ int main(int argc, char **argv)
             }
             else if (optarg[0] == 'c')
             {
-                dsdDecoder.setModulationOptimizations(DSDcc::DSDDecoder::DSDModulationOptimC4FM);
+                dsdDecoder.setModulationOptimizations(DSDcc::DSDDecoder::DSDModulationOptimGFSK);
 //                opts->mod_c4fm = 1;
 //                opts->mod_qpsk = 0;
 //                opts->mod_gfsk = 0;
@@ -312,15 +312,6 @@ int main(int argc, char **argv)
 //                opts->mod_gfsk = 1;
 //                state->rf_mod = 2;
 //                fprintf(stderr, "Enabling only GFSK modulation optimizations.\n");
-            }
-            else if (optarg[0] == 'q')
-            {
-                dsdDecoder.setModulationOptimizations(DSDcc::DSDDecoder::DSDModulationOptimQPSK);
-//                opts->mod_c4fm = 0;
-//                opts->mod_qpsk = 1;
-//                opts->mod_gfsk = 0;
-//                state->rf_mod = 1;
-//                fprintf(stderr, "Enabling only QPSK modulation optimizations.\n");
             }
             break;
         case 'u':

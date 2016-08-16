@@ -76,7 +76,7 @@ DSDState::DSDState()
     sprintf(fsubtype, "              ");
     sprintf(ftype, "             ");
     symbolcnt = 0;
-    rf_mod = 0;
+    rf_mod = 2; // force GFSK
     numflips = 0;
     lastsynctype = -1;
     lastp25type = 0;
