@@ -23,7 +23,7 @@ namespace DSDcc
 
 DSDDecoder::DSDDecoder() :
         m_fsmState(DSDLookForSync),
-        m_hasSync(0),
+        m_hasSync(false),
         m_mbeDVReady(false),
         m_mbelibEnable(true),
         m_mbeRate(DSDMBERateNone),
@@ -442,7 +442,7 @@ void DSDDecoder::run(short sample)
 
                 if (m_sync > -1) // good sync found
                 {
-                    m_hasSync = 1;
+                    m_hasSync = true;
                     m_fsmState = DSDSyncFound; // go to processing state next time
                 }
                 else // no sync found
@@ -675,17 +675,7 @@ int DSDDecoder::getFrameSync()
     // smelly while was starting here
     //symbol = getSymbol(opts, state, 0);
     m_t++;
-    m_lbuf[m_lidx] = m_dsdSymbol.getSymbol();
     m_state.sbuf[m_state.sidx] = m_dsdSymbol.getSymbol();
-
-    if (m_lidx == 23)
-    {
-        m_lidx = 0;
-    }
-    else
-    {
-        m_lidx++;
-    }
 
     if (m_state.sidx == (m_opts.ssize - 1))
     {
@@ -719,21 +709,6 @@ int DSDDecoder::getFrameSync()
 
     if (m_t >= 18)
     {
-    	// What is this and why is it there ?
-
-        for (int i = 0; i < 24; i++)
-        {
-            m_lbuf2[i] = m_lbuf[i];
-        }
-
-        qsort(m_lbuf2, 24, sizeof(int), comp);
-
-        m_lmin = (m_lbuf2[2] + m_lbuf2[3] + m_lbuf2[4]) / 3;
-        m_lmax = (m_lbuf2[21] + m_lbuf2[20] + m_lbuf2[19]) / 3;
-
-		m_state.maxref = m_state.max;
-		m_state.minref = m_state.min;
-
         // Just update for display
 
         if (m_state.rf_mod == 0)
@@ -756,8 +731,7 @@ int DSDDecoder::getFrameSync()
             {
                 m_state.carrier = 1;
                 m_state.offset = m_synctest_pos;
-                m_state.max = ((m_state.max) + m_lmax) / 2;
-                m_state.min = ((m_state.min) + m_lmin) / 2;
+                m_dsdSymbol.snapSync(24);
 
                 sprintf(m_state.ftype, "+P25 Phase 1 ");
 
@@ -774,8 +748,7 @@ int DSDDecoder::getFrameSync()
             {
                 m_state.carrier = 1;
                 m_state.offset = m_synctest_pos;
-                m_state.max = ((m_state.max) + m_lmax) / 2;
-                m_state.min = ((m_state.min) + m_lmin) / 2;
+                m_dsdSymbol.snapSync(24);
 
                 sprintf(m_state.ftype, "-P25 Phase 1 ");
 
@@ -796,8 +769,7 @@ int DSDDecoder::getFrameSync()
             {
                 m_state.carrier = 1;
                 m_state.offset = m_synctest_pos;
-                m_state.max = ((m_state.max) + (m_lmax)) / 2;
-                m_state.min = ((m_state.min) + (m_lmin)) / 2;
+                m_dsdSymbol.snapSync(24);
 
                 if (strcmp(m_synctest, X2TDMA_BS_DATA_SYNC) == 0) {
                     m_stationType = DSDBaseStation;
@@ -844,8 +816,7 @@ int DSDDecoder::getFrameSync()
             {
                 m_state.carrier = 1;
                 m_state.offset = m_synctest_pos;
-                m_state.max = ((m_state.max) + m_lmax) / 2;
-                m_state.min = ((m_state.min) + m_lmin) / 2;
+                m_dsdSymbol.snapSync(24);
 
                 if (strcmp(m_synctest, X2TDMA_BS_VOICE_SYNC) == 0) {
                     m_stationType = DSDBaseStation;
@@ -896,8 +867,7 @@ int DSDDecoder::getFrameSync()
             {
                 m_state.carrier = 1;
                 m_state.offset = m_synctest_pos;
-                m_state.max = ((m_state.max) + (m_lmax)) / 2;
-                m_state.min = ((m_state.min) + (m_lmin)) / 2;
+                m_dsdSymbol.snapSync(20);
 
                 sprintf(m_state.ftype, "+YSF         ");
 
@@ -917,8 +887,7 @@ int DSDDecoder::getFrameSync()
             {
                 m_state.carrier = 1;
                 m_state.offset = m_synctest_pos;
-                m_state.max = ((m_state.max) + (m_lmax)) / 2;
-                m_state.min = ((m_state.min) + (m_lmin)) / 2;
+                m_dsdSymbol.snapSync(24);
 
                 if (strcmp(m_synctest, DMR_BS_DATA_SYNC) == 0) {
                     m_stationType = DSDBaseStation;
@@ -965,8 +934,7 @@ int DSDDecoder::getFrameSync()
             {
                 m_state.carrier = 1;
                 m_state.offset = m_synctest_pos;
-                m_state.max = ((m_state.max) + m_lmax) / 2;
-                m_state.min = ((m_state.min) + m_lmin) / 2;
+                m_dsdSymbol.snapSync(24);
 
                 if (strcmp(m_synctest, DMR_BS_VOICE_SYNC) == 0) {
                     m_stationType = DSDBaseStation;
@@ -1018,8 +986,7 @@ int DSDDecoder::getFrameSync()
             {
                 m_state.carrier = 1;
                 m_state.offset = m_synctest_pos;
-                m_state.max = ((m_state.max) + m_lmax) / 2;
-                m_state.min = ((m_state.min) + m_lmin) / 2;
+                m_dsdSymbol.snapSync(32);
 
                 sprintf(m_state.ftype, "+ProVoice    ");
 
@@ -1037,8 +1004,7 @@ int DSDDecoder::getFrameSync()
             {
                 m_state.carrier = 1;
                 m_state.offset = m_synctest_pos;
-                m_state.max = ((m_state.max) + m_lmax) / 2;
-                m_state.min = ((m_state.min) + m_lmin) / 2;
+                m_dsdSymbol.snapSync(32);
 
                 sprintf(m_state.ftype, "-ProVoice    ");
 
@@ -1061,8 +1027,7 @@ int DSDDecoder::getFrameSync()
             {
 				m_state.carrier = 1;
 				m_state.offset = m_synctest_pos;
-				m_state.max = ((m_state.max) + m_lmax) / 2;
-				m_state.min = ((m_state.min) + m_lmin) / 2;
+                m_dsdSymbol.snapSync(20);
 
 				if (m_state.samplesPerSymbol == 20)
 				{
@@ -1091,8 +1056,7 @@ int DSDDecoder::getFrameSync()
             {
 				m_state.carrier = 1;
 				m_state.offset = m_synctest_pos;
-				m_state.max = ((m_state.max) + m_lmax) / 2;
-				m_state.min = ((m_state.min) + m_lmin) / 2;
+                m_dsdSymbol.snapSync(20);
 
 				if (m_state.samplesPerSymbol == 20)
 				{
@@ -1217,8 +1181,7 @@ int DSDDecoder::getFrameSync()
             {
                 m_state.carrier = 1;
                 m_state.offset = m_synctest_pos;
-                m_state.max = ((m_state.max) + m_lmax) / 2;
-                m_state.min = ((m_state.min) + m_lmin) / 2;
+                m_dsdSymbol.snapSync(24);
 
                 sprintf(m_state.ftype, "+dPMR        ");
 
@@ -1235,8 +1198,7 @@ int DSDDecoder::getFrameSync()
             {
                 m_state.carrier = 1;
                 m_state.offset = m_synctest_pos;
-                m_state.max = ((m_state.max) + m_lmax) / 2;
-                m_state.min = ((m_state.min) + m_lmin) / 2;
+                m_dsdSymbol.snapSync(24);
 
                 sprintf(m_state.ftype, "+dPMRpkt     ");
 
@@ -1255,8 +1217,7 @@ int DSDDecoder::getFrameSync()
             {
                 m_state.carrier = 1;
                 m_state.offset = m_synctest_pos;
-                m_state.max = ((m_state.max) + m_lmax) / 2;
-                m_state.min = ((m_state.min) + m_lmin) / 2;
+                m_dsdSymbol.snapSync(24);
 
                 sprintf(m_state.ftype, "+D-STAR      ");
 
@@ -1273,8 +1234,7 @@ int DSDDecoder::getFrameSync()
             {
                 m_state.carrier = 1;
                 m_state.offset = m_synctest_pos;
-                m_state.max = ((m_state.max) + m_lmax) / 2;
-                m_state.min = ((m_state.min) + m_lmin) / 2;
+                m_dsdSymbol.snapSync(24);
 
                 sprintf(m_state.ftype, "-D-STAR      ");
 
@@ -1291,8 +1251,7 @@ int DSDDecoder::getFrameSync()
             {
                 m_state.carrier = 1;
                 m_state.offset = m_synctest_pos;
-                m_state.max = ((m_state.max) + m_lmax) / 2;
-                m_state.min = ((m_state.min) + m_lmin) / 2;
+                m_dsdSymbol.snapSync(24);
 
                 sprintf(m_state.ftype, "+D-STAR_HD   ");
 
@@ -1309,8 +1268,7 @@ int DSDDecoder::getFrameSync()
             {
                 m_state.carrier = 1;
                 m_state.offset = m_synctest_pos;
-                m_state.max = ((m_state.max) + m_lmax) / 2;
-                m_state.min = ((m_state.min) + m_lmin) / 2;
+                m_dsdSymbol.snapSync(24);
 
                 sprintf(m_state.ftype, "-D-STAR_HD   ");
 
@@ -1333,8 +1291,7 @@ int DSDDecoder::getFrameSync()
             {
                 m_state.carrier = 1;
                 m_state.offset = m_synctest_pos;
-                m_state.max = ((m_state.max) + (m_lmax)) / 2;
-                m_state.min = ((m_state.min) + (m_lmin)) / 2;
+                m_dsdSymbol.snapSync(24);
 
                 sprintf(m_state.ftype, "(+P25 Phase1)");
 
@@ -1351,9 +1308,10 @@ int DSDDecoder::getFrameSync()
             {
                 m_state.carrier = 1;
                 m_state.offset = m_synctest_pos;
-                m_state.max = ((m_state.max) + m_lmax) / 2;
-                m_state.min = ((m_state.min) + m_lmin) / 2;
+                m_dsdSymbol.snapSync(24);
+
                 sprintf(m_state.ftype, "(-P25 Phase1)");
+
                 if (m_opts.errorbars == 1)
                 {
                     printFrameSync("(-P25p1)   ",  m_synctest_pos + 1, m_modulation);
@@ -1367,8 +1325,7 @@ int DSDDecoder::getFrameSync()
             {
                 m_state.carrier = 1;
                 m_state.offset = m_synctest_pos;
-                m_state.max = ((m_state.max) + m_lmax) / 2;
-                m_state.min = ((m_state.min) + m_lmin) / 2;
+                m_dsdSymbol.snapSync(24);
 
                 sprintf(m_state.ftype, "(-X2-TDMA)   ");
 
@@ -1385,8 +1342,7 @@ int DSDDecoder::getFrameSync()
             {
                 m_state.carrier = 1;
                 m_state.offset = m_synctest_pos;
-                m_state.max = ((m_state.max) + m_lmax) / 2;
-                m_state.min = ((m_state.min) + m_lmin) / 2;
+                m_dsdSymbol.snapSync(24);
 
                 sprintf(m_state.ftype, "(+X2-TDMA)   ");
 
@@ -1403,8 +1359,7 @@ int DSDDecoder::getFrameSync()
             {
                 m_state.carrier = 1;
                 m_state.offset = m_synctest_pos;
-                m_state.max = ((m_state.max) + m_lmax) / 2;
-                m_state.min = ((m_state.min) + m_lmin) / 2;
+                m_dsdSymbol.snapSync(24);
 
                 sprintf(m_state.ftype, "(-DMR)       ");
 
@@ -1421,8 +1376,7 @@ int DSDDecoder::getFrameSync()
             {
                 m_state.carrier = 1;
                 m_state.offset = m_synctest_pos;
-                m_state.max = ((m_state.max) + m_lmax) / 2;
-                m_state.min = ((m_state.min) + m_lmin) / 2;
+                m_dsdSymbol.snapSync(24);
 
                 sprintf(m_state.ftype, "(+DMR)       ");
 
@@ -1476,12 +1430,6 @@ void DSDDecoder::resetFrameSync()
 
     m_dsdSymbol.resetFrameSync();
 
-    for (int i = 18; i < 24; i++)
-    {
-        m_lbuf[i] = 0;
-        m_lbuf2[i] = 0;
-    }
-
     // reset detect frame sync engine
     m_t = 0;
     m_synctest[24] = 0;
@@ -1489,13 +1437,10 @@ void DSDDecoder::resetFrameSync()
     m_synctest32[32] = 0;
     m_synctest_pos = 0;
     m_synctest_p = m_synctest_buf + 10;
-    m_lmin = 0;
-    m_lmax = 0;
-    m_lidx = 0;
     m_state.numflips = 0;
 
     m_sync = -2;   // mark in progress
-    m_hasSync = 0; // for DSDSymbol::pushSample method
+    m_hasSync = false; // for DSDSymbol::pushSample method
 
     if ((m_opts.symboltiming == 1) && (m_state.carrier == 1))
     {

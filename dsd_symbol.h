@@ -33,8 +33,9 @@ public:
     void noCarrier();
     void resetFrameSync();
 
+    void snapSync(int nbSymbols); //!< take snapshot for min/max on sync sequence
     int getSymbol() const { return m_symbol; }
-    bool pushSample(short sample, int have_sync); //!< push a new sample into the decoder. Returns true if a new symbol is available
+    bool pushSample(short sample, bool have_sync); //!< push a new sample into the decoder. Returns true if a new symbol is available
     int getDibit(); //!< from the last retrieved symbol Returns either the bit (0,1) or the dibit value (0,1,2,3)
     static int invert_dibit(int dibit);
     void print_datascope(int* sbuf2);
@@ -52,18 +53,6 @@ public:
             byteArray[i] += (1 & bitArray[8*i+6]) << 1;
             byteArray[i] += (1 & bitArray[8*i+7]) << 0;
         }
-
-//        for (int i = nbBytes-1; i >= 0; i--)
-//        {
-//            byteArray[i] =  (1 & bitArray[8*i+7]) << 7;
-//            byteArray[i] += (1 & bitArray[8*i+6]) << 6;
-//            byteArray[i] += (1 & bitArray[8*i+5]) << 5;
-//            byteArray[i] += (1 & bitArray[8*i+4]) << 4;
-//            byteArray[i] += (1 & bitArray[8*i+4]) << 3;
-//            byteArray[i] += (1 & bitArray[8*i+2]) << 2;
-//            byteArray[i] += (1 & bitArray[8*i+1]) << 1;
-//            byteArray[i] += (1 & bitArray[8*i+0]) << 0;
-//        }
     }
 
 private:
@@ -71,6 +60,7 @@ private:
     int get_dibit_and_analog_signal(int* out_analog_signal);
     void use_symbol(int symbol);
     int digitize(int symbol);
+    static int comp(const void *a, const void *b);
 
     DSDDecoder *m_dsdDecoder;
     DSDFilters m_dsdFilters;
@@ -81,6 +71,9 @@ private:
     int m_count;
     int m_jitter;
     int m_symCount1;   //!< Symbol counter #1
+    int m_lbuf[32*2], m_lbuf2[32]; //!< symbol buffers for min/max
+    int m_lidx; //!< index in min/max symbol buffer
+    int m_lmin, m_lmax;
 };
 
 } // namespace DSDcc

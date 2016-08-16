@@ -317,12 +317,10 @@ private:
     char m_modulation[8];
     char *m_synctest_p;
     char m_synctest_buf[10240];
-    int m_lmin, m_lmax, m_lidx;
-    int m_lbuf[24], m_lbuf2[24];
     int m_lsum;
     char m_spectrum[64];
     int m_t;
-    int m_hasSync; //!< tells whether we are in synced phase
+    bool m_hasSync; //!< tells whether we are in synced phase
     int m_squelchTimeoutCount;
     // Symbol extraction and operations
     DSDSymbol m_dsdSymbol;

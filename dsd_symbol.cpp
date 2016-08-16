@@ -44,6 +44,8 @@ void DSDSymbol::noCarrier()
 void DSDSymbol::resetFrameSync()
 {
     m_symCount1 = 0;
+    m_lmin = 0;
+    m_lmax = 0;
 }
 
 void DSDSymbol::resetSymbol()
@@ -53,11 +55,12 @@ void DSDSymbol::resetSymbol()
     m_count = 0;
 }
 
-bool DSDSymbol::pushSample(short sample, int have_sync)
+bool DSDSymbol::pushSample(short sample, bool have_sync)
 {
-    short inSample = sample;
+    // short inSample = sample; // DEBUG
+
     // timing control
-    if ((m_sampleIndex == 0) && (have_sync == 0))
+    if ((m_sampleIndex == 0) && (!have_sync))
     {
         if (m_dsdDecoder->m_state.samplesPerSymbol == 20)
         {
@@ -118,11 +121,11 @@ bool DSDSymbol::pushSample(short sample, int have_sync)
         }
     }
 
-    if ((sample > m_dsdDecoder->m_state.max) && (have_sync == 1) && (m_dsdDecoder->m_state.rf_mod == 0))
+    if ((sample > m_dsdDecoder->m_state.max) && (have_sync) && (m_dsdDecoder->m_state.rf_mod == 0))
     {
         sample = m_dsdDecoder->m_state.max;
     }
-    else if ((sample < m_dsdDecoder->m_state.min) && (have_sync == 1)
+    else if ((sample < m_dsdDecoder->m_state.min) && (have_sync)
             && (m_dsdDecoder->m_state.rf_mod == 0))
     {
         sample = m_dsdDecoder->m_state.min;
@@ -140,7 +143,7 @@ bool DSDSymbol::pushSample(short sample, int have_sync)
             {
                 m_dsdDecoder->m_state.numflips += 1;
             }
-            if ((m_dsdDecoder->m_opts.symboltiming == 1) && (have_sync == 0)
+            if ((m_dsdDecoder->m_opts.symboltiming == 1) && (!have_sync)
              && (m_dsdDecoder->m_state.lastsynctype != -1))
             {
                 m_dsdDecoder->getLogger().log("O");
@@ -148,7 +151,7 @@ bool DSDSymbol::pushSample(short sample, int have_sync)
         }
         else
         {
-            if ((m_dsdDecoder->m_opts.symboltiming == 1) && (have_sync == 0)
+            if ((m_dsdDecoder->m_opts.symboltiming == 1) && (!have_sync)
              && (m_dsdDecoder->m_state.lastsynctype != -1))
             {
                 m_dsdDecoder->getLogger().log("+");
@@ -172,7 +175,7 @@ bool DSDSymbol::pushSample(short sample, int have_sync)
             {
                 m_dsdDecoder->m_state.numflips += 1;
             }
-            if ((m_dsdDecoder->m_opts.symboltiming == 1) && (have_sync == 0)
+            if ((m_dsdDecoder->m_opts.symboltiming == 1) && (!have_sync)
              && (m_dsdDecoder->m_state.lastsynctype != -1))
             {
                 m_dsdDecoder->getLogger().log("X");
@@ -180,7 +183,7 @@ bool DSDSymbol::pushSample(short sample, int have_sync)
         }
         else
         {
-            if ((m_dsdDecoder->m_opts.symboltiming == 1) && (have_sync == 0)
+            if ((m_dsdDecoder->m_opts.symboltiming == 1) && (!have_sync)
              && (m_dsdDecoder->m_state.lastsynctype != -1))
             {
                 m_dsdDecoder->getLogger().log("-");
@@ -255,7 +258,8 @@ bool DSDSymbol::pushSample(short sample, int have_sync)
     if (m_sampleIndex == m_dsdDecoder->m_state.samplesPerSymbol - 1) // conclusion
     {
         m_symbol = m_sum / m_count;
-        if ((m_dsdDecoder->m_opts.symboltiming == 1) && (have_sync == 0)
+
+        if ((m_dsdDecoder->m_opts.symboltiming == 1) && (!have_sync)
                 && (m_dsdDecoder->m_state.lastsynctype != -1))
         {
             if (m_jitter >= 0)
@@ -279,30 +283,16 @@ bool DSDSymbol::pushSample(short sample, int have_sync)
 
         // moved here what was done at symbol retrieval in the decoder
 
-        if (m_symCount1 < 23)
-        {
-            m_symCount1++;
-        }
-        else
-        {
-            if (m_dsdDecoder->m_state.numflips > 18)
-            {
-                if (m_dsdDecoder->m_opts.mod_gfsk == 1)
-                {
-                    m_dsdDecoder->m_state.rf_mod = 2;
-                }
-            }
-            else
-            {
-                if (m_dsdDecoder->m_opts.mod_c4fm == 1)
-                {
-                    m_dsdDecoder->m_state.rf_mod = 0;
-                }
-            }
+        // min/max calculation
 
-            m_dsdDecoder->m_state.numflips = 0;
-            m_symCount1 = 0;
+        if (m_lidx < 23) {
+            m_lidx++;
+        } else {
+            m_lidx = 0;
         }
+
+        m_lbuf[m_lidx]    = m_symbol; // double buffering
+        m_lbuf[m_lidx+32] = m_symbol;
 
         return true; // new symbol available
     }
@@ -311,6 +301,21 @@ bool DSDSymbol::pushSample(short sample, int have_sync)
         m_sampleIndex++; // wait for next sample
         return false;
     }
+}
+
+void DSDSymbol::snapSync(int nbSymbols)
+{
+    memcpy(m_lbuf2, &m_lbuf[32 + m_lidx - nbSymbols], nbSymbols * sizeof(int)); // copy to working buffer
+    qsort(m_lbuf2, nbSymbols, sizeof(int), comp);
+
+    m_lmin = (m_lbuf2[2] + m_lbuf2[3] + m_lbuf2[4]) / 3;
+    m_lmax = (m_lbuf2[nbSymbols-3] + m_lbuf2[nbSymbols-4] + m_lbuf2[nbSymbols-5]) / 3;
+
+    m_dsdDecoder->m_state.maxref = m_dsdDecoder->m_state.max;
+    m_dsdDecoder->m_state.minref = m_dsdDecoder->m_state.min;
+
+    m_dsdDecoder->m_state.max = ((m_dsdDecoder->m_state.max) + m_lmax) / 2;
+    m_dsdDecoder->m_state.min = ((m_dsdDecoder->m_state.min) + m_lmin) / 2;
 }
 
 int DSDSymbol::get_dibit_and_analog_signal(int* out_analog_signal)
@@ -653,5 +658,16 @@ int DSDSymbol::getDibit()
 {
     return get_dibit_and_analog_signal(0);
 }
+
+int DSDSymbol::comp(const void *a, const void *b)
+{
+    if (*((const int *) a) == *((const int *) b))
+        return 0;
+    else if (*((const int *) a) < *((const int *) b))
+        return -1;
+    else
+        return 1;
+}
+
 
 } // namespace DSDcc
