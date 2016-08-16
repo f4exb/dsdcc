@@ -142,9 +142,9 @@ bool DSDSymbol::pushSample(short sample, bool have_sync)
         {
             m_dsdDecoder->m_state.numflips += 1;
         }
-        if (sample > (m_maxref * 1.25))
+        if (sample > (m_max * 1.25))
         {
-            if (m_dsdDecoder->m_state.lastsample < (m_maxref * 1.25))
+            if (m_dsdDecoder->m_state.lastsample < (m_max * 1.25))
             {
                 m_dsdDecoder->m_state.numflips += 1;
             }
@@ -174,9 +174,9 @@ bool DSDSymbol::pushSample(short sample, bool have_sync)
         {
             m_dsdDecoder->m_state.numflips += 1;
         }
-        if (sample < (m_minref * 1.25))
+        if (sample < (m_min * 1.25))
         {
-            if (m_dsdDecoder->m_state.lastsample > (m_minref * 1.25))
+            if (m_dsdDecoder->m_state.lastsample > (m_min * 1.25))
             {
                 m_dsdDecoder->m_state.numflips += 1;
             }
@@ -322,9 +322,6 @@ void DSDSymbol::snapSync(int nbSymbols)
     m_center = ((m_max) + (m_min)) / 2;
     m_umid = (((m_max) - m_center) * 5 / 8) + m_center;
     m_lmid = (((m_min) - m_center) * 5 / 8) + m_center;
-    // store ref TODO: merge with min/max
-    m_maxref = m_max;
-    m_minref = m_min;
 }
 
 int DSDSymbol::get_dibit_and_analog_signal(int* out_analog_signal)
