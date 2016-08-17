@@ -32,6 +32,8 @@ DSDSymbol::DSDSymbol(DSDDecoder *dsdDecoder) :
     m_symCount1 = 0;
     m_umid = 0;
     m_lmid = 0;
+    m_nbFSKSymbols = 2;
+    m_invertedFSK = false;
 }
 
 DSDSymbol::~DSDSymbol()
@@ -267,6 +269,19 @@ void DSDSymbol::snapSync(int nbSymbols)
     m_lmid = (((m_min) - m_center) * 5 / 8) + m_center;
 }
 
+void DSDSymbol::setFSK(unsigned int nbSymbols, bool inverted)
+{
+	if (nbSymbols == 2) { // binary FSK a.k.a. 2FSK
+		m_nbFSKSymbols = 2;
+	} else if (nbSymbols == 4) { // 4-ary FSK a.k.a. 4FSK
+		m_nbFSKSymbols = 4;
+	} else { // others are not supported => default to binary FSK
+		m_nbFSKSymbols = 2;
+	}
+
+	m_invertedFSK = inverted;
+}
+
 int DSDSymbol::get_dibit_and_analog_signal(int* out_analog_signal)
 {
     int symbol;
@@ -324,162 +339,62 @@ void DSDSymbol::use_symbol(int symbol)
 int DSDSymbol::digitize(int symbol)
 {
     // determine dibit state
-    if ((m_dsdDecoder->m_state.synctype == 6) || (m_dsdDecoder->m_state.synctype == 14)
-            || (m_dsdDecoder->m_state.synctype == 18))
-    {
-        //  6 +D-STAR
-        // 14 +ProVoice
-        // 18 +D-STAR_HD
 
+	if (m_nbFSKSymbols == 2)
+	{
         if (symbol > m_center)
         {
-            *m_dsdDecoder->m_state.dibit_buf_p = 1;
+            *m_dsdDecoder->m_state.dibit_buf_p = 1; // store non-inverted values in dibit_buf
             m_dsdDecoder->m_state.dibit_buf_p++;
-            return (0);               // +1
+            return (m_invertedFSK ? 1 : 0);
         }
         else
         {
-            *m_dsdDecoder->m_state.dibit_buf_p = 3;
+            *m_dsdDecoder->m_state.dibit_buf_p = 3; // store non-inverted values in dibit_buf
             m_dsdDecoder->m_state.dibit_buf_p++;
-            return (1);               // +3
+            return (m_invertedFSK ? 0 : 1);
         }
-    }
-    else if ((m_dsdDecoder->m_state.synctype == 7) || (m_dsdDecoder->m_state.synctype == 15)
-            || (m_dsdDecoder->m_state.synctype == 19))
-    {
-        //  7 -D-STAR
-        // 15 -ProVoice
-        // 19 -D-STAR_HD
+	}
+	else if (m_nbFSKSymbols == 4)
+	{
+		int dibit;
 
         if (symbol > m_center)
         {
-            *m_dsdDecoder->m_state.dibit_buf_p = 1;
-            m_dsdDecoder->m_state.dibit_buf_p++;
-            return (1);               // +3
+            if (symbol > m_umid)
+            {
+                dibit = m_invertedFSK ? 3 : 1; // -3 / +3
+                *m_dsdDecoder->m_state.dibit_buf_p = 1; // store non-inverted values in dibit_buf
+            }
+            else
+            {
+                dibit = m_invertedFSK ? 2 : 0; // -1 / +1
+                *m_dsdDecoder->m_state.dibit_buf_p = 0; // store non-inverted values in dibit_buf
+            }
         }
         else
         {
-            *m_dsdDecoder->m_state.dibit_buf_p = 3;
-            m_dsdDecoder->m_state.dibit_buf_p++;
-            return (0);               // +1
-        }
-    }
-    else if ((m_dsdDecoder->m_state.synctype == 1) || (m_dsdDecoder->m_state.synctype == 3)
-            || (m_dsdDecoder->m_state.synctype == 5) || (m_dsdDecoder->m_state.synctype == 9)
-            || (m_dsdDecoder->m_state.synctype == 11) || (m_dsdDecoder->m_state.synctype == 13)
-            || (m_dsdDecoder->m_state.synctype == 17))
-    {
-        //  1 -P25p1
-        //  3 -X2-TDMA (inverted signal voice frame)
-        //  5 -X2-TDMA (inverted signal data frame)
-        //  9 -NXDN (inverted voice frame)
-        // 11 -DMR (inverted signal voice frame)
-        // 13 -DMR (inverted signal data frame)
-        // 17 -NXDN (inverted data frame)
-
-        int valid;
-        int dibit;
-
-        valid = 0;
-
-        if (m_dsdDecoder->m_state.synctype == 1)
-        {
-            // Use the P25 heuristics if available
-            valid = DSDP25Heuristics::estimate_symbol(2, &(m_dsdDecoder->m_state.inv_p25_heuristics),
-                    m_dsdDecoder->m_state.last_dibit, symbol, &dibit);
-        }
-
-        if (valid == 0)
-        {
-            // Revert to the original approach: choose the symbol according to the regions delimited
-            // by center, umid and lmid
-            if (symbol > m_center)
+            if (symbol < m_lmid)
             {
-                if (symbol > m_umid)
-                {
-                    dibit = 3;               // -3
-                }
-                else
-                {
-                    dibit = 2;               // -1
-                }
+                dibit = m_invertedFSK ? 1 : 3;  // +3 / -3
+                *m_dsdDecoder->m_state.dibit_buf_p = 3; // store non-inverted values in dibit_buf
             }
             else
             {
-                if (symbol < m_lmid)
-                {
-                    dibit = 1;               // +3
-                }
-                else
-                {
-                    dibit = 0;               // +2
-                }
+                dibit = m_invertedFSK ? 0 : 2;  // +1 / -1
+                *m_dsdDecoder->m_state.dibit_buf_p = 2; // store non-inverted values in dibit_buf
             }
         }
 
-        m_dsdDecoder->m_state.last_dibit = dibit;
-
-        // store non-inverted values in dibit_buf
-        *m_dsdDecoder->m_state.dibit_buf_p = invert_dibit(dibit);
         m_dsdDecoder->m_state.dibit_buf_p++;
         return dibit;
-    }
-    else
-    {
-        //  0 +P25p1
-        //  2 +X2-TDMA (non inverted signal data frame)
-        //  4 +X2-TDMA (non inverted signal voice frame)
-        //  8 +NXDN (non inverted voice frame)
-        // 10 +DMR (non inverted signal data frame)
-        // 12 +DMR (non inverted signal voice frame)
-        // 16 +NXDN (non inverted data frame)
-
-        int valid;
-        int dibit;
-
-        valid = 0;
-
-        if (m_dsdDecoder->m_state.synctype == 0)
-        {
-            // Use the P25 heuristics if available
-            valid = DSDP25Heuristics::estimate_symbol(2, &(m_dsdDecoder->m_state.p25_heuristics),
-                    m_dsdDecoder->m_state.last_dibit, symbol, &dibit);
-        }
-
-        if (valid == 0)
-        {
-            // Revert to the original approach: choose the symbol according to the regions delimited
-            // by center, umid and lmid
-            if (symbol > m_center)
-            {
-                if (symbol > m_umid)
-                {
-                    dibit = 1;               // +3
-                }
-                else
-                {
-                    dibit = 0;               // +1
-                }
-            }
-            else
-            {
-                if (symbol < m_lmid)
-                {
-                    dibit = 3;               // -3
-                }
-                else
-                {
-                    dibit = 2;               // -1
-                }
-            }
-        }
-
-        m_dsdDecoder->m_state.last_dibit = dibit;
-
-        *m_dsdDecoder->m_state.dibit_buf_p = dibit;
+	}
+	else // invalid
+	{
+        *m_dsdDecoder->m_state.dibit_buf_p = 0;
         m_dsdDecoder->m_state.dibit_buf_p++;
-        return dibit;
-    }
+		return 0;
+	}
 }
 
 int DSDSymbol::invert_dibit(int dibit)

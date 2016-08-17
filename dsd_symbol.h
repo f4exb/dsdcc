@@ -34,6 +34,8 @@ public:
     void resetFrameSync();
 
     void snapSync(int nbSymbols); //!< take snapshot for min/max on sync sequence
+    void setFSK(unsigned int nbSymbols, bool inverted=false);
+
     int getSymbol() const { return m_symbol; }
     bool pushSample(short sample, bool have_sync); //!< push a new sample into the decoder. Returns true if a new symbol is available
     int getDibit(); //!< from the last retrieved symbol Returns either the bit (0,1) or the dibit value (0,1,2,3)
@@ -79,6 +81,8 @@ private:
     int m_minref, m_maxref;
     int m_center;
     int m_umid, m_lmid;
+    unsigned int m_nbFSKSymbols;
+    bool m_invertedFSK;
 };
 
 } // namespace DSDcc
