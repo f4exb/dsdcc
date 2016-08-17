@@ -115,70 +115,34 @@ bool DSDSymbol::pushSample(short sample, bool have_sync)
         }
     }
 
+    // zero crossing
+
     if (sample > m_center)
     {
+        if ((m_jitter < 0) && (m_lastsample < m_center)) // first transition edge
+        {
+            m_jitter = m_sampleIndex;
+        }
+
         if (m_lastsample < m_center)
         {
             m_numflips += 1;
         }
-        if (sample > (m_max * 1.25))
-        {
-            if (m_lastsample < (m_max * 1.25))
-            {
-                m_numflips += 1;
-            }
-            if ((m_dsdDecoder->m_opts.symboltiming == 1) && (!have_sync)
-             && (m_dsdDecoder->m_state.lastsynctype != -1))
-            {
-                m_dsdDecoder->getLogger().log("O");
-            }
-        }
-        else
-        {
-            if ((m_dsdDecoder->m_opts.symboltiming == 1) && (!have_sync)
-             && (m_dsdDecoder->m_state.lastsynctype != -1))
-            {
-                m_dsdDecoder->getLogger().log("+");
-            }
-            if ((m_jitter < 0)
-             && (m_lastsample < m_center))
-            {               // first transition edge
-                m_jitter = m_sampleIndex;
-            }
-        }
     }
     else
-    {                       // sample < 0
+    {
+        if ((m_jitter < 0) && (m_lastsample > m_center)) // first transition edge
+        {
+            m_jitter = m_sampleIndex;
+        }
+
         if (m_lastsample > m_center)
         {
             m_numflips += 1;
         }
-        if (sample < (m_min * 1.25))
-        {
-            if (m_lastsample > (m_min * 1.25))
-            {
-                m_numflips += 1;
-            }
-            if ((m_dsdDecoder->m_opts.symboltiming == 1) && (!have_sync)
-             && (m_dsdDecoder->m_state.lastsynctype != -1))
-            {
-                m_dsdDecoder->getLogger().log("X");
-            }
-        }
-        else
-        {
-            if ((m_dsdDecoder->m_opts.symboltiming == 1) && (!have_sync)
-             && (m_dsdDecoder->m_state.lastsynctype != -1))
-            {
-                m_dsdDecoder->getLogger().log("-");
-            }
-            if ((m_jitter < 0)
-             && (m_lastsample > m_center))
-            {               // first transition edge
-                m_jitter = m_sampleIndex;
-            }
-        }
     }
+
+    // symbol estimation
 
     if (m_dsdDecoder->m_state.samplesPerSymbol == 5)
     {
