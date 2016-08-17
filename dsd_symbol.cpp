@@ -53,6 +53,7 @@ void DSDSymbol::resetFrameSync()
     m_symCount1 = 0;
     m_lmin = 0;
     m_lmax = 0;
+    m_numflips = 0;
 }
 
 void DSDSymbol::resetSymbol()
@@ -117,13 +118,13 @@ bool DSDSymbol::pushSample(short sample, bool have_sync)
     {
         if (m_dsdDecoder->m_state.lastsample < m_center)
         {
-            m_dsdDecoder->m_state.numflips += 1;
+            m_numflips += 1;
         }
         if (sample > (m_max * 1.25))
         {
             if (m_dsdDecoder->m_state.lastsample < (m_max * 1.25))
             {
-                m_dsdDecoder->m_state.numflips += 1;
+                m_numflips += 1;
             }
             if ((m_dsdDecoder->m_opts.symboltiming == 1) && (!have_sync)
              && (m_dsdDecoder->m_state.lastsynctype != -1))
@@ -149,13 +150,13 @@ bool DSDSymbol::pushSample(short sample, bool have_sync)
     {                       // sample < 0
         if (m_dsdDecoder->m_state.lastsample > m_center)
         {
-            m_dsdDecoder->m_state.numflips += 1;
+            m_numflips += 1;
         }
         if (sample < (m_min * 1.25))
         {
             if (m_dsdDecoder->m_state.lastsample > (m_min * 1.25))
             {
-                m_dsdDecoder->m_state.numflips += 1;
+                m_numflips += 1;
             }
             if ((m_dsdDecoder->m_opts.symboltiming == 1) && (!have_sync)
              && (m_dsdDecoder->m_state.lastsynctype != -1))
@@ -287,7 +288,7 @@ int DSDSymbol::get_dibit_and_analog_signal(int* out_analog_signal)
     int symbol;
     int dibit;
 
-    m_dsdDecoder->m_state.numflips = 0;
+    m_numflips = 0;
     symbol = m_symbol;
     m_dsdDecoder->m_state.sbuf[m_dsdDecoder->m_state.sidx] = symbol;
 

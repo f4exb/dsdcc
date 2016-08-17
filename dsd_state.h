@@ -60,7 +60,6 @@ public:
     char fsubtype[16];
     char ftype[16];
     int symbolcnt;
-    int numflips;
     int lastsynctype;
     int lastp25type;
     int offset;

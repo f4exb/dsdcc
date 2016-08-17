@@ -1156,7 +1156,6 @@ void DSDDecoder::resetFrameSync()
     m_synctest32[32] = 0;
     m_synctest_pos = 0;
     m_synctest_p = m_synctest_buf + 10;
-    m_state.numflips = 0;
 
     m_sync = -2;   // mark in progress
     m_hasSync = false; // for DSDSymbol::pushSample method
