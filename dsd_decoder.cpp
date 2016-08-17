@@ -622,17 +622,6 @@ int DSDDecoder::getFrameSync()
      */
 
     // smelly while was starting here
-    //symbol = getSymbol(opts, state, 0);
-    m_state.sbuf[m_state.sidx] = m_dsdSymbol.getSymbol();
-
-    if (m_state.sidx == (m_opts.ssize - 1))
-    {
-        m_state.sidx = 0;
-    }
-    else
-    {
-        m_state.sidx++;
-    }
 
     if (m_state.dibit_buf_p > m_state.dibit_buf + 900000)
     {

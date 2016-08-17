@@ -290,7 +290,6 @@ int DSDSymbol::get_dibit_and_analog_signal(int* out_analog_signal)
 
     m_numflips = 0;
     symbol = m_symbol;
-    m_dsdDecoder->m_state.sbuf[m_dsdDecoder->m_state.sidx] = symbol;
 
     if (out_analog_signal != 0) {
         *out_analog_signal = symbol;
@@ -305,32 +304,6 @@ int DSDSymbol::get_dibit_and_analog_signal(int* out_analog_signal)
 
 void DSDSymbol::use_symbol(int symbol)
 {
-    int i;
-    int sbuf2[128];
-    int lmin, lmax, lsum;
-
-    for (i = 0; i < m_dsdDecoder->m_opts.ssize; i++)
-    {
-        sbuf2[i] = m_dsdDecoder->m_state.sbuf[i];
-    }
-
-    qsort(sbuf2, m_dsdDecoder->m_opts.ssize, sizeof(int), m_dsdDecoder->comp);
-
-    // Increase sidx
-    if (m_dsdDecoder->m_state.sidx == (m_dsdDecoder->m_opts.ssize - 1))
-    {
-        m_dsdDecoder->m_state.sidx = 0;
-
-        if (m_dsdDecoder->m_opts.datascope == 1)
-        {
-            print_datascope(sbuf2);
-        }
-    }
-    else
-    {
-        m_dsdDecoder->m_state.sidx++;
-    }
-
     if (m_dsdDecoder->m_state.dibit_buf_p > m_dsdDecoder->m_state.dibit_buf + 900000)
     {
         m_dsdDecoder->m_state.dibit_buf_p = m_dsdDecoder->m_state.dibit_buf + 200;

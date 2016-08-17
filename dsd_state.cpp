@@ -47,13 +47,6 @@ DSDState::DSDState()
     synctype = -1;
     lastsample = 0;
 
-    for (i = 0; i < 128; i++)
-    {
-        sbuf[i] = 0;
-    }
-
-    sidx = 0;
-
     for (i = 0; i < 1024; i++)
     {
         maxbuf[i] = 15000;
