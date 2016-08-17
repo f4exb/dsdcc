@@ -34,6 +34,7 @@ DSDSymbol::DSDSymbol(DSDDecoder *dsdDecoder) :
     m_lmid = 0;
     m_nbFSKSymbols = 2;
     m_invertedFSK = false;
+    m_lastsample = 0;
 }
 
 DSDSymbol::~DSDSymbol()
@@ -116,13 +117,13 @@ bool DSDSymbol::pushSample(short sample, bool have_sync)
 
     if (sample > m_center)
     {
-        if (m_dsdDecoder->m_state.lastsample < m_center)
+        if (m_lastsample < m_center)
         {
             m_numflips += 1;
         }
         if (sample > (m_max * 1.25))
         {
-            if (m_dsdDecoder->m_state.lastsample < (m_max * 1.25))
+            if (m_lastsample < (m_max * 1.25))
             {
                 m_numflips += 1;
             }
@@ -140,7 +141,7 @@ bool DSDSymbol::pushSample(short sample, bool have_sync)
                 m_dsdDecoder->getLogger().log("+");
             }
             if ((m_jitter < 0)
-             && (m_dsdDecoder->m_state.lastsample < m_center))
+             && (m_lastsample < m_center))
             {               // first transition edge
                 m_jitter = m_sampleIndex;
             }
@@ -148,13 +149,13 @@ bool DSDSymbol::pushSample(short sample, bool have_sync)
     }
     else
     {                       // sample < 0
-        if (m_dsdDecoder->m_state.lastsample > m_center)
+        if (m_lastsample > m_center)
         {
             m_numflips += 1;
         }
         if (sample < (m_min * 1.25))
         {
-            if (m_dsdDecoder->m_state.lastsample > (m_min * 1.25))
+            if (m_lastsample > (m_min * 1.25))
             {
                 m_numflips += 1;
             }
@@ -172,7 +173,7 @@ bool DSDSymbol::pushSample(short sample, bool have_sync)
                 m_dsdDecoder->getLogger().log("-");
             }
             if ((m_jitter < 0)
-             && (m_dsdDecoder->m_state.lastsample > m_center))
+             && (m_lastsample > m_center))
             {               // first transition edge
                 m_jitter = m_sampleIndex;
             }
@@ -197,7 +198,7 @@ bool DSDSymbol::pushSample(short sample, bool have_sync)
         }
     }
 
-    m_dsdDecoder->m_state.lastsample = sample;
+    m_lastsample = sample;
 
     if (m_sampleIndex == m_dsdDecoder->m_state.samplesPerSymbol - 1) // conclusion
     {

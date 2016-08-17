@@ -45,7 +45,6 @@ DSDState::DSDState()
     audio_out_idx2 = 0;
 
     synctype = -1;
-    lastsample = 0;
 
     for (i = 0; i < 1024; i++)
     {

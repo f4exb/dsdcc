@@ -50,7 +50,6 @@ public:
     int audio_out_idx;
     int audio_out_idx2;
     int synctype;
-    int lastsample;
     int maxbuf[1024];
     int minbuf[1024];
     int midx;

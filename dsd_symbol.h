@@ -82,6 +82,7 @@ private:
     int m_center;
     int m_umid, m_lmid;
     int m_numflips; // TODO: not sure we really need this one
+    short m_lastsample;
     unsigned int m_nbFSKSymbols;
     bool m_invertedFSK;
 };
