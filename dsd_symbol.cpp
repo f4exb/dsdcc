@@ -178,17 +178,10 @@ bool DSDSymbol::pushSample(short sample, bool have_sync)
             }
         }
     }
-    if (m_dsdDecoder->m_state.samplesPerSymbol == 20)
-    {
-        if ((m_sampleIndex >= 9) && (m_sampleIndex <= 11))
-        {
-            m_sum += sample;
-            m_count++;
-        }
-    }
+
     if (m_dsdDecoder->m_state.samplesPerSymbol == 5)
     {
-        if (m_sampleIndex == 2)
+        if (m_sampleIndex == m_dsdDecoder->m_state.symbolCenter)
         {
             m_sum += sample;
             m_count++;
@@ -196,8 +189,8 @@ bool DSDSymbol::pushSample(short sample, bool have_sync)
     }
     else
     {
-        if ((m_sampleIndex == m_dsdDecoder->m_state.symbolCenter - 1)
-         || (m_sampleIndex == m_dsdDecoder->m_state.symbolCenter + 1))
+        if ((m_sampleIndex >= m_dsdDecoder->m_state.symbolCenter - 1)
+         && (m_sampleIndex <= m_dsdDecoder->m_state.symbolCenter + 1))
         {
             m_sum += sample;
             m_count++;
