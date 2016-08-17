@@ -92,8 +92,6 @@ void usage()
     fprintf(stderr, "  -l            Disable DMR/MOTOTRBO and NXDN input filtering\n");
     fprintf(stderr, "  -pu           Unmute Encrypted P25\n");
     fprintf(stderr, "  -u <num>      Unvoiced speech quality (default=3)\n");
-    fprintf(stderr, "  -xx           Expect non-inverted X2-TDMA signal\n");
-    fprintf(stderr, "  -xr           Expect inverted DMR/MOTOTRBO signal\n");
     fprintf(stderr, "\n");
     fprintf(stderr, "Advanced decoder options:\n");
     fprintf(stderr,
@@ -136,7 +134,7 @@ int main(int argc, char **argv)
     signal(SIGINT, sigfun);
 
     while ((c = getopt(argc, argv,
-            "hep:qstv:z:i:o:g:nR:f:u:U:x:A:S:M:lL:D:d:")) != -1)
+            "hep:qstv:z:i:o:g:nR:f:u:U:A:S:M:lL:D:d:")) != -1)
     {
         opterr = 0;
         switch (c)
@@ -285,13 +283,6 @@ int main(int argc, char **argv)
             int upsampling;
             sscanf(optarg, "%d", &upsampling);
             dsdDecoder.setUpsampling(upsampling);
-            break;
-        case 'x':
-            if (optarg[0] == 'x') {
-                dsdDecoder.setInvertedXTDMA(false);
-            } else if (optarg[0] == 'r') {
-                dsdDecoder.setInvertedDMR(true);
-            }
             break;
         case 'A':
             int threshold;
