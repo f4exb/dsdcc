@@ -272,7 +272,6 @@ public:
     void setUpsampling(int upsampling);
     void setStereo(bool on);
     void setInvertedXTDMA(bool on);
-    void setInvertedDMR(bool on);
     void setAutoDetectionThreshold(int threshold);
     void setQPSKSymbolBufferSize(int size);
     void setQPSKMinMaxBufferSize(int size);

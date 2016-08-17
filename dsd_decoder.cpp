@@ -283,12 +283,6 @@ void DSDDecoder::setInvertedXTDMA(bool on)
     m_dsdLogger.log("Expecting %sinverted X2-TDMA signals.\n", (m_opts.inverted_x2tdma == 0 ? "non-" : ""));
 }
 
-void DSDDecoder::setInvertedDMR(bool on)
-{
-    m_opts.inverted_dmr = (on ? 1 : 0);
-    m_dsdLogger.log("Expecting %sinverted DMR/MOTOTRBO signals.\n", (m_opts.inverted_x2tdma == 0 ? "non-" : ""));
-}
-
 void DSDDecoder::setAutoDetectionThreshold(int threshold)
 {
     m_opts.mod_threshold = threshold;
@@ -422,7 +416,6 @@ void DSDDecoder::run(short sample)
             {
                 noCarrier();
                 resetFrameSync();
-                //m_fsmState = DSDLookForSync;
             }
             break;
         case DSDprocessDMRvoice:
@@ -827,6 +820,7 @@ int DSDDecoder::getFrameSync()
                 }
 
                 m_state.lastsynctype = 24;
+                m_mbeRate = DSDMBERate3600x2450;
                 return(24);
             }
         }
@@ -846,39 +840,17 @@ int DSDDecoder::getFrameSync()
                     m_stationType = DSDMobileStation;
                 }
 
-                if (m_opts.inverted_dmr == 0)
-                {
-                    // data frame
-                    sprintf(m_state.ftype, "+DMRd        ");
+				// data frame
+				sprintf(m_state.ftype, "+DMRd        ");
 
-                    if (m_opts.errorbars == 1)
-                    {
-                        printFrameSync(" +DMRd     ",  m_synctest_pos + 1);
-                    }
+				if (m_opts.errorbars == 1)
+				{
+					printFrameSync(" +DMRd     ",  m_synctest_pos + 1);
+				}
 
-                    m_state.lastsynctype = 10;
-                    m_mbeRate = DSDMBERate3600x2450;
-                    return(10); // done
-                }
-                else
-                {
-                    // inverted voice frame
-                    sprintf(m_state.ftype, "-DMRv        ");
-
-                    if (m_opts.errorbars == 1)
-                    {
-                        printFrameSync(" -DMRv     ", m_synctest_pos + 1);
-                    }
-
-                    if (m_state.lastsynctype != 11)
-                    {
-                        m_state.firstframe = 1;
-                    }
-
-                    m_state.lastsynctype = 11;
-                    m_mbeRate = DSDMBERate3600x2450;
-                    return(11); // done
-                }
+				m_state.lastsynctype = 10;
+				m_mbeRate = DSDMBERate3600x2450;
+				return(10); // done
             }
             if ((strcmp(m_synctest, DMR_MS_VOICE_SYNC) == 0)
              || (strcmp(m_synctest, DMR_BS_VOICE_SYNC) == 0))
@@ -894,39 +866,22 @@ int DSDDecoder::getFrameSync()
                     m_stationType = DSDMobileStation;
                 }
 
-                if (m_opts.inverted_dmr == 0)
-                {
-                    // voice frame
-                    sprintf(m_state.ftype, "+DMRv        ");
+				// voice frame
+				sprintf(m_state.ftype, "+DMRv        ");
 
-                    if (m_opts.errorbars == 1)
-                    {
-                        printFrameSync(" +DMRv     ", m_synctest_pos + 1);
-                    }
+				if (m_opts.errorbars == 1)
+				{
+					printFrameSync(" +DMRv     ", m_synctest_pos + 1);
+				}
 
-                    if (m_state.lastsynctype != 12)
-                    {
-                        m_state.firstframe = 1;
-                    }
+				if (m_state.lastsynctype != 12)
+				{
+					m_state.firstframe = 1;
+				}
 
-                    m_state.lastsynctype = 12;
-                    m_mbeRate = DSDMBERate3600x2450;
-                    return(12); // done
-                }
-                else
-                {
-                    // inverted data frame
-                    sprintf(m_state.ftype, "-DMRd        ");
-
-                    if (m_opts.errorbars == 1)
-                    {
-                        printFrameSync(" -DMRd     ", m_synctest_pos + 1);
-                    }
-
-                    m_state.lastsynctype = 13;
-                    m_mbeRate = DSDMBERate3600x2450;
-                    return(13); // done
-                }
+				m_state.lastsynctype = 12;
+				m_mbeRate = DSDMBERate3600x2450;
+				return(12); // done
             }
         }
         if (m_opts.frame_provoice == 1)
@@ -1037,98 +992,6 @@ int DSDDecoder::getFrameSync()
 				m_mbeRate = DSDMBERate3600x2450;
 				return(9); // done
             }
-//            else if ((strcmp(m_synctest18, NXDN_BS_DATA_SYNC) == 0)
-//                  || (strcmp(m_synctest18, NXDN_MS_DATA_SYNC) == 0))
-//            {
-//                if (strcmp(m_synctest, NXDN_BS_DATA_SYNC) == 0) {
-//                    m_stationType = DSDBaseStation;
-//                } else {
-//                    m_stationType = DSDMobileStation;
-//                }
-//
-////                if ((m_state.lastsynctype == 8)
-////                        || (m_state.lastsynctype == 16))
-//                {
-//                    m_state.carrier = 1;
-//                    m_state.offset = m_synctest_pos;
-//                    m_state.max = ((m_state.max) + m_lmax) / 2;
-//                    m_state.min = ((m_state.min) + m_lmin) / 2;
-//
-//                    if (m_state.samplesPerSymbol == 20)
-//                    {
-//                        sprintf(m_state.ftype, "+NXDN48d     ");
-//
-//                        if (m_opts.errorbars == 1)
-//                        {
-//                            printFrameSync(" +NXDN48   ", m_synctest_pos + 1, m_modulation);
-//                        }
-//                    }
-//                    else
-//                    {
-//                        sprintf(m_state.ftype, "+NXDN96d     ");
-//
-//                        if (m_opts.errorbars == 1)
-//                        {
-//                            printFrameSync(" +NXDN96   ", m_synctest_pos + 1, m_modulation);
-//                        }
-//                    }
-////                    m_state.lastsynctype = 16;
-//                    m_mbeRate = DSDMBERate3600x2450;
-//                    return(16); // done
-//                }
-////                else
-////                {
-////                    m_state.lastsynctype = 16;
-////                }
-//            }
-//            else if ((strcmp(m_synctest18, INV_NXDN_BS_DATA_SYNC) == 0)
-//                  || (strcmp(m_synctest18, INV_NXDN_MS_DATA_SYNC) == 0))
-//            {
-//                if (strcmp(m_synctest, INV_NXDN_BS_DATA_SYNC) == 0) {
-//                    m_stationType = DSDBaseStation;
-//                } else {
-//                    m_stationType = DSDMobileStation;
-//                }
-//
-////                if ((m_state.lastsynctype == 9)
-////                        || (m_state.lastsynctype == 17))
-//                {
-//                    m_state.carrier = 1;
-//                    m_state.offset = m_synctest_pos;
-//                    m_state.max = ((m_state.max) + m_lmax) / 2;
-//                    m_state.min = ((m_state.min) + m_lmin) / 2;
-//
-//                    sprintf(m_state.ftype, "-NXDN        ");
-//
-//                    if (m_state.samplesPerSymbol == 20)
-//                    {
-//                        sprintf(m_state.ftype, "-NXDN48d     ");
-//
-//                        if (m_opts.errorbars == 1)
-//                        {
-//                            printFrameSync(" -NXDN48   ", m_synctest_pos + 1, m_modulation);
-//                        }
-//                    }
-//                    else
-//                    {
-//                        sprintf(m_state.ftype, "-NXDN96d     ");
-//
-//                        if (m_opts.errorbars == 1)
-//                        {
-//                            printFrameSync(" -NXDN96   ", m_synctest_pos + 1, m_modulation);
-//                        }
-//                    }
-//
-//                    m_state.lastsynctype = 17;
-//                    m_mbeRate = DSDMBERate3600x2450;
-//                    return(17); // done
-//                }
-////                else
-////                {
-////                    m_state.lastsynctype = 17;
-////                }
-//            }
-//        }
         }
         if (m_opts.frame_dpmr == 1)
         {

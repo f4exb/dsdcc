@@ -52,11 +52,6 @@ void DSDDMRData::preProcess()
         dibit = *dibit_p;
         dibit_p++;
 
-        if (m_dsdDecoder->m_opts.inverted_dmr == 1)
-        {
-            dibit = (dibit ^ 2);
-        }
-
         cachdata[i] = dibit;
 
         if (i == 2)
@@ -88,22 +83,12 @@ void DSDDMRData::preProcess()
     dibit = *dibit_p;
     dibit_p++;
 
-    if (m_dsdDecoder->m_opts.inverted_dmr == 1)
-    {
-        dibit = (dibit ^ 2);
-    }
-
     m_dsdDecoder->m_state.ccnum = dibit << 2;
     cc[0] = (1 & (dibit >> 1)) + 48;      // bit 1
     cc[1] = (1 & dibit) + 48;     // bit 0
 
     dibit = *dibit_p;
     dibit_p++;
-
-    if (m_dsdDecoder->m_opts.inverted_dmr == 1)
-    {
-        dibit = (dibit ^ 2);
-    }
 
     m_dsdDecoder->m_state.ccnum += dibit;
     cc[2] = (1 & (dibit >> 1)) + 48;      // bit 1
@@ -112,21 +97,11 @@ void DSDDMRData::preProcess()
     dibit = *dibit_p;
     dibit_p++;
 
-    if (m_dsdDecoder->m_opts.inverted_dmr == 1)
-    {
-        dibit = (dibit ^ 2);
-    }
-
     bursttype[0] = (1 & (dibit >> 1)) + 48;       // bit 1
     bursttype[1] = (1 & dibit) + 48;      // bit 0
 
     dibit = *dibit_p;
     dibit_p++;
-
-    if (m_dsdDecoder->m_opts.inverted_dmr == 1)
-    {
-        dibit = (dibit ^ 2);
-    }
 
     bursttype[2] = (1 & (dibit >> 1)) + 48;       // bit 1
     bursttype[3] = (1 & dibit) + 48;      // bit 0
@@ -188,12 +163,6 @@ void DSDDMRData::preProcess()
     {
         dibit = *dibit_p;
         dibit_p++;
-
-        if (m_dsdDecoder->m_opts.inverted_dmr == 1)
-        {
-            dibit = (dibit ^ 2);
-        }
-
         syncdata[i] = dibit;
         sync[i] = (dibit | 1) + 48;
     }

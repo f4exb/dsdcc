@@ -44,7 +44,6 @@ DSDOpts::DSDOpts()
     frame_provoice = 0;
     uvquality = 3;
     inverted_x2tdma = 1; // most transmitter + scanner + sound card combinations show inverted signals for this
-    inverted_dmr = 0; // most transmitter + scanner + sound card combinations show non-inverted signals for this
     mod_threshold = 26;
     ssize = 36;
     msize = 15;

@@ -51,7 +51,6 @@ public:
     int frame_ysf;
     int uvquality;
     int inverted_x2tdma;
-    int inverted_dmr;
     int mod_threshold;
     int ssize;
     int msize;
