@@ -623,7 +623,6 @@ int DSDDecoder::getFrameSync()
 
     // smelly while was starting here
     //symbol = getSymbol(opts, state, 0);
-    m_t++;
     m_state.sbuf[m_state.sidx] = m_dsdSymbol.getSymbol();
 
     if (m_state.sidx == (m_opts.ssize - 1))
@@ -656,7 +655,11 @@ int DSDDecoder::getFrameSync()
 
     *m_synctest_p = m_dibit;
 
-    if (m_t >= 18)
+    if (m_t < 18)
+    {
+        m_t++;
+    }
+    else
     {
         // Sync identification starts here
 
