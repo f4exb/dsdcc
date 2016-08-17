@@ -229,10 +229,18 @@ bool DSDSymbol::pushSample(short sample, bool have_sync)
 
         // min/max calculation
 
-        if (m_lidx < 23) {
+        if (m_lidx < 32)
+        {
             m_lidx++;
-        } else {
+        }
+        else
+        {
             m_lidx = 0;
+
+            if (have_sync && (m_nbFSKSymbols == 2)) // for established binary FSK adjust min/max continuously
+            {
+            	snapSync(32);
+            }
         }
 
         m_lbuf[m_lidx]    = m_symbol; // double buffering
