@@ -71,7 +71,7 @@ private:
     int m_sampleIndex; //!< the current sample index for the symbol in progress
     int m_sum;
     int m_count;
-    int m_jitter;
+    int m_zeroCrossing;
     int m_symCount1;   //!< Symbol counter #1
     int m_lbuf[32*2], m_lbuf2[32]; //!< symbol buffers for min/max
     int m_lidx; //!< index in min/max symbol buffer

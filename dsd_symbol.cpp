@@ -28,7 +28,7 @@ DSDSymbol::DSDSymbol(DSDDecoder *dsdDecoder) :
         m_symbol(0)
 {
     resetSymbol();
-    m_jitter = -1;
+    m_zeroCrossing = -1;
     m_symCount1 = 0;
     m_umid = 0;
     m_lmid = 0;
@@ -43,7 +43,7 @@ DSDSymbol::~DSDSymbol()
 
 void DSDSymbol::noCarrier()
 {
-    m_jitter = -1;
+    m_zeroCrossing = -1;
     m_max = 15000;
     m_min = -15000;
     m_center = 0;
@@ -69,33 +69,25 @@ bool DSDSymbol::pushSample(short sample, bool have_sync)
     // short inSample = sample; // DEBUG
 
     // timing control
-    if ((m_sampleIndex == 0) && (!have_sync))
-    {
-        if (m_dsdDecoder->m_state.samplesPerSymbol == 20)
-        {
-            if ((m_jitter >= 7) && (m_jitter <= 10))
-            {
-                m_sampleIndex--;
-            }
-            else if ((m_jitter >= 11) && (m_jitter <= 14))
-            {
-                m_sampleIndex++;
-            }
-        }
 
-        if ((m_jitter >= m_dsdDecoder->m_state.symbolCenter - 1)
-         && (m_jitter <= m_dsdDecoder->m_state.symbolCenter))
-        {
-            m_sampleIndex--;
-        }
-        else if ((m_jitter >= m_dsdDecoder->m_state.symbolCenter + 1)
-              && (m_jitter <= m_dsdDecoder->m_state.symbolCenter + 2))
-        {
-            m_sampleIndex++;
-        }
+	if (m_sampleIndex == 0) // cycle start
+	{
+		if ((m_zeroCrossing > 0) && (m_numflips == 1)) // zero crossing established
+		{
+			if (m_zeroCrossing < m_dsdDecoder->m_state.symbolCenter) // sampling point lags
+			{
+				m_sampleIndex -= m_zeroCrossing / 2;
+			}
+			else // sampling point leads
+			{
+				m_sampleIndex += (m_dsdDecoder->m_state.samplesPerSymbol - m_zeroCrossing) / 2;
+			}
 
-        m_jitter = -1;
-    }
+			m_zeroCrossing = -1; // wait for next crossing
+		}
+
+		m_numflips = 0;
+	}
 
     // process sample
     if (m_dsdDecoder->m_opts.use_cosine_filter)
@@ -119,26 +111,28 @@ bool DSDSymbol::pushSample(short sample, bool have_sync)
 
     if (sample > m_center)
     {
-        if ((m_jitter < 0) && (m_lastsample < m_center)) // first transition edge
-        {
-            m_jitter = m_sampleIndex;
-        }
+    	// transition edge with at least 45 degree slope
+    	if ((m_lastsample < m_center) && ((sample - m_lastsample) > (65536 / m_dsdDecoder->m_state.samplesPerSymbol)))
+    	{
+    		 m_numflips += 1;
 
-        if (m_lastsample < m_center)
-        {
-            m_numflips += 1;
-        }
+    		 if (m_zeroCrossing < 0)
+    		 {
+    			 m_zeroCrossing = m_sampleIndex;
+    		 }
+    	}
     }
     else
     {
-        if ((m_jitter < 0) && (m_lastsample > m_center)) // first transition edge
+    	// transition edge with at least 45 degree slope
+        if ((m_lastsample > m_center) && ((m_lastsample - sample) > (65536 / m_dsdDecoder->m_state.samplesPerSymbol)))
         {
-            m_jitter = m_sampleIndex;
-        }
+			m_numflips += 1;
 
-        if (m_lastsample > m_center)
-        {
-            m_numflips += 1;
+			if (m_zeroCrossing < 0)
+			{
+				m_zeroCrossing = m_sampleIndex;
+			}
         }
     }
 
@@ -171,9 +165,9 @@ bool DSDSymbol::pushSample(short sample, bool have_sync)
         if ((m_dsdDecoder->m_opts.symboltiming == 1) && (!have_sync)
                 && (m_dsdDecoder->m_state.lastsynctype != -1))
         {
-            if (m_jitter >= 0)
+            if (m_zeroCrossing >= 0)
             {
-                m_dsdDecoder->getLogger().log(" %i\n", m_jitter);
+                m_dsdDecoder->getLogger().log(" %i\n", m_zeroCrossing);
             }
             else
             {
@@ -254,7 +248,6 @@ int DSDSymbol::get_dibit_and_analog_signal(int* out_analog_signal)
     int symbol;
     int dibit;
 
-    m_numflips = 0;
     symbol = m_symbol;
 
     if (out_analog_signal != 0) {
