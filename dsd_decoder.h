@@ -48,17 +48,7 @@
 #define INV_DSTAR_SYNC "131313131311313331131333"
 
 // NXDN symbol mapping: 01(1):+3, 00(0):+1, 10(2):-1, 11(3):-3
-// old way with FSW+LICH
-//                              FSW       LICH
-#define NXDN_MS_DATA_SYNC      "313133113131111333" // CD F5 9| => DD F5 D|
-#define NXDN_MS_VOICE_SYNC     "313133113131113133"
-#define NXDN_BS_DATA_SYNC      "313133113131111313"
-#define NXDN_BS_VOICE_SYNC     "313133113131113113"
-#define INV_NXDN_MS_DATA_SYNC  "131311331313333111"
-#define INV_NXDN_MS_VOICE_SYNC "131311331313331311"
-#define INV_NXDN_BS_DATA_SYNC  "131311331313333131"
-#define INV_NXDN_BS_VOICE_SYNC "131311331313331331"
-// new way with preamble and FSW only for RDCH (conventional) type
+// Preamble and FSW only for RDCH (conventional) type
 //                           PREAMBLE  FSW
 #define NXDN_RDCH_FULL_SYNC "11131133313131331131" // Full sync lookup in auto mode
 #define NXDN_RDCH_FSW_SYNC            "3131331131" // FSW sync lookup (follow up or sync lookup in NXDN mode)
