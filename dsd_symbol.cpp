@@ -84,12 +84,12 @@ bool DSDSymbol::pushSample(short sample, bool have_sync)
             if (m_zeroCrossing < m_dsdDecoder->m_state.symbolCenter) // sampling point lags
 			{
 			    m_zeroCrossingPos = -m_zeroCrossing;
-				m_sampleIndex -= m_zeroCrossing / (m_dsdDecoder->m_state.samplesPerSymbol/5);
+				m_sampleIndex -= m_zeroCrossing / (m_dsdDecoder->m_state.samplesPerSymbol/4);
 			}
 			else // sampling point leads
 			{
 			    m_zeroCrossingPos = m_dsdDecoder->m_state.samplesPerSymbol - m_zeroCrossing;
-				m_sampleIndex += (m_dsdDecoder->m_state.samplesPerSymbol - m_zeroCrossing)  / (m_dsdDecoder->m_state.samplesPerSymbol/5);
+				m_sampleIndex += (m_dsdDecoder->m_state.samplesPerSymbol - m_zeroCrossing)  / (m_dsdDecoder->m_state.samplesPerSymbol/4);
 			}
 		}
 
