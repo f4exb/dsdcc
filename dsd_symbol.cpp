@@ -38,6 +38,7 @@ DSDSymbol::DSDSymbol(DSDDecoder *dsdDecoder) :
     m_zeroCrossingSlopeMin = 20000;
     m_invertedFSK = false;
     m_lastsample = 0;
+    m_numflips = 0;
 }
 
 DSDSymbol::~DSDSymbol()
@@ -57,7 +58,6 @@ void DSDSymbol::resetFrameSync()
     m_symCount1 = 0;
     m_lmin = 0;
     m_lmax = 0;
-    m_numflips = 0;
 }
 
 void DSDSymbol::resetSymbol()
@@ -92,7 +92,6 @@ bool DSDSymbol::pushSample(short sample, bool have_sync)
 		}
 
         m_zeroCrossing = -1; // wait for next crossing
-		m_numflips = 0;
 	}
 
     // process sample
@@ -123,6 +122,7 @@ bool DSDSymbol::pushSample(short sample, bool have_sync)
             if (m_zeroCrossing < 0)
             {
                 m_zeroCrossing = m_sampleIndex;
+                m_numflips++;
             }
     	}
     }
@@ -134,6 +134,7 @@ bool DSDSymbol::pushSample(short sample, bool have_sync)
 			if (m_zeroCrossing < 0)
 			{
 				m_zeroCrossing = m_sampleIndex;
+				m_numflips++;
 			}
         }
     }
@@ -183,6 +184,7 @@ bool DSDSymbol::pushSample(short sample, bool have_sync)
         else
         {
             m_lidx = 0;
+            m_numflips = 0;
             snapLevels(32);
         }
 

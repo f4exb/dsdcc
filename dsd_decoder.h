@@ -243,6 +243,7 @@ public:
     int getInLevel() const { return m_dsdSymbol.getLevel(); }
     int getCarrierPos() const { return m_dsdSymbol.getCarrierPos(); }
     int getZeroCrossingPos() const { return m_dsdSymbol.getZeroCrossingPos(); }
+    int getNumFlips() const { return m_dsdSymbol.getNumFlips(); }
     int getSamplesPerSymbol() const { return m_state.samplesPerSymbol; }
     DSDRate getDataRate() const { return m_dataRate; };
     const DSDDstar& getDStarDecoder() const { return m_dsdDstar; }

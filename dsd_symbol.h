@@ -43,6 +43,7 @@ public:
     int getLevel() const { return (m_max - m_min) / 328; }
     int getCarrierPos() const { return m_center / 164; }
     int getZeroCrossingPos() const { return m_zeroCrossingPos; }
+    int getNumFlips() const { return m_numflips; }
 
     static void compressBits(const char *bitArray, unsigned char *byteArray, int nbBytes)
     {
