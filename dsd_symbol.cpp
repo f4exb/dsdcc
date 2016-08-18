@@ -222,8 +222,8 @@ void DSDSymbol::snapLevels(int nbSymbols)
     m_lmin = (m_lbuf2[2] + m_lbuf2[3] + m_lbuf2[4]) / 3;
     m_lmax = (m_lbuf2[nbSymbols-3] + m_lbuf2[nbSymbols-4] + m_lbuf2[nbSymbols-5]) / 3;
 
-    m_max = ((m_max) + m_lmax) / 2;
-    m_min = ((m_min) + m_lmin) / 2;
+    m_max = m_max + (m_lmax - m_max) / 4; // alpha = 0.25
+    m_min = m_min + (m_lmin - m_min) / 4; // alpha = 0.25
     // recalibrate center/umid/lmid
     m_center = ((m_max) + (m_min)) / 2;
     m_umid = (((m_max) - m_center) / 2) + m_center;
