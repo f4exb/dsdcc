@@ -226,8 +226,8 @@ void DSDSymbol::snapLevels(int nbSymbols)
     m_min = ((m_min) + m_lmin) / 2;
     // recalibrate center/umid/lmid
     m_center = ((m_max) + (m_min)) / 2;
-    m_umid = (((m_max) - m_center) * 5 / 8) + m_center;
-    m_lmid = (((m_min) - m_center) * 5 / 8) + m_center;
+    m_umid = (((m_max) - m_center) / 2) + m_center;
+    m_lmid = (((m_min) - m_center) / 2) + m_center;
 }
 
 void DSDSymbol::setFSK(unsigned int nbSymbols, bool inverted)
