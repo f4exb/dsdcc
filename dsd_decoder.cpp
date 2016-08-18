@@ -661,7 +661,6 @@ int DSDDecoder::getFrameSync()
             {
                 m_state.carrier = 1;
                 m_state.offset = m_synctest_pos;
-                m_dsdSymbol.snapSync(24);
                 m_dsdSymbol.setFSK(4);
 
                 sprintf(m_state.ftype, "+P25 Phase 1 ");
@@ -679,7 +678,6 @@ int DSDDecoder::getFrameSync()
             {
                 m_state.carrier = 1;
                 m_state.offset = m_synctest_pos;
-                m_dsdSymbol.snapSync(24);
                 m_dsdSymbol.setFSK(4, true);
 
                 sprintf(m_state.ftype, "-P25 Phase 1 ");
@@ -701,7 +699,6 @@ int DSDDecoder::getFrameSync()
             {
                 m_state.carrier = 1;
                 m_state.offset = m_synctest_pos;
-                m_dsdSymbol.snapSync(24);
                 m_dsdSymbol.setFSK(4);
 
                 if (strcmp(m_synctest, X2TDMA_BS_DATA_SYNC) == 0) {
@@ -749,7 +746,6 @@ int DSDDecoder::getFrameSync()
             {
                 m_state.carrier = 1;
                 m_state.offset = m_synctest_pos;
-                m_dsdSymbol.snapSync(24);
                 m_dsdSymbol.setFSK(4);
 
                 if (strcmp(m_synctest, X2TDMA_BS_VOICE_SYNC) == 0) {
@@ -801,7 +797,6 @@ int DSDDecoder::getFrameSync()
             {
                 m_state.carrier = 1;
                 m_state.offset = m_synctest_pos;
-                m_dsdSymbol.snapSync(20);
                 m_dsdSymbol.setFSK(4);
 
                 sprintf(m_state.ftype, "+YSF         ");
@@ -823,7 +818,6 @@ int DSDDecoder::getFrameSync()
             {
                 m_state.carrier = 1;
                 m_state.offset = m_synctest_pos;
-                m_dsdSymbol.snapSync(24);
                 m_dsdSymbol.setFSK(4);
 
                 if (strcmp(m_synctest, DMR_BS_DATA_SYNC) == 0) {
@@ -849,7 +843,6 @@ int DSDDecoder::getFrameSync()
             {
                 m_state.carrier = 1;
                 m_state.offset = m_synctest_pos;
-                m_dsdSymbol.snapSync(24);
                 m_dsdSymbol.setFSK(4);
 
                 if (strcmp(m_synctest, DMR_BS_VOICE_SYNC) == 0) {
@@ -885,7 +878,6 @@ int DSDDecoder::getFrameSync()
             {
                 m_state.carrier = 1;
                 m_state.offset = m_synctest_pos;
-                m_dsdSymbol.snapSync(32);
                 m_dsdSymbol.setFSK(4);
 
                 sprintf(m_state.ftype, "+ProVoice    ");
@@ -904,7 +896,6 @@ int DSDDecoder::getFrameSync()
             {
                 m_state.carrier = 1;
                 m_state.offset = m_synctest_pos;
-                m_dsdSymbol.snapSync(32);
                 m_dsdSymbol.setFSK(4, true);
 
                 sprintf(m_state.ftype, "-ProVoice    ");
@@ -928,7 +919,6 @@ int DSDDecoder::getFrameSync()
             {
 				m_state.carrier = 1;
 				m_state.offset = m_synctest_pos;
-                m_dsdSymbol.snapSync(20);
                 m_dsdSymbol.setFSK(4);
 
 				if (m_state.samplesPerSymbol == 20)
@@ -958,7 +948,6 @@ int DSDDecoder::getFrameSync()
             {
 				m_state.carrier = 1;
 				m_state.offset = m_synctest_pos;
-                m_dsdSymbol.snapSync(20);
                 m_dsdSymbol.setFSK(4, true);
 
 				if (m_state.samplesPerSymbol == 20)
@@ -991,7 +980,6 @@ int DSDDecoder::getFrameSync()
             {
                 m_state.carrier = 1;
                 m_state.offset = m_synctest_pos;
-                m_dsdSymbol.snapSync(24);
                 m_dsdSymbol.setFSK(4);
 
                 sprintf(m_state.ftype, "+dPMR        ");
@@ -1009,7 +997,6 @@ int DSDDecoder::getFrameSync()
             {
                 m_state.carrier = 1;
                 m_state.offset = m_synctest_pos;
-                m_dsdSymbol.snapSync(24);
                 m_dsdSymbol.setFSK(4);
 
                 sprintf(m_state.ftype, "+dPMRpkt     ");
@@ -1029,7 +1016,6 @@ int DSDDecoder::getFrameSync()
             {
                 m_state.carrier = 1;
                 m_state.offset = m_synctest_pos;
-                m_dsdSymbol.snapSync(24);
                 m_dsdSymbol.setFSK(2);
 
                 sprintf(m_state.ftype, "+D-STAR      ");
@@ -1047,7 +1033,6 @@ int DSDDecoder::getFrameSync()
             {
                 m_state.carrier = 1;
                 m_state.offset = m_synctest_pos;
-                m_dsdSymbol.snapSync(24);
                 m_dsdSymbol.setFSK(2, true);
 
                 sprintf(m_state.ftype, "-D-STAR      ");
@@ -1065,7 +1050,6 @@ int DSDDecoder::getFrameSync()
             {
                 m_state.carrier = 1;
                 m_state.offset = m_synctest_pos;
-                m_dsdSymbol.snapSync(24);
                 m_dsdSymbol.setFSK(2);
 
                 sprintf(m_state.ftype, "+D-STAR_HD   ");
@@ -1083,7 +1067,6 @@ int DSDDecoder::getFrameSync()
             {
                 m_state.carrier = 1;
                 m_state.offset = m_synctest_pos;
-                m_dsdSymbol.snapSync(24);
                 m_dsdSymbol.setFSK(2, true);
 
                 sprintf(m_state.ftype, "-D-STAR_HD   ");

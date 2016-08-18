@@ -33,14 +33,16 @@ public:
     void noCarrier();
     void resetFrameSync();
 
-    void snapSync(int nbSymbols); //!< take snapshot for min/max on sync sequence
+    void snapLevels(int nbSymbols); //!< take snapshot for min/max over a number of symbols
     void setFSK(unsigned int nbSymbols, bool inverted=false);
 
     int getSymbol() const { return m_symbol; }
     bool pushSample(short sample, bool have_sync); //!< push a new sample into the decoder. Returns true if a new symbol is available
     int getDibit(); //!< from the last retrieved symbol Returns either the bit (0,1) or the dibit value (0,1,2,3)
     static int invert_dibit(int dibit);
-    int getLevel() const { return (int) m_max / 164; }
+    int getLevel() const { return (m_max - m_min) / 328; }
+    int getCarrierPos() const { return m_center / 164; }
+    int getZeroCrossingPos() const { return m_zeroCrossingPos; }
 
     static void compressBits(const char *bitArray, unsigned char *byteArray, int nbBytes)
     {
@@ -72,6 +74,8 @@ private:
     int m_sum;
     int m_count;
     int m_zeroCrossing;
+    int m_zeroCrossingPos;
+    int m_zeroCrossingSlopeMin;
     int m_symCount1;   //!< Symbol counter #1
     int m_lbuf[32*2], m_lbuf2[32]; //!< symbol buffers for min/max
     int m_lidx; //!< index in min/max symbol buffer

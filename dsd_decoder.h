@@ -241,6 +241,8 @@ public:
     const char *getSlot1Text() const { return m_state.slot1light; }
     unsigned char getColorCode() const { return m_state.ccnum; }
     int getInLevel() const { return m_dsdSymbol.getLevel(); }
+    int getCarrierPos() const { return m_dsdSymbol.getCarrierPos(); }
+    int getZeroCrossingPos() const { return m_dsdSymbol.getZeroCrossingPos(); }
     int getSamplesPerSymbol() const { return m_state.samplesPerSymbol; }
     DSDRate getDataRate() const { return m_dataRate; };
     const DSDDstar& getDStarDecoder() const { return m_dsdDstar; }

@@ -14,6 +14,7 @@
 // along with this program. If not, see <http://www.gnu.org/licenses/>.          //
 ///////////////////////////////////////////////////////////////////////////////////
 
+#include <iostream>
 #include <stdlib.h>
 #include <assert.h>
 
@@ -29,10 +30,12 @@ DSDSymbol::DSDSymbol(DSDDecoder *dsdDecoder) :
 {
     resetSymbol();
     m_zeroCrossing = -1;
+    m_zeroCrossingPos = 0;
     m_symCount1 = 0;
     m_umid = 0;
     m_lmid = 0;
     m_nbFSKSymbols = 2;
+    m_zeroCrossingSlopeMin = 20000;
     m_invertedFSK = false;
     m_lastsample = 0;
 }
@@ -72,20 +75,23 @@ bool DSDSymbol::pushSample(short sample, bool have_sync)
 
 	if (m_sampleIndex == 0) // cycle start
 	{
-		if ((m_zeroCrossing > 0) && (m_numflips == 1)) // zero crossing established
+		if (m_zeroCrossing > 0) // zero crossing established
 		{
-			if (m_zeroCrossing < m_dsdDecoder->m_state.symbolCenter) // sampling point lags
+//            std::cerr << "DSDSymbol::pushSample: ZC adjust : " << m_zeroCrossing << std::endl;
+
+            if (m_zeroCrossing < m_dsdDecoder->m_state.symbolCenter) // sampling point lags
 			{
+			    m_zeroCrossingPos = -m_zeroCrossing;
 				m_sampleIndex -= m_zeroCrossing / 2;
 			}
 			else // sampling point leads
 			{
+			    m_zeroCrossingPos = m_dsdDecoder->m_state.samplesPerSymbol - m_zeroCrossing;
 				m_sampleIndex += (m_dsdDecoder->m_state.samplesPerSymbol - m_zeroCrossing) / 2;
 			}
-
-			m_zeroCrossing = -1; // wait for next crossing
 		}
 
+        m_zeroCrossing = -1; // wait for next crossing
 		m_numflips = 0;
 	}
 
@@ -111,24 +117,20 @@ bool DSDSymbol::pushSample(short sample, bool have_sync)
 
     if (sample > m_center)
     {
-    	// transition edge with at least 45 degree slope
-    	if ((m_lastsample < m_center) && ((sample - m_lastsample) > (65536 / m_dsdDecoder->m_state.samplesPerSymbol)))
+        // transition edge with at least some slope
+    	if ((m_lastsample < m_center) && ((sample - m_lastsample) > (m_zeroCrossingSlopeMin / m_dsdDecoder->m_state.samplesPerSymbol)))
     	{
-    		 m_numflips += 1;
-
-    		 if (m_zeroCrossing < 0)
-    		 {
-    			 m_zeroCrossing = m_sampleIndex;
-    		 }
+            if (m_zeroCrossing < 0)
+            {
+                m_zeroCrossing = m_sampleIndex;
+            }
     	}
     }
     else
     {
-    	// transition edge with at least 45 degree slope
-        if ((m_lastsample > m_center) && ((m_lastsample - sample) > (65536 / m_dsdDecoder->m_state.samplesPerSymbol)))
+        // transition edge with at least some slope
+        if ((m_lastsample > m_center) && ((m_lastsample - sample) > (m_zeroCrossingSlopeMin / m_dsdDecoder->m_state.samplesPerSymbol)))
         {
-			m_numflips += 1;
-
 			if (m_zeroCrossing < 0)
 			{
 				m_zeroCrossing = m_sampleIndex;
@@ -161,20 +163,6 @@ bool DSDSymbol::pushSample(short sample, bool have_sync)
     if (m_sampleIndex == m_dsdDecoder->m_state.samplesPerSymbol - 1) // conclusion
     {
         m_symbol = m_sum / m_count;
-
-        if ((m_dsdDecoder->m_opts.symboltiming == 1) && (!have_sync)
-                && (m_dsdDecoder->m_state.lastsynctype != -1))
-        {
-            if (m_zeroCrossing >= 0)
-            {
-                m_dsdDecoder->getLogger().log(" %i\n", m_zeroCrossing);
-            }
-            else
-            {
-                m_dsdDecoder->getLogger().log("\n");
-            }
-        }
-
         m_dsdDecoder->m_state.symbolcnt++;
 
         // Symbol debugging
@@ -195,14 +183,10 @@ bool DSDSymbol::pushSample(short sample, bool have_sync)
         else
         {
             m_lidx = 0;
-
-            if (have_sync && (m_nbFSKSymbols == 2)) // for established binary FSK adjust min/max continuously
-            {
-            	snapSync(32);
-            }
+            snapLevels(32);
         }
 
-        m_lbuf[m_lidx]    = m_symbol; // double buffering
+        m_lbuf[m_lidx]    = m_symbol; // double buffering in case snap is required randomly
         m_lbuf[m_lidx+32] = m_symbol;
 
         return true; // new symbol available
@@ -214,7 +198,7 @@ bool DSDSymbol::pushSample(short sample, bool have_sync)
     }
 }
 
-void DSDSymbol::snapSync(int nbSymbols)
+void DSDSymbol::snapLevels(int nbSymbols)
 {
     memcpy(m_lbuf2, &m_lbuf[32 + m_lidx - nbSymbols], nbSymbols * sizeof(int)); // copy to working buffer
     qsort(m_lbuf2, nbSymbols, sizeof(int), comp);
@@ -232,12 +216,20 @@ void DSDSymbol::snapSync(int nbSymbols)
 
 void DSDSymbol::setFSK(unsigned int nbSymbols, bool inverted)
 {
-	if (nbSymbols == 2) { // binary FSK a.k.a. 2FSK
+	if (nbSymbols == 2) // binary FSK a.k.a. 2FSK
+	{
 		m_nbFSKSymbols = 2;
-	} else if (nbSymbols == 4) { // 4-ary FSK a.k.a. 4FSK
+		m_zeroCrossingSlopeMin = 20000;
+	}
+	else if (nbSymbols == 4) // 4-ary FSK a.k.a. 4FSK
+	{
 		m_nbFSKSymbols = 4;
-	} else { // others are not supported => default to binary FSK
+		m_zeroCrossingSlopeMin = 40000;
+	}
+	else // others are not supported => default to binary FSK
+	{
 		m_nbFSKSymbols = 2;
+        m_zeroCrossingSlopeMin = 20000;
 	}
 
 	m_invertedFSK = inverted;
