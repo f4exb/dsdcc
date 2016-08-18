@@ -39,6 +39,8 @@ DSDSymbol::DSDSymbol(DSDDecoder *dsdDecoder) :
     m_invertedFSK = false;
     m_lastsample = 0;
     m_numflips = 0;
+    m_symbolSyncQuality = 0;
+    m_symbolSyncQualityCounter = 0;
 }
 
 DSDSymbol::~DSDSymbol()
@@ -175,6 +177,19 @@ bool DSDSymbol::pushSample(short sample, bool have_sync)
 
         // moved here what was done at symbol retrieval in the decoder
 
+        // symbol syncgronization quality metric
+
+        if (m_symbolSyncQualityCounter < 100)
+        {
+            m_symbolSyncQualityCounter++;
+        }
+        else
+        {
+            m_symbolSyncQuality = m_numflips;
+            m_symbolSyncQualityCounter = 0;
+            m_numflips = 0;
+        }
+
         // min/max calculation
 
         if (m_lidx < 32)
@@ -184,7 +199,6 @@ bool DSDSymbol::pushSample(short sample, bool have_sync)
         else
         {
             m_lidx = 0;
-            m_numflips = 0;
             snapLevels(32);
         }
 

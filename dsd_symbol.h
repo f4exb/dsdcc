@@ -43,7 +43,7 @@ public:
     int getLevel() const { return (m_max - m_min) / 328; }
     int getCarrierPos() const { return m_center / 164; }
     int getZeroCrossingPos() const { return m_zeroCrossingPos; }
-    int getNumFlips() const { return m_numflips; }
+    int getSymbolSyncQuality() const { return m_symbolSyncQuality; }
 
     static void compressBits(const char *bitArray, unsigned char *byteArray, int nbBytes)
     {
@@ -85,7 +85,9 @@ private:
     int m_minref, m_maxref;
     int m_center;
     int m_umid, m_lmid;
-    int m_numflips; // TODO: not sure we really need this one
+    int m_numflips;
+    int m_symbolSyncQuality;
+    int m_symbolSyncQualityCounter;
     short m_lastsample;
     unsigned int m_nbFSKSymbols;
     bool m_invertedFSK;
