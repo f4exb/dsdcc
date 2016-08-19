@@ -80,7 +80,6 @@ public:
     float *aout_max_buf_p;
     int aout_max_buf_idx;
     int samplesPerSymbol;
-    int symbolCenter;
     char algid[9];
     char keyid[17];
     int currentslot;

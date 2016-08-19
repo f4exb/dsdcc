@@ -81,7 +81,7 @@ bool DSDSymbol::pushSample(short sample, bool have_sync)
 		{
 //            std::cerr << "DSDSymbol::pushSample: ZC adjust : " << m_zeroCrossing << std::endl;
 
-            if (m_zeroCrossing < m_dsdDecoder->m_state.symbolCenter) // sampling point lags
+            if (m_zeroCrossing < (m_dsdDecoder->m_state.samplesPerSymbol)/2) // sampling point lags
 			{
 			    m_zeroCrossingPos = -m_zeroCrossing;
 				m_sampleIndex -= m_zeroCrossing / (m_dsdDecoder->m_state.samplesPerSymbol/4);
@@ -135,18 +135,27 @@ bool DSDSymbol::pushSample(short sample, bool have_sync)
 
     // symbol estimation
 
-    if (m_dsdDecoder->m_state.samplesPerSymbol == 5)
+    if (m_dsdDecoder->m_state.samplesPerSymbol == 5) // 9600 baud
     {
-        if (m_sampleIndex == m_dsdDecoder->m_state.symbolCenter)
+        if (m_sampleIndex == 2)
         {
             m_sum += sample;
             m_count++;
         }
     }
-    else
+    else if (m_dsdDecoder->m_state.samplesPerSymbol == 20) // 2400 baud
     {
-        if ((m_sampleIndex >= m_dsdDecoder->m_state.symbolCenter - 1)
-         && (m_sampleIndex <= m_dsdDecoder->m_state.symbolCenter + 1))
+        if ((m_sampleIndex >= 5)
+         && (m_sampleIndex <= 14))
+        {
+            m_sum += sample;
+            m_count++;
+        }
+    }
+    else // 4800 baud - default
+    {
+        if ((m_sampleIndex >= 3)
+         && (m_sampleIndex <= 6))
         {
             m_sum += sample;
             m_count++;

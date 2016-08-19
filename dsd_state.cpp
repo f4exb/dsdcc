@@ -91,7 +91,6 @@ DSDState::DSDState()
     aout_max_buf_p = aout_max_buf;
     aout_max_buf_idx = 0;
     samplesPerSymbol = 10;
-    symbolCenter = 4;
     sprintf(algid, "________");
     sprintf(keyid, "________________");
     currentslot = 0;

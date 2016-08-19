@@ -342,22 +342,18 @@ void DSDDecoder::setDataRate(DSDRate dataRate)
     case DSDRate2400:
         m_dsdLogger.log("Set data rate to 2400 bauds. 20 samples per symbol\n");
         m_state.samplesPerSymbol = 20;
-        m_state.symbolCenter = 10;
         break;
     case DSDRate4800:
         m_dsdLogger.log("Set data rate to 4800 bauds. 10 samples per symbol\n");
         m_state.samplesPerSymbol = 10;
-        m_state.symbolCenter = 4;
         break;
     case DSDRate9600:
         m_dsdLogger.log("Set data rate to 9600 bauds. 5 samples per symbol\n");
         m_state.samplesPerSymbol = 5;
-        m_state.symbolCenter = 2;
         break;
     default:
         m_dsdLogger.log("Set default data rate to 4800 bauds. 10 samples per symbol\n");
         m_state.samplesPerSymbol = 10;
-        m_state.symbolCenter = 4;
         break;
     }
 }
