@@ -187,6 +187,7 @@ public:
     ~DSDDecoder();
 
     void run(short sample);
+    short getFilteredSample() const { return m_dsdSymbol.getFilteredSample(); }
 
     /** DVSI support */
     const unsigned char *getMbeDVFrame() const {

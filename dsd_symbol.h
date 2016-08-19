@@ -44,6 +44,7 @@ public:
     int getCarrierPos() const { return m_center / 164; }
     int getZeroCrossingPos() const { return m_zeroCrossingPos; }
     int getSymbolSyncQuality() const { return m_symbolSyncQuality; }
+    short getFilteredSample() const { return m_filteredSample; }
 
     static void compressBits(const char *bitArray, unsigned char *byteArray, int nbBytes)
     {
@@ -89,6 +90,7 @@ private:
     int m_symbolSyncQuality;
     int m_symbolSyncQualityCounter;
     short m_lastsample;
+    short m_filteredSample;
     unsigned int m_nbFSKSymbols;
     bool m_invertedFSK;
 };

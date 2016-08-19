@@ -38,6 +38,7 @@ DSDSymbol::DSDSymbol(DSDDecoder *dsdDecoder) :
     m_zeroCrossingSlopeMin = 20000;
     m_invertedFSK = false;
     m_lastsample = 0;
+    m_filteredSample = 0;
     m_numflips = 0;
     m_symbolSyncQuality = 0;
     m_symbolSyncQualityCounter = 0;
@@ -53,6 +54,7 @@ void DSDSymbol::noCarrier()
     m_max = 15000;
     m_min = -15000;
     m_center = 0;
+    m_filteredSample = 0;
 }
 
 void DSDSymbol::resetFrameSync()
@@ -105,6 +107,8 @@ bool DSDSymbol::pushSample(short sample, bool have_sync)
             sample = m_dsdFilters.dmr_filter(sample);  // 12.5 kHz for 4800 and 9600 baud
         }
     }
+
+    m_filteredSample = sample;
 
     // zero crossing
 
