@@ -20,7 +20,7 @@ namespace DSDcc
 {
 
 const float DSDFilters::ngain = 7.423339364f;
-const float DSDFilters::nxgain = 15.95930463f;
+const float DSDFilters::nxgain = 15.95930463f / 1.25f; // it was found empirically that a little boost is required
 
 // DMR filter
 const float DSDFilters::xcoeffs[] =
@@ -121,7 +121,7 @@ short DSDFilters::dsd_input_filter(short sample, int mode)
         zeros = NZEROS;
         break;
     case 2:
-        gain = nxgain / 1.25;
+        gain = nxgain;
         v = nxv;
         coeffs = nxcoeffs;
         zeros = NXZEROS;
