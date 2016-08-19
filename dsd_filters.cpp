@@ -121,7 +121,7 @@ short DSDFilters::dsd_input_filter(short sample, int mode)
         zeros = NZEROS;
         break;
     case 2:
-        gain = nxgain;
+        gain = nxgain / 1.25;
         v = nxv;
         coeffs = nxcoeffs;
         zeros = NXZEROS;
