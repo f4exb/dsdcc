@@ -99,18 +99,10 @@ bool DSDSymbol::pushSample(short sample, bool have_sync)
     // process sample
     if (m_dsdDecoder->m_opts.use_cosine_filter)
     {
-        if (m_dsdDecoder->m_state.lastsynctype >= 10 && m_dsdDecoder->m_state.lastsynctype <= 13)              // all DMR
-        {
-            sample = m_dsdFilters.dmr_filter(sample);  // 12.5 kHz for DMR
-        }
-        else if (m_dsdDecoder->m_state.lastsynctype == 8  || m_dsdDecoder->m_state.lastsynctype == 9       // +/-NXDN
-              || (m_dsdDecoder->m_state.lastsynctype == 20 || m_dsdDecoder->m_state.lastsynctype == 21))   // +DPMR FS1,4
-        {
-            if (m_dsdDecoder->m_state.samplesPerSymbol == 20) {
-                sample = m_dsdFilters.nxdn_filter(sample); // 6.25 kHz for NXDN48 / DPMR
-            } else {
-                sample = m_dsdFilters.dmr_filter(sample);  // 12.5 kHz for NXDN96
-            }
+        if (m_dsdDecoder->m_state.samplesPerSymbol == 20) {
+            sample = m_dsdFilters.nxdn_filter(sample); // 6.25 kHz for 2400 baud
+        } else {
+            sample = m_dsdFilters.dmr_filter(sample);  // 12.5 kHz for 4800 and 9600 baud
         }
     }
 
