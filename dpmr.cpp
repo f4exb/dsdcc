@@ -572,7 +572,7 @@ void DSDdPMR::processCCH(int symbolIndex, int dibit)
             m_frameNumber = 0xFF; // invalid
         }
 
-        switch (m_commFormat)
+        switch (m_commMode)
         {
         case DPMRVoiceMode:
             m_frameType = DPMRVoiceframe;
@@ -695,10 +695,10 @@ bool DSDdPMR::checkCRC7(unsigned char *bits, int nbBits)
 
     for (int i = 0; i < nbBits; i++)
     {
-        if (m_bitWork[i] == 1) // divide by X⁷+X³+1 (10001001)
+        if (m_bitWork[i] == 1) // divide by X^7+X^3+1 (10001001)
         {
-            m_bitWork[i]    = 0; // X⁷
-            m_bitWork[i+4] ^= 1; // X³
+            m_bitWork[i]    = 0; // X^8
+            m_bitWork[i+4] ^= 1; // X^3
             m_bitWork[i+7] ^= 1; // 1
         }
     }
@@ -720,10 +720,10 @@ bool DSDdPMR::checkCRC8(unsigned char *bits, int nbBits)
 
     for (int i = 0; i < nbBits; i++)
     {
-        if (m_bitWork[i] == 1) // divide by X⁸+X²+X+1  (100000111)
+        if (m_bitWork[i] == 1) // divide by X^8+X^2+X+1  (100000111)
         {
-            m_bitWork[i]    = 0; // X⁸
-            m_bitWork[i+6] ^= 1; // X²
+            m_bitWork[i]    = 0; // X^8
+            m_bitWork[i+6] ^= 1; // X^2
             m_bitWork[i+7] ^= 1; // X
             m_bitWork[i+8] ^= 1; // 1
         }
