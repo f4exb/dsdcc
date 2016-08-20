@@ -24,12 +24,17 @@
 namespace DSDcc
 {
 
+                                                            //   0  1  2  3  4  5  6  7  8  9 10
+const int DSDSymbol::m_zeroCrossingCorrectionProfile2400[11] = { 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2};
+const int DSDSymbol::m_zeroCrossingCorrectionProfile4800[11] = { 0, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2};
+const int DSDSymbol::m_zeroCrossingCorrectionProfile9600[11] = { 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+
 DSDSymbol::DSDSymbol(DSDDecoder *dsdDecoder) :
         m_dsdDecoder(dsdDecoder),
         m_symbol(0)
 {
     resetSymbol();
-    m_zeroCrossing = -1;
+    m_zeroCrossingInCycle = false;
     m_zeroCrossingPos = 0;
     m_symCount1 = 0;
     m_umid = 0;
@@ -43,6 +48,7 @@ DSDSymbol::DSDSymbol(DSDDecoder *dsdDecoder) :
     m_numflips = 0;
     m_symbolSyncQuality = 0;
     m_symbolSyncQualityCounter = 0;
+    memcpy(m_zeroCrossingCorrectionProfile, m_zeroCrossingCorrectionProfile4800, 5*sizeof(int));
 }
 
 DSDSymbol::~DSDSymbol()
@@ -51,7 +57,7 @@ DSDSymbol::~DSDSymbol()
 
 void DSDSymbol::noCarrier()
 {
-    m_zeroCrossing = -1;
+    m_zeroCrossingInCycle = false;
     m_max = 15000;
     m_min = -15000;
     m_center = 0;
@@ -82,18 +88,23 @@ bool DSDSymbol::pushSample(short sample, bool have_sync)
 	{
 		if (m_zeroCrossingInCycle) // zero crossing established
 		{
-//            std::cerr << "DSDSymbol::pushSample: ZC adjust : " << m_zeroCrossing << std::endl;
+		    if (m_zeroCrossing < 11)
+		    {
+//	            std::cerr << "DSDSymbol::pushSample: ZC adjust : " << m_zeroCrossing << std::endl;
 
-            if (m_zeroCrossing < (m_samplesPerSymbol)/2) // sampling point lags
-			{
-			    m_zeroCrossingPos = -m_zeroCrossing;
-				m_sampleIndex -= m_zeroCrossing / (m_samplesPerSymbol/4);
-			}
-			else // sampling point leads
-			{
-			    m_zeroCrossingPos = m_samplesPerSymbol - m_zeroCrossing;
-				m_sampleIndex += (m_samplesPerSymbol - m_zeroCrossing)  / (m_samplesPerSymbol/4);
-			}
+	            if (m_zeroCrossing < (m_samplesPerSymbol)/2) // sampling point lags
+	            {
+	                m_zeroCrossingPos = -m_zeroCrossing;
+	                m_sampleIndex -= m_zeroCrossingCorrectionProfile[m_zeroCrossing];
+//	                m_sampleIndex -= m_zeroCrossing / (m_samplesPerSymbol/4);
+	            }
+	            else // sampling point leads
+	            {
+	                m_zeroCrossingPos = m_samplesPerSymbol - m_zeroCrossing;
+	                m_sampleIndex += m_zeroCrossingCorrectionProfile[m_samplesPerSymbol - m_zeroCrossing];
+//	                m_sampleIndex += (m_samplesPerSymbol - m_zeroCrossing)  / (m_samplesPerSymbol/4);
+	            }
+		    }
 		}
 
 		m_zeroCrossingInCycle = false; // wait for next crossing
@@ -262,6 +273,23 @@ void DSDSymbol::setFSK(unsigned int nbSymbols, bool inverted)
 void DSDSymbol::setSamplesPerSymbol(int samplesPerSymbol)
 {
     m_samplesPerSymbol = samplesPerSymbol;
+
+    if (m_samplesPerSymbol == 5)
+    {
+        memcpy(m_zeroCrossingCorrectionProfile, m_zeroCrossingCorrectionProfile9600, 11*sizeof(int));
+    }
+    else if (m_samplesPerSymbol == 10)
+    {
+        memcpy(m_zeroCrossingCorrectionProfile, m_zeroCrossingCorrectionProfile4800, 11*sizeof(int));
+    }
+    else if (m_samplesPerSymbol == 20)
+    {
+        memcpy(m_zeroCrossingCorrectionProfile, m_zeroCrossingCorrectionProfile2400, 11*sizeof(int));
+    }
+    else
+    {
+        memcpy(m_zeroCrossingCorrectionProfile, m_zeroCrossingCorrectionProfile4800, 11*sizeof(int));
+    }
 }
 
 int DSDSymbol::get_dibit_and_analog_signal(int* out_analog_signal)

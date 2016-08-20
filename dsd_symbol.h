@@ -77,10 +77,11 @@ private:
     int m_sampleIndex; //!< the current sample index for the symbol in progress
     int m_sum;
     int m_count;
-    int m_zeroCrossing;
+    unsigned int m_zeroCrossing;
     bool m_zeroCrossingInCycle;
     int m_zeroCrossingPos;
     int m_zeroCrossingSlopeMin;
+    int m_zeroCrossingCorrectionProfile[11];
     int m_symCount1;   //!< Symbol counter #1
     int m_lbuf[32*2], m_lbuf2[32]; //!< symbol buffers for min/max
     int m_lidx; //!< index in min/max symbol buffer
@@ -97,6 +98,10 @@ private:
     unsigned int m_nbFSKSymbols;
     bool m_invertedFSK;
     int  m_samplesPerSymbol;
+
+    static const int m_zeroCrossingCorrectionProfile2400[11];
+    static const int m_zeroCrossingCorrectionProfile4800[11];
+    static const int m_zeroCrossingCorrectionProfile9600[11];
 };
 
 } // namespace DSDcc
