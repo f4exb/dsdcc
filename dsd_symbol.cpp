@@ -25,9 +25,9 @@ namespace DSDcc
 {
 
                                                             //   0  1  2  3  4  5  6  7  8  9 10
-const int DSDSymbol::m_zeroCrossingCorrectionProfile2400[11] = { 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2};
-const int DSDSymbol::m_zeroCrossingCorrectionProfile4800[11] = { 0, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2};
-const int DSDSymbol::m_zeroCrossingCorrectionProfile9600[11] = { 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+const int DSDSymbol::m_zeroCrossingCorrectionProfile2400[11] = { 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1}; // base: /5
+const int DSDSymbol::m_zeroCrossingCorrectionProfile4800[11] = { 0, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2}; // base: /2
+const int DSDSymbol::m_zeroCrossingCorrectionProfile9600[11] = { 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}; // base: /1
 
 DSDSymbol::DSDSymbol(DSDDecoder *dsdDecoder) :
         m_dsdDecoder(dsdDecoder),
@@ -129,7 +129,7 @@ bool DSDSymbol::pushSample(short sample, bool have_sync)
         // transition edge with at least some slope
     	if ((m_lastsample < m_center) && ((sample - m_lastsample) > (m_zeroCrossingSlopeMin / m_samplesPerSymbol)))
     	{
-            if (!m_zeroCrossingInCycle)
+            if ((!m_zeroCrossingInCycle) && (m_sampleIndex >= 0))
             {
                 m_zeroCrossing = m_sampleIndex;
                 m_numflips++;
@@ -142,7 +142,7 @@ bool DSDSymbol::pushSample(short sample, bool have_sync)
         // transition edge with at least some slope
         if ((m_lastsample > m_center) && ((m_lastsample - sample) > (m_zeroCrossingSlopeMin / m_samplesPerSymbol)))
         {
-            if (!m_zeroCrossingInCycle)
+            if ((!m_zeroCrossingInCycle) && (m_sampleIndex >= 0))
             {
                 m_zeroCrossing = m_sampleIndex;
                 m_numflips++;
