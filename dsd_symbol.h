@@ -76,6 +76,7 @@ private:
     int m_sum;
     int m_count;
     int m_zeroCrossing;
+    bool m_zeroCrossingInCycle;
     int m_zeroCrossingPos;
     int m_zeroCrossingSlopeMin;
     int m_symCount1;   //!< Symbol counter #1

@@ -79,7 +79,7 @@ bool DSDSymbol::pushSample(short sample, bool have_sync)
 
 	if (m_sampleIndex == 0) // cycle start
 	{
-		if (m_zeroCrossing > 0) // zero crossing established
+		if (m_zeroCrossingInCycle) // zero crossing established
 		{
 //            std::cerr << "DSDSymbol::pushSample: ZC adjust : " << m_zeroCrossing << std::endl;
 
@@ -95,7 +95,7 @@ bool DSDSymbol::pushSample(short sample, bool have_sync)
 			}
 		}
 
-        m_zeroCrossing = -1; // wait for next crossing
+		m_zeroCrossingInCycle = false; // wait for next crossing
 	}
 
     // process sample
@@ -117,10 +117,11 @@ bool DSDSymbol::pushSample(short sample, bool have_sync)
         // transition edge with at least some slope
     	if ((m_lastsample < m_center) && ((sample - m_lastsample) > (m_zeroCrossingSlopeMin / m_dsdDecoder->m_state.samplesPerSymbol)))
     	{
-            if (m_zeroCrossing < 0)
+            if (!m_zeroCrossingInCycle)
             {
                 m_zeroCrossing = m_sampleIndex;
                 m_numflips++;
+                m_zeroCrossingInCycle = true;
             }
     	}
     }
@@ -129,11 +130,12 @@ bool DSDSymbol::pushSample(short sample, bool have_sync)
         // transition edge with at least some slope
         if ((m_lastsample > m_center) && ((m_lastsample - sample) > (m_zeroCrossingSlopeMin / m_dsdDecoder->m_state.samplesPerSymbol)))
         {
-			if (m_zeroCrossing < 0)
-			{
-				m_zeroCrossing = m_sampleIndex;
-				m_numflips++;
-			}
+            if (!m_zeroCrossingInCycle)
+            {
+                m_zeroCrossing = m_sampleIndex;
+                m_numflips++;
+                m_zeroCrossingInCycle = true;
+            }
         }
     }
 
