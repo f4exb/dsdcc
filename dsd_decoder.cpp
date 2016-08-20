@@ -341,19 +341,19 @@ void DSDDecoder::setDataRate(DSDRate dataRate)
     {
     case DSDRate2400:
         m_dsdLogger.log("Set data rate to 2400 bauds. 20 samples per symbol\n");
-        m_state.samplesPerSymbol = 20;
+        m_dsdSymbol.setSamplesPerSymbol(20);
         break;
     case DSDRate4800:
         m_dsdLogger.log("Set data rate to 4800 bauds. 10 samples per symbol\n");
-        m_state.samplesPerSymbol = 10;
+        m_dsdSymbol.setSamplesPerSymbol(10);
         break;
     case DSDRate9600:
         m_dsdLogger.log("Set data rate to 9600 bauds. 5 samples per symbol\n");
-        m_state.samplesPerSymbol = 5;
+        m_dsdSymbol.setSamplesPerSymbol(5);
         break;
     default:
         m_dsdLogger.log("Set default data rate to 4800 bauds. 10 samples per symbol\n");
-        m_state.samplesPerSymbol = 10;
+        m_dsdSymbol.setSamplesPerSymbol(10);
         break;
     }
 }
@@ -917,7 +917,7 @@ int DSDDecoder::getFrameSync()
 				m_state.offset = m_synctest_pos;
                 m_dsdSymbol.setFSK(4);
 
-				if (m_state.samplesPerSymbol == 20)
+                if (m_dataRate == DSDRate2400)
 				{
 					sprintf(m_state.ftype, "+NXDN48      ");
 
@@ -946,7 +946,7 @@ int DSDDecoder::getFrameSync()
 				m_state.offset = m_synctest_pos;
                 m_dsdSymbol.setFSK(4, true);
 
-				if (m_state.samplesPerSymbol == 20)
+                if (m_dataRate == DSDRate2400)
 				{
 					sprintf(m_state.ftype, "-NXDN48      ");
 

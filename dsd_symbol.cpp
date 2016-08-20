@@ -37,6 +37,7 @@ DSDSymbol::DSDSymbol(DSDDecoder *dsdDecoder) :
     m_nbFSKSymbols = 2;
     m_zeroCrossingSlopeMin = 20000;
     m_invertedFSK = false;
+    m_samplesPerSymbol = 10;
     m_lastsample = 0;
     m_filteredSample = 0;
     m_numflips = 0;
@@ -83,15 +84,15 @@ bool DSDSymbol::pushSample(short sample, bool have_sync)
 		{
 //            std::cerr << "DSDSymbol::pushSample: ZC adjust : " << m_zeroCrossing << std::endl;
 
-            if (m_zeroCrossing < (m_dsdDecoder->m_state.samplesPerSymbol)/2) // sampling point lags
+            if (m_zeroCrossing < (m_samplesPerSymbol)/2) // sampling point lags
 			{
 			    m_zeroCrossingPos = -m_zeroCrossing;
-				m_sampleIndex -= m_zeroCrossing / (m_dsdDecoder->m_state.samplesPerSymbol/4);
+				m_sampleIndex -= m_zeroCrossing / (m_samplesPerSymbol/4);
 			}
 			else // sampling point leads
 			{
-			    m_zeroCrossingPos = m_dsdDecoder->m_state.samplesPerSymbol - m_zeroCrossing;
-				m_sampleIndex += (m_dsdDecoder->m_state.samplesPerSymbol - m_zeroCrossing)  / (m_dsdDecoder->m_state.samplesPerSymbol/4);
+			    m_zeroCrossingPos = m_samplesPerSymbol - m_zeroCrossing;
+				m_sampleIndex += (m_samplesPerSymbol - m_zeroCrossing)  / (m_samplesPerSymbol/4);
 			}
 		}
 
@@ -101,7 +102,7 @@ bool DSDSymbol::pushSample(short sample, bool have_sync)
     // process sample
     if (m_dsdDecoder->m_opts.use_cosine_filter)
     {
-        if (m_dsdDecoder->m_state.samplesPerSymbol == 20) {
+        if (m_samplesPerSymbol == 20) {
             sample = m_dsdFilters.nxdn_filter(sample); // 6.25 kHz for 2400 baud
         } else {
             sample = m_dsdFilters.dmr_filter(sample);  // 12.5 kHz for 4800 and 9600 baud
@@ -115,7 +116,7 @@ bool DSDSymbol::pushSample(short sample, bool have_sync)
     if (sample > m_center)
     {
         // transition edge with at least some slope
-    	if ((m_lastsample < m_center) && ((sample - m_lastsample) > (m_zeroCrossingSlopeMin / m_dsdDecoder->m_state.samplesPerSymbol)))
+    	if ((m_lastsample < m_center) && ((sample - m_lastsample) > (m_zeroCrossingSlopeMin / m_samplesPerSymbol)))
     	{
             if (!m_zeroCrossingInCycle)
             {
@@ -128,7 +129,7 @@ bool DSDSymbol::pushSample(short sample, bool have_sync)
     else
     {
         // transition edge with at least some slope
-        if ((m_lastsample > m_center) && ((m_lastsample - sample) > (m_zeroCrossingSlopeMin / m_dsdDecoder->m_state.samplesPerSymbol)))
+        if ((m_lastsample > m_center) && ((m_lastsample - sample) > (m_zeroCrossingSlopeMin / m_samplesPerSymbol)))
         {
             if (!m_zeroCrossingInCycle)
             {
@@ -141,7 +142,7 @@ bool DSDSymbol::pushSample(short sample, bool have_sync)
 
     // symbol estimation
 
-    if (m_dsdDecoder->m_state.samplesPerSymbol == 5) // 9600 baud
+    if (m_samplesPerSymbol == 5) // 9600 baud
     {
         if (m_sampleIndex == 2)
         {
@@ -149,7 +150,7 @@ bool DSDSymbol::pushSample(short sample, bool have_sync)
             m_count++;
         }
     }
-    else if (m_dsdDecoder->m_state.samplesPerSymbol == 20) // 2400 baud
+    else if (m_samplesPerSymbol == 20) // 2400 baud
     {
         if ((m_sampleIndex >= 5)
          && (m_sampleIndex <= 14))
@@ -170,7 +171,7 @@ bool DSDSymbol::pushSample(short sample, bool have_sync)
 
     m_lastsample = sample;
 
-    if (m_sampleIndex == m_dsdDecoder->m_state.samplesPerSymbol - 1) // conclusion
+    if (m_sampleIndex == m_samplesPerSymbol - 1) // conclusion
     {
         m_symbol = m_sum / m_count;
         m_dsdDecoder->m_state.symbolcnt++;
@@ -256,6 +257,11 @@ void DSDSymbol::setFSK(unsigned int nbSymbols, bool inverted)
 	}
 
 	m_invertedFSK = inverted;
+}
+
+void DSDSymbol::setSamplesPerSymbol(int samplesPerSymbol)
+{
+    m_samplesPerSymbol = samplesPerSymbol;
 }
 
 int DSDSymbol::get_dibit_and_analog_signal(int* out_analog_signal)

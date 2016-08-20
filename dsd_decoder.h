@@ -245,7 +245,7 @@ public:
     int getCarrierPos() const { return m_dsdSymbol.getCarrierPos(); }
     int getZeroCrossingPos() const { return m_dsdSymbol.getZeroCrossingPos(); }
     int getSymbolSyncQuality() const { return m_dsdSymbol.getSymbolSyncQuality(); }
-    int getSamplesPerSymbol() const { return m_state.samplesPerSymbol; }
+    int getSamplesPerSymbol() const { return m_dsdSymbol.getSamplesPerSymbol(); }
     DSDRate getDataRate() const { return m_dataRate; };
     const DSDDstar& getDStarDecoder() const { return m_dsdDstar; }
     const DSDdPMR& getDPMRDecoder() const { return m_dsdDPMR; }

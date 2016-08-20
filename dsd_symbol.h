@@ -34,6 +34,7 @@ public:
     void resetFrameSync();
 
     void snapLevels(int nbSymbols); //!< take snapshot for min/max over a number of symbols
+    void setSamplesPerSymbol(int samplesPerSymbol);
     void setFSK(unsigned int nbSymbols, bool inverted=false);
 
     int getSymbol() const { return m_symbol; }
@@ -45,6 +46,7 @@ public:
     int getZeroCrossingPos() const { return m_zeroCrossingPos; }
     int getSymbolSyncQuality() const { return m_symbolSyncQuality; }
     short getFilteredSample() const { return m_filteredSample; }
+    int getSamplesPerSymbol() const { return m_samplesPerSymbol; }
 
     static void compressBits(const char *bitArray, unsigned char *byteArray, int nbBytes)
     {
@@ -94,6 +96,7 @@ private:
     short m_filteredSample;
     unsigned int m_nbFSKSymbols;
     bool m_invertedFSK;
+    int  m_samplesPerSymbol;
 };
 
 } // namespace DSDcc
