@@ -31,11 +31,11 @@ const int DSDSymbol::m_zeroCrossingCorrectionProfile9600[11] = { 0, 1, 1, 1, 1, 
 
 DSDSymbol::DSDSymbol(DSDDecoder *dsdDecoder) :
         m_dsdDecoder(dsdDecoder),
-        m_symbol(0)
+        m_symbol(0),
+        m_sampleBuffer(10)
 {
     resetSymbol();
-    m_zeroCrossingInCycle = false;
-    m_zeroCrossingPos = 0;
+    resetZeroCrossing();
     m_symCount1 = 0;
     m_umid = 0;
     m_lmid = 0;
@@ -57,7 +57,8 @@ DSDSymbol::~DSDSymbol()
 
 void DSDSymbol::noCarrier()
 {
-    m_zeroCrossingInCycle = false;
+    resetSymbol();
+    resetZeroCrossing();
     m_max = 15000;
     m_min = -15000;
     m_center = 0;
@@ -78,37 +79,17 @@ void DSDSymbol::resetSymbol()
     m_count = 0;
 }
 
+void DSDSymbol::resetZeroCrossing()
+{
+    m_zeroCrossing = 0;
+    m_zeroCrossingInCycle = false;
+    m_zeroCrossingPos = 0;
+    m_zeroCrossingIndex = 20;
+}
+
 bool DSDSymbol::pushSample(short sample, bool have_sync)
 {
-    // short inSample = sample; // DEBUG
-
-    // timing control
-
-	if (m_sampleIndex == 0) // cycle start
-	{
-		if (m_zeroCrossingInCycle) // zero crossing established
-		{
-		    if (m_zeroCrossing < 11)
-		    {
-//	            std::cerr << "DSDSymbol::pushSample: ZC adjust : " << m_zeroCrossing << std::endl;
-
-	            if (m_zeroCrossing < (m_samplesPerSymbol)/2) // sampling point lags
-	            {
-	                m_zeroCrossingPos = -m_zeroCrossing;
-	                m_sampleIndex -= m_zeroCrossingCorrectionProfile[m_zeroCrossing];
-//	                m_sampleIndex -= m_zeroCrossing / (m_samplesPerSymbol/4);
-	            }
-	            else // sampling point leads
-	            {
-	                m_zeroCrossingPos = m_samplesPerSymbol - m_zeroCrossing;
-	                m_sampleIndex += m_zeroCrossingCorrectionProfile[m_samplesPerSymbol - m_zeroCrossing];
-//	                m_sampleIndex += (m_samplesPerSymbol - m_zeroCrossing)  / (m_samplesPerSymbol/4);
-	            }
-		    }
-		}
-
-		m_zeroCrossingInCycle = false; // wait for next crossing
-	}
+    //return pushSampleOld(sample, have_sync);
 
     // process sample
     if (m_dsdDecoder->m_opts.use_cosine_filter)
@@ -121,6 +102,209 @@ bool DSDSymbol::pushSample(short sample, bool have_sync)
     }
 
     m_filteredSample = sample;
+    m_sampleBuffer.push(sample);
+
+    // zero crossing
+
+    if (m_zeroCrossingIndex < m_samplesPerSymbol/2)
+    {
+        m_zeroCrossingIndex++;
+    }
+    else
+    {
+        if (m_zeroCrossingInCycle)
+        {
+            memcpy(m_sampleBuffer2, m_sampleBuffer.getData(), m_samplesPerSymbol*sizeof(short));
+            qsort(m_sampleBuffer2, m_samplesPerSymbol, sizeof(short), compShort);
+            int deltaLevel = m_sampleBuffer2[m_samplesPerSymbol-1] - m_sampleBuffer2[0];
+
+            if (deltaLevel > 28000)
+            {
+                int zeroCrossing = (m_sampleIndex - (m_samplesPerSymbol/2)) % m_samplesPerSymbol;
+
+                if (zeroCrossing < (m_samplesPerSymbol)/2) // sampling point lags
+                {
+                    m_zeroCrossingPos = -zeroCrossing;
+                    m_zeroCrossing = -zeroCrossing;
+    //              m_sampleIndex -= m_zeroCrossingCorrectionProfile[zeroCrossing];
+                }
+                else // sampling point leads
+                {
+                    m_zeroCrossingPos = m_samplesPerSymbol - zeroCrossing;
+                    m_zeroCrossing = m_samplesPerSymbol - zeroCrossing;
+    //              m_sampleIndex += m_zeroCrossingCorrectionProfile[m_samplesPerSymbol - zeroCrossing];
+                }
+
+                m_numflips++;
+            }
+
+            m_zeroCrossingInCycle = false;
+        }
+    }
+
+    if (sample > m_center)
+    {
+        // transition edge with at least some slope
+        if (m_lastsample < m_center)
+        {
+            if ((!m_zeroCrossingInCycle) && (m_sampleIndex >= 0))
+            {
+                m_zeroCrossingIndex = 0;
+                m_zeroCrossingInCycle = true;
+            }
+        }
+    }
+    else
+    {
+        // transition edge with at least some slope
+        if (m_lastsample > m_center)
+        {
+            if ((!m_zeroCrossingInCycle) && (m_sampleIndex >= 0))
+            {
+                m_zeroCrossingIndex = 0;
+                m_zeroCrossingInCycle = true;
+            }
+        }
+    }
+
+    // timing control
+
+    if ((m_sampleIndex == 0) && (m_zeroCrossing != 0)) // cycle start
+    {
+        if (m_zeroCrossing < 0)
+        {
+            m_sampleIndex -= m_zeroCrossingCorrectionProfile[-m_zeroCrossing];
+        }
+        else
+        {
+            m_sampleIndex += m_zeroCrossingCorrectionProfile[m_zeroCrossing];
+        }
+
+        m_zeroCrossing = 0;
+    }
+
+    // symbol estimation
+
+    if (m_samplesPerSymbol == 5) // 9600 baud
+    {
+        if (m_sampleIndex == 2)
+        {
+            m_sum += sample;
+            m_count++;
+        }
+    }
+    else if (m_samplesPerSymbol == 20) // 2400 baud
+    {
+        if ((m_sampleIndex >= 5)
+         && (m_sampleIndex <= 14))
+        {
+            m_sum += sample;
+            m_count++;
+        }
+    }
+    else // 4800 baud - default
+    {
+        if ((m_sampleIndex >= 3)
+         && (m_sampleIndex <= 6))
+        {
+            m_sum += sample;
+            m_count++;
+        }
+    }
+
+    m_lastsample = sample;
+
+    if (m_sampleIndex == m_samplesPerSymbol - 1) // conclusion
+    {
+        m_symbol = m_sum / m_count;
+        m_dsdDecoder->m_state.symbolcnt++;
+
+        // Symbol debugging
+//        if ((m_dsdDecoder->m_state.symbolcnt > 1160) && (m_dsdDecoder->m_state.symbolcnt < 1200))  { // sampling
+//            m_dsdDecoder->getLogger().log("DSDSymbol::pushSample: symbol %d (%d:%d) in:%d\n", m_dsdDecoder->m_state.symbolcnt, m_symbol, sample, inSample);
+//        }
+
+        resetSymbol();
+
+        // moved here what was done at symbol retrieval in the decoder
+
+        // symbol syncgronization quality metric
+
+        if (m_symbolSyncQualityCounter < 100)
+        {
+            m_symbolSyncQualityCounter++;
+        }
+        else
+        {
+            m_symbolSyncQuality = m_numflips;
+            m_symbolSyncQualityCounter = 0;
+            m_numflips = 0;
+        }
+
+        // min/max calculation
+
+        if (m_lidx < 32)
+        {
+            m_lidx++;
+        }
+        else
+        {
+            m_lidx = 0;
+            snapLevels(32);
+        }
+
+        m_lbuf[m_lidx]    = m_symbol; // double buffering in case snap is required randomly
+        m_lbuf[m_lidx+32] = m_symbol;
+
+        return true; // new symbol available
+    }
+    else
+    {
+        m_sampleIndex++; // wait for next sample
+        return false;
+    }
+}
+
+bool DSDSymbol::pushSampleOld(short sample, bool have_sync)
+{
+    // short inSample = sample; // DEBUG
+
+    // process sample
+    if (m_dsdDecoder->m_opts.use_cosine_filter)
+    {
+        if (m_samplesPerSymbol == 20) {
+            sample = m_dsdFilters.nxdn_filter(sample); // 6.25 kHz for 2400 baud
+        } else {
+            sample = m_dsdFilters.dmr_filter(sample);  // 12.5 kHz for 4800 and 9600 baud
+        }
+    }
+
+    m_filteredSample = sample;
+
+    // timing control
+
+	if (m_sampleIndex == 0) // cycle start
+	{
+		if (m_zeroCrossingInCycle) // zero crossing established
+		{
+//          std::cerr << "DSDSymbol::pushSample: ZC adjust : " << m_zeroCrossing << std::endl;
+
+            if (m_zeroCrossing < (m_samplesPerSymbol)/2) // sampling point lags
+            {
+                m_zeroCrossingPos = -m_zeroCrossing;
+                m_sampleIndex -= m_zeroCrossingCorrectionProfile[m_zeroCrossing];
+//              m_sampleIndex -= m_zeroCrossing / (m_samplesPerSymbol/4);
+            }
+            else // sampling point leads
+            {
+                m_zeroCrossingPos = m_samplesPerSymbol - m_zeroCrossing;
+                m_sampleIndex += m_zeroCrossingCorrectionProfile[m_samplesPerSymbol - m_zeroCrossing];
+//              m_sampleIndex += (m_samplesPerSymbol - m_zeroCrossing)  / (m_samplesPerSymbol/4);
+            }
+		}
+
+		m_zeroCrossingInCycle = false; // wait for next crossing
+	}
 
     // zero crossing
 
@@ -277,18 +461,22 @@ void DSDSymbol::setSamplesPerSymbol(int samplesPerSymbol)
     if (m_samplesPerSymbol == 5)
     {
         memcpy(m_zeroCrossingCorrectionProfile, m_zeroCrossingCorrectionProfile9600, 11*sizeof(int));
+        m_sampleBuffer.resize(5);
     }
     else if (m_samplesPerSymbol == 10)
     {
         memcpy(m_zeroCrossingCorrectionProfile, m_zeroCrossingCorrectionProfile4800, 11*sizeof(int));
+        m_sampleBuffer.resize(10);
     }
     else if (m_samplesPerSymbol == 20)
     {
         memcpy(m_zeroCrossingCorrectionProfile, m_zeroCrossingCorrectionProfile2400, 11*sizeof(int));
+        m_sampleBuffer.resize(20);
     }
     else
     {
         memcpy(m_zeroCrossingCorrectionProfile, m_zeroCrossingCorrectionProfile4800, 11*sizeof(int));
+        m_sampleBuffer.resize(5);
     }
 }
 
@@ -408,6 +596,16 @@ int DSDSymbol::comp(const void *a, const void *b)
     if (*((const int *) a) == *((const int *) b))
         return 0;
     else if (*((const int *) a) < *((const int *) b))
+        return -1;
+    else
+        return 1;
+}
+
+int DSDSymbol::compShort(const void *a, const void *b)
+{
+    if (*((const short *) a) == *((const short *) b))
+        return 0;
+    else if (*((const short *) a) < *((const short *) b))
         return -1;
     else
         return 1;

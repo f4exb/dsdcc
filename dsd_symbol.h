@@ -18,6 +18,7 @@
 #define DSD_SYMBOL_H_
 
 #include "dsd_filters.h"
+#include "doublebuffer.h"
 
 namespace DSDcc
 {
@@ -64,11 +65,14 @@ public:
     }
 
 private:
+    bool pushSampleOld(short sample, bool have_sync); //!< push a new sample into the decoder. Returns true if a new symbol is available
     void resetSymbol();
+    void resetZeroCrossing();
     int get_dibit_and_analog_signal(int* out_analog_signal);
     void use_symbol(int symbol);
     int digitize(int symbol);
     static int comp(const void *a, const void *b);
+    static int compShort(const void *a, const void *b);
 
     DSDDecoder *m_dsdDecoder;
     DSDFilters m_dsdFilters;
@@ -77,11 +81,16 @@ private:
     int m_sampleIndex; //!< the current sample index for the symbol in progress
     int m_sum;
     int m_count;
-    unsigned int m_zeroCrossing;
+
+    int m_zeroCrossing;
     bool m_zeroCrossingInCycle;
     int m_zeroCrossingPos;
     int m_zeroCrossingSlopeMin;
     int m_zeroCrossingCorrectionProfile[11];
+    int m_zeroCrossingIndex;
+    DoubleBuffer<short> m_sampleBuffer;
+    short m_sampleBuffer2[20];
+
     int m_symCount1;   //!< Symbol counter #1
     int m_lbuf[32*2], m_lbuf2[32]; //!< symbol buffers for min/max
     int m_lidx; //!< index in min/max symbol buffer
