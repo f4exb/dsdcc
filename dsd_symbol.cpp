@@ -87,9 +87,9 @@ void DSDSymbol::resetZeroCrossing()
     m_zeroCrossingIndex = 20;
 }
 
-bool DSDSymbol::pushSample(short sample, bool have_sync)
+bool DSDSymbol::pushSample(short sample)
 {
-    //return pushSampleOld(sample, have_sync);
+    //return pushSampleOld(sample);
 
     // process sample
     if (m_dsdDecoder->m_opts.use_cosine_filter)
@@ -265,7 +265,7 @@ bool DSDSymbol::pushSample(short sample, bool have_sync)
     }
 }
 
-bool DSDSymbol::pushSampleOld(short sample, bool have_sync)
+bool DSDSymbol::pushSampleOld(short sample)
 {
     // short inSample = sample; // DEBUG
 

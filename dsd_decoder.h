@@ -305,7 +305,6 @@ private:
     int m_lsum;
     char m_spectrum[64];
     int m_t;
-    bool m_hasSync; //!< tells whether we are in synced phase
     int m_squelchTimeoutCount;
     // Symbol extraction and operations
     DSDSymbol m_dsdSymbol;

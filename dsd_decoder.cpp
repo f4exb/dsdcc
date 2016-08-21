@@ -23,7 +23,6 @@ namespace DSDcc
 
 DSDDecoder::DSDDecoder() :
         m_fsmState(DSDLookForSync),
-        m_hasSync(false),
         m_mbeDVReady(false),
         m_mbelibEnable(true),
         m_mbeRate(DSDMBERateNone),
@@ -378,7 +377,7 @@ void DSDDecoder::run(short sample)
         }
     }
 
-    if (m_dsdSymbol.pushSample(sample, m_hasSync)) // a symbol is retrieved
+    if (m_dsdSymbol.pushSample(sample)) // a symbol is retrieved
     {
         switch (m_fsmState)
         {
@@ -391,7 +390,6 @@ void DSDDecoder::run(short sample)
 
                 if (m_sync > -1) // good sync found
                 {
-                    m_hasSync = true;
                     m_fsmState = DSDSyncFound; // go to processing state next time
                 }
                 else // no sync found
@@ -1126,7 +1124,6 @@ void DSDDecoder::resetFrameSync()
     m_synctest_p = m_synctest_buf + 10;
 
     m_sync = -2;   // mark in progress
-    m_hasSync = false; // for DSDSymbol::pushSample method
 
     if ((m_opts.symboltiming == 1) && (m_state.carrier == 1))
     {
