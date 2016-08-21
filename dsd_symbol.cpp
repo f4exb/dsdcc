@@ -32,7 +32,8 @@ const int DSDSymbol::m_zeroCrossingCorrectionProfile9600[11] = { 0, 1, 1, 1, 1, 
 DSDSymbol::DSDSymbol(DSDDecoder *dsdDecoder) :
         m_dsdDecoder(dsdDecoder),
         m_symbol(0),
-        m_sampleBuffer(10)
+        m_sampleBuffer(10),
+        m_lmmSamples(10*24)
 {
     resetSymbol();
     resetZeroCrossing();
@@ -103,6 +104,7 @@ bool DSDSymbol::pushSample(short sample)
 
     m_filteredSample = sample;
     m_sampleBuffer.push(sample);
+    m_lmmSamples.update(sample); // store for running min/max calculaion
 
     // zero crossing
 
@@ -243,18 +245,15 @@ bool DSDSymbol::pushSample(short sample)
 
         // min/max calculation
 
-        if (m_lidx < 32)
+        if (m_lmmidx < 24)
         {
-            m_lidx++;
+            m_lmmidx++;
         }
         else
         {
-            m_lidx = 0;
-            snapLevels(32);
+            m_lmmidx = 0;
+            snapMinMax();
         }
-
-        m_lbuf[m_lidx]    = m_symbol; // double buffering in case snap is required randomly
-        m_lbuf[m_lidx+32] = m_symbol;
 
         return true; // new symbol available
     }
@@ -395,18 +394,18 @@ bool DSDSymbol::pushSampleOld(short sample)
 
         // min/max calculation
 
-        if (m_lidx < 32)
+        if (m_lmmidx < 32)
         {
-            m_lidx++;
+            m_lmmidx++;
         }
         else
         {
-            m_lidx = 0;
+            m_lmmidx = 0;
             snapLevels(32);
         }
 
-        m_lbuf[m_lidx]    = m_symbol; // double buffering in case snap is required randomly
-        m_lbuf[m_lidx+32] = m_symbol;
+        m_lbuf[m_lmmidx]    = m_symbol; // double buffering in case snap is required randomly
+        m_lbuf[m_lmmidx+32] = m_symbol;
 
         return true; // new symbol available
     }
@@ -419,7 +418,7 @@ bool DSDSymbol::pushSampleOld(short sample)
 
 void DSDSymbol::snapLevels(int nbSymbols)
 {
-    memcpy(m_lbuf2, &m_lbuf[32 + m_lidx - nbSymbols], nbSymbols * sizeof(int)); // copy to working buffer
+    memcpy(m_lbuf2, &m_lbuf[32 + m_lmmidx - nbSymbols], nbSymbols * sizeof(int)); // copy to working buffer
     qsort(m_lbuf2, nbSymbols, sizeof(int), comp);
 
     m_lmin = (m_lbuf2[2] + m_lbuf2[3] + m_lbuf2[4]) / 3;
@@ -427,6 +426,16 @@ void DSDSymbol::snapLevels(int nbSymbols)
 
     m_max = m_max + (m_lmax - m_max) / 4; // alpha = 0.25
     m_min = m_min + (m_lmin - m_min) / 4; // alpha = 0.25
+    // recalibrate center/umid/lmid
+    m_center = ((m_max) + (m_min)) / 2;
+    m_umid = (((m_max) - m_center) / 2) + m_center;
+    m_lmid = (((m_min) - m_center) / 2) + m_center;
+}
+
+void DSDSymbol::snapMinMax()
+{
+    m_max = m_max + (m_lmmSamples.max() - m_max) / 4; // alpha = 0.25
+    m_min = m_min + (m_lmmSamples.min() - m_min) / 4; // alpha = 0.25
     // recalibrate center/umid/lmid
     m_center = ((m_max) + (m_min)) / 2;
     m_umid = (((m_max) - m_center) / 2) + m_center;
@@ -462,21 +471,25 @@ void DSDSymbol::setSamplesPerSymbol(int samplesPerSymbol)
     {
         memcpy(m_zeroCrossingCorrectionProfile, m_zeroCrossingCorrectionProfile9600, 11*sizeof(int));
         m_sampleBuffer.resize(5);
+        m_lmmSamples.resize(5*24);
     }
     else if (m_samplesPerSymbol == 10)
     {
         memcpy(m_zeroCrossingCorrectionProfile, m_zeroCrossingCorrectionProfile4800, 11*sizeof(int));
         m_sampleBuffer.resize(10);
+        m_lmmSamples.resize(10*24);
     }
     else if (m_samplesPerSymbol == 20)
     {
         memcpy(m_zeroCrossingCorrectionProfile, m_zeroCrossingCorrectionProfile2400, 11*sizeof(int));
         m_sampleBuffer.resize(20);
+        m_lmmSamples.resize(20*24);
     }
     else
     {
         memcpy(m_zeroCrossingCorrectionProfile, m_zeroCrossingCorrectionProfile4800, 11*sizeof(int));
-        m_sampleBuffer.resize(5);
+        m_sampleBuffer.resize(10);
+        m_lmmSamples.resize(10*24);
     }
 }
 

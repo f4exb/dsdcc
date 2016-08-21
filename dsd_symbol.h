@@ -19,6 +19,7 @@
 
 #include "dsd_filters.h"
 #include "doublebuffer.h"
+#include "runningmaxmin.h"
 
 namespace DSDcc
 {
@@ -71,6 +72,7 @@ private:
     int get_dibit_and_analog_signal(int* out_analog_signal);
     void use_symbol(int symbol);
     int digitize(int symbol);
+    void snapMinMax();
     static int comp(const void *a, const void *b);
     static int compShort(const void *a, const void *b);
 
@@ -93,10 +95,9 @@ private:
 
     int m_symCount1;   //!< Symbol counter #1
     int m_lbuf[32*2], m_lbuf2[32]; //!< symbol buffers for min/max
-    int m_lidx; //!< index in min/max symbol buffer
+    int m_lmmidx; //!< index in min/max symbol buffer
     int m_lmin, m_lmax;
     int m_min, m_max;
-    int m_minref, m_maxref;
     int m_center;
     int m_umid, m_lmid;
     int m_numflips;
@@ -107,6 +108,7 @@ private:
     unsigned int m_nbFSKSymbols;
     bool m_invertedFSK;
     int  m_samplesPerSymbol;
+    lemiremaxmintruestreaming<short> m_lmmSamples; //!< running min/max calculator
 
     static const int m_zeroCrossingCorrectionProfile2400[11];
     static const int m_zeroCrossingCorrectionProfile4800[11];

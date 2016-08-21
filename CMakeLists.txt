@@ -62,6 +62,7 @@ set(dsdcc_HEADERS
     nxdn.h
     p25p1_heuristics.h
     dsd_upsample.h
+    runningmaxmin.h
 )
 
 include_directories(
