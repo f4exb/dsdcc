@@ -118,7 +118,7 @@ bool DSDSymbol::pushSample(short sample, bool have_sync)
             qsort(m_sampleBuffer2, m_samplesPerSymbol, sizeof(short), compShort);
             int deltaLevel = m_sampleBuffer2[m_samplesPerSymbol-1] - m_sampleBuffer2[0];
 
-            if (deltaLevel > 28000)
+            if (deltaLevel > 24000)
             {
                 int zeroCrossing = (m_sampleIndex - (m_samplesPerSymbol/2)) % m_samplesPerSymbol;
 
@@ -145,7 +145,7 @@ bool DSDSymbol::pushSample(short sample, bool have_sync)
     if (sample > m_center)
     {
         // transition edge with at least some slope
-        if (m_lastsample < m_center)
+        if ((m_lastsample < m_center) && ((sample - m_lastsample) > (m_zeroCrossingSlopeMin / m_samplesPerSymbol)))
         {
             if ((!m_zeroCrossingInCycle) && (m_sampleIndex >= 0))
             {
@@ -157,7 +157,7 @@ bool DSDSymbol::pushSample(short sample, bool have_sync)
     else
     {
         // transition edge with at least some slope
-        if (m_lastsample > m_center)
+        if ((m_lastsample > m_center) && ((m_lastsample - sample) > (m_zeroCrossingSlopeMin / m_samplesPerSymbol)))
         {
             if ((!m_zeroCrossingInCycle) && (m_sampleIndex >= 0))
             {
@@ -356,8 +356,8 @@ bool DSDSymbol::pushSampleOld(short sample, bool have_sync)
     }
     else // 4800 baud - default
     {
-        if ((m_sampleIndex >= 3)
-         && (m_sampleIndex <= 6))
+        if ((m_sampleIndex >= 4)
+         && (m_sampleIndex <= 5))
         {
             m_sum += sample;
             m_count++;
