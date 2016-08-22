@@ -27,9 +27,9 @@ namespace DSDcc
 {
 
 // nextPowerOfTwo returns a power of two that is larger or equal than x.
-inline uint nextPowerOfTwo(uint x)
+inline uint32_t nextPowerOfTwo(uint32_t x)
 {
-    uint result = 1;
+    uint32_t result = 1;
     while (result < x)
     {
         result <<= 1;
@@ -44,7 +44,7 @@ template<typename valuetype>
 class lemiremaxmintruestreaming
 {
 public:
-    explicit lemiremaxmintruestreaming(uint width) :
+    explicit lemiremaxmintruestreaming(uint32_t width) :
             up(), lo(), n(0), ww(width)
     {
         init(&up, ww);
@@ -57,7 +57,7 @@ public:
         freenodes(&lo);
     }
 
-    void resize(uint width)
+    void resize(uint32_t width)
     {
         ww = width;
         freenodes(&up);
@@ -113,26 +113,26 @@ public:
 private:
     struct valuenode
     {
-        uint index;
+        uint32_t index;
         valuetype value;
     };
 
     struct valuesqueue
     {
         valuenode * nodes;
-        uint head;
-        uint tail;
-        uint mask;
+        uint32_t head;
+        uint32_t tail;
+        uint32_t mask;
     };
 
     // Dequeue methods
 
-    inline uint count(valuesqueue * q)
+    inline uint32_t count(valuesqueue * q)
     {
         return (q->tail - q->head) & q->mask;
     }
 
-    inline void init(valuesqueue * q, uint size)
+    inline void init(valuesqueue * q, uint32_t size)
     {
         size = nextPowerOfTwo(size + 1);
         q->nodes = reinterpret_cast<valuenode *>(malloc(sizeof(valuenode) * size));
@@ -146,12 +146,12 @@ private:
         free(q->nodes);
     }
 
-    inline uint headindex(valuesqueue * q)
+    inline uint32_t headindex(valuesqueue * q)
     {
         return q->nodes[q->head].index;
     }
 
-    inline void push(valuesqueue * q, uint index, valuetype value)
+    inline void push(valuesqueue * q, uint32_t index, valuetype value)
     {
         q->nodes[q->tail].index = index;
         q->nodes[q->tail].value = value;
@@ -184,8 +184,8 @@ private:
 
     valuesqueue up;
     valuesqueue lo;
-    uint n;
-    uint ww;
+    uint32_t n;
+    uint32_t ww;
 };
 
 } // namespce DSDcc
