@@ -60,8 +60,8 @@ void DSDSymbol::noCarrier()
 {
     resetSymbol();
     resetZeroCrossing();
-    m_max = 15000;
-    m_min = -15000;
+    m_max = 0;
+    m_min = 0;
     m_center = 0;
     m_filteredSample = 0;
 }
