@@ -120,7 +120,7 @@ bool DSDSymbol::pushSample(short sample)
             qsort(m_sampleBuffer2, m_samplesPerSymbol, sizeof(short), compShort);
             int deltaLevel = m_sampleBuffer2[m_samplesPerSymbol-1] - m_sampleBuffer2[0];
 
-            if (deltaLevel > 24000)
+            if (deltaLevel > (9*(m_max - m_min))/16)
             {
                 int zeroCrossing = (m_sampleIndex - (m_samplesPerSymbol/2)) % m_samplesPerSymbol;
 
@@ -447,17 +447,17 @@ void DSDSymbol::setFSK(unsigned int nbSymbols, bool inverted)
 	if (nbSymbols == 2) // binary FSK a.k.a. 2FSK
 	{
 		m_nbFSKSymbols = 2;
-		m_zeroCrossingSlopeMin = 20000;
+		m_zeroCrossingSlopeMin = 10000; //20000;
 	}
 	else if (nbSymbols == 4) // 4-ary FSK a.k.a. 4FSK
 	{
 		m_nbFSKSymbols = 4;
-		m_zeroCrossingSlopeMin = 40000;
+		m_zeroCrossingSlopeMin = 20000; //40000;
 	}
 	else // others are not supported => default to binary FSK
 	{
 		m_nbFSKSymbols = 2;
-        m_zeroCrossingSlopeMin = 20000;
+        m_zeroCrossingSlopeMin = 10000; //20000;
 	}
 
 	m_invertedFSK = inverted;
