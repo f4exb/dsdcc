@@ -197,8 +197,8 @@ bool DSDSymbol::pushSample(short sample)
     }
     else if (m_samplesPerSymbol == 20) // 2400 baud
     {
-        if ((m_sampleIndex >= 5)
-         && (m_sampleIndex <= 14))
+        if ((m_sampleIndex >= 7)
+         && (m_sampleIndex <= 12))
         {
             m_sum += sample;
             m_count++;
@@ -206,8 +206,8 @@ bool DSDSymbol::pushSample(short sample)
     }
     else // 4800 baud - default
     {
-        if ((m_sampleIndex >= 3)
-         && (m_sampleIndex <= 6))
+        if ((m_sampleIndex >= 4)
+         && (m_sampleIndex <= 5))
         {
             m_sum += sample;
             m_count++;
