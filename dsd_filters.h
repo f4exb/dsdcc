@@ -34,6 +34,10 @@ public:
     static const float xcoeffs[];
     static const float nxgain;
     static const float nxcoeffs[];
+    static const float dmrgain;
+    static const float dmrcoeffs[];
+    static const float dpmrgain;
+    static const float dpmrcoeffs[];
 
     short dsd_input_filter(short sample, int mode);
     short dmr_filter(short sample);
