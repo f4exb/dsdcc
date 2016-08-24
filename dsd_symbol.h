@@ -111,6 +111,7 @@ private:
     bool m_invertedFSK;
     int  m_samplesPerSymbol;
     lemiremaxmintruestreaming<short> m_lmmSamples; //!< running min/max calculator
+    DSDSecondOrderRecursiveFilter m_ringingFilter;
 
     static const int m_zeroCrossingCorrectionProfile2400[11];
     static const int m_zeroCrossingCorrectionProfile4800[11];

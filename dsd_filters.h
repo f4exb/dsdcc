@@ -48,6 +48,24 @@ private:
     float nxv[NXZEROS+1];
 };
 
+class DSDSecondOrderRecursiveFilter
+{
+public:
+    DSDSecondOrderRecursiveFilter(float samplingFrequency, float centerFrequency, float r);
+    ~DSDSecondOrderRecursiveFilter();
+
+    void setFrequencies(float samplingFrequency, float centerFrequency);
+    void setR(float r);
+    short run(short sample);
+
+private:
+    void init();
+
+    float m_r;
+    float m_frequencyRatio;
+    float m_v[3];
+};
+
 }
 
 #endif /* DSDCC_DSD_FILTERS_H_ */

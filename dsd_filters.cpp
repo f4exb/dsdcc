@@ -14,6 +14,7 @@
 // along with this program. If not, see <http://www.gnu.org/licenses/>.          //
 ///////////////////////////////////////////////////////////////////////////////////
 
+#include <cmath>
 #include "dsd_filters.h"
 
 namespace DSDcc
@@ -197,6 +198,46 @@ short DSDFilters::dsd_input_filter(short sample, int mode)
     }
 
     return (short) (sum / gain); // filtered sample out
+}
+
+DSDSecondOrderRecursiveFilter::DSDSecondOrderRecursiveFilter(float samplingFrequency, float centerFrequency, float r) :
+		m_r(r),
+		m_frequencyRatio(centerFrequency/samplingFrequency)
+{
+	init();
+}
+
+DSDSecondOrderRecursiveFilter::~DSDSecondOrderRecursiveFilter()
+{}
+
+void DSDSecondOrderRecursiveFilter::setFrequencies(float samplingFrequency, float centerFrequency)
+{
+	m_frequencyRatio = centerFrequency / samplingFrequency;
+	init();
+}
+
+void DSDSecondOrderRecursiveFilter::setR(float r)
+{
+	m_r = r;
+	init();
+}
+
+short DSDSecondOrderRecursiveFilter::run(short sample)
+{
+	m_v[0] = ((1.0f - m_r) * (float) sample) + (2.0f * m_r * cos(2.0*M_PI*m_frequencyRatio) * m_v[1]) - (m_r * m_r * m_v[2]);
+	float y = m_v[0] - m_v[2];
+	m_v[2] = m_v[1];
+	m_v[1] = m_v[0];
+
+	return (short) y;
+}
+
+void DSDSecondOrderRecursiveFilter::init()
+{
+	for (int i = 0; i < 3; i++)
+	{
+		m_v[i] = 0.0f;
+	}
 }
 
 } // namespace dsdcc

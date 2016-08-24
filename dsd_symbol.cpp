@@ -33,7 +33,8 @@ DSDSymbol::DSDSymbol(DSDDecoder *dsdDecoder) :
         m_dsdDecoder(dsdDecoder),
         m_symbol(0),
         m_sampleBuffer(10),
-        m_lmmSamples(10*24)
+        m_lmmSamples(10*24),
+		m_ringingFilter(48000.0, 2400.0, 0.9)
 {
     resetSymbol();
     resetZeroCrossing();
@@ -105,6 +106,8 @@ bool DSDSymbol::pushSample(short sample)
     m_filteredSample = sample;
     m_sampleBuffer.push(sample);
     m_lmmSamples.update(sample); // store for running min/max calculaion
+    short sampleSq = ((((int) sample)- m_center) * (((int) sample)- m_center)) >> 15;
+    m_symbolSyncSample = m_ringingFilter.run(sampleSq);
 
     // zero crossing
 
@@ -138,7 +141,7 @@ bool DSDSymbol::pushSample(short sample)
                 }
 
                 m_numflips++;
-                m_symbolSyncSample = m_min;
+                //m_symbolSyncSample = m_min;
             }
 
             m_zeroCrossingInCycle = false;
@@ -174,7 +177,7 @@ bool DSDSymbol::pushSample(short sample)
 
     if (m_sampleIndex == 0) // cycle start
     {
-        m_symbolSyncSample = m_center;
+        //m_symbolSyncSample = m_center;
 
         if (m_zeroCrossing != 0) // cycle start
         {
@@ -197,7 +200,7 @@ bool DSDSymbol::pushSample(short sample)
     {
         if (m_sampleIndex == 2)
         {
-            m_symbolSyncSample = m_max;
+            //m_symbolSyncSample = m_max;
             m_sum += sample;
             m_count++;
         }
@@ -206,7 +209,7 @@ bool DSDSymbol::pushSample(short sample)
     {
         if (m_sampleIndex == 10)
         {
-            m_symbolSyncSample = m_max;
+            //m_symbolSyncSample = m_max;
         }
 
         if ((m_sampleIndex >= 7)
@@ -220,7 +223,7 @@ bool DSDSymbol::pushSample(short sample)
     {
         if (m_sampleIndex == 5)
         {
-            m_symbolSyncSample = m_max;
+            //m_symbolSyncSample = m_max;
         }
 
         if ((m_sampleIndex >= 4)
