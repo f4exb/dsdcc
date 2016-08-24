@@ -139,7 +139,7 @@ DSDFilters::~DSDFilters()
 
 short DSDFilters::dmr_filter(short sample) // all 4800 baud filters for now
 {
-    return dsd_input_filter(sample, 1);
+    return dsd_input_filter(sample, 3);
 }
 
 short DSDFilters::nxdn_filter(short sample) // all 2400 baud filters for now
