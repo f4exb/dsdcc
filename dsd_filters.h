@@ -48,6 +48,10 @@ private:
     float nxv[NXZEROS+1];
 };
 
+/**
+ * \Brief: This is a second order bandpass filter using recursive method. r is in range ]0..1[ the higher the steeper the filter.
+ * inspired by:http://www.ece.umd.edu/~tretter/commlab/c6713slides/FSKSlides.pdf
+ */
 class DSDSecondOrderRecursiveFilter
 {
 public:

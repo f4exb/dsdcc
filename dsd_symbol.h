@@ -67,6 +67,7 @@ public:
     }
 
 private:
+    bool pushSampleClassic(short sample); //!< push a new sample into the decoder. Returns true if a new symbol is available
     bool pushSampleOld(short sample); //!< push a new sample into the decoder. Returns true if a new symbol is available
     void resetSymbol();
     void resetZeroCrossing();

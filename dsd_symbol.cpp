@@ -34,7 +34,7 @@ DSDSymbol::DSDSymbol(DSDDecoder *dsdDecoder) :
         m_symbol(0),
         m_sampleBuffer(10),
         m_lmmSamples(10*24),
-		m_ringingFilter(48000.0, 2400.0, 0.9)
+		m_ringingFilter(48000.0, 4800.0, 0.99)
 {
     resetSymbol();
     resetZeroCrossing();
@@ -89,10 +89,163 @@ void DSDSymbol::resetZeroCrossing()
     m_zeroCrossingIndex = 20;
 }
 
+/**
+ * Squares the output of the match filter and passes it through a narrow bandpass filter centered on the
+ * Symbol rate frequency. Inspired by: http://www.ece.umd.edu/~tretter/commlab/c6713slides/FSKSlides.pdf
+ * Non linear clock correction following estimated zero point shift using heuristic table.
+ * So far gives the best results.
+ */
 bool DSDSymbol::pushSample(short sample)
 {
-    //return pushSampleOld(sample);
+    // matched filter
 
+    if (m_dsdDecoder->m_opts.use_cosine_filter)
+    {
+        if (m_samplesPerSymbol == 20) {
+            sample = m_dsdFilters.nxdn_filter(sample); // 6.25 kHz for 2400 baud
+        } else {
+            sample = m_dsdFilters.dmr_filter(sample);  // 12.5 kHz for 4800 and 9600 baud
+        }
+    }
+
+    m_filteredSample = sample;
+    m_lmmSamples.update(sample); // store for running min/max calculation
+
+    // ringing filter
+
+    short sampleSq = ((((int) sample)- m_center) * (((int) sample)- m_center)) >> 15;
+    short sampleRinging = m_ringingFilter.run(sampleSq);
+
+    // zero crossing - rising edge only with enough steepness
+
+    if ((sampleRinging > 0) && (m_lastsample < 0) && (sampleRinging - m_lastsample > 100))
+    {
+        m_symbolSyncSample = 16384;
+        int targetZero = (m_sampleIndex - (m_samplesPerSymbol/4)) % m_samplesPerSymbol; // empirically should be ~T/4 away
+
+        if (targetZero < (m_samplesPerSymbol)/2) // sampling point lags
+        {
+            m_zeroCrossingPos = -targetZero;
+            m_zeroCrossing = -targetZero;
+            m_zeroCrossingInCycle = true;
+        }
+        else // sampling point leads
+        {
+            m_zeroCrossingPos = m_samplesPerSymbol - targetZero;
+            m_zeroCrossing = m_samplesPerSymbol - targetZero;
+            m_zeroCrossingInCycle = true;
+        }
+    }
+
+    m_lastsample = sampleRinging;
+
+    // symbol estimation
+
+    if (m_samplesPerSymbol == 5) // 9600 baud
+    {
+        if (m_sampleIndex == 2)
+        {
+            //m_symbolSyncSample = m_max;
+            m_sum += sample;
+            m_count++;
+        }
+    }
+    else if (m_samplesPerSymbol == 20) // 2400 baud
+    {
+        if (m_sampleIndex == 10)
+        {
+            //m_symbolSyncSample = m_max;
+        }
+
+        if ((m_sampleIndex >= 7)
+         && (m_sampleIndex <= 12))
+        {
+            m_sum += sample;
+            m_count++;
+        }
+    }
+    else // 4800 baud - default
+    {
+        if (m_sampleIndex == 5)
+        {
+            //m_symbolSyncSample = m_max;
+        }
+
+        if ((m_sampleIndex >= 4)
+         && (m_sampleIndex <= 5))
+        {
+            m_sum += sample;
+            m_count++;
+        }
+    }
+
+    // timing control
+
+    if (m_sampleIndex == 0)
+    {
+        m_symbolSyncSample = 0;
+
+        if (m_zeroCrossingInCycle)
+        {
+            if (m_zeroCrossing < 0)
+            {
+                m_sampleIndex -= m_zeroCrossingCorrectionProfile[-m_zeroCrossing];
+            }
+            else
+            {
+                m_sampleIndex += m_zeroCrossingCorrectionProfile[m_zeroCrossing];
+            }
+
+            m_numflips++;
+            m_zeroCrossingInCycle = false;
+        }
+    }
+
+    if (m_sampleIndex == m_samplesPerSymbol - 1) // conclusion
+    {
+        m_symbol = m_sum / m_count;
+        m_dsdDecoder->m_state.symbolcnt++;
+
+        resetSymbol();
+
+        // moved here what was done at symbol retrieval in the decoder
+
+        // symbol syncgronization quality metric
+
+        if (m_symbolSyncQualityCounter < 100)
+        {
+            m_symbolSyncQualityCounter++;
+        }
+        else
+        {
+            m_symbolSyncQuality = m_numflips;
+            m_symbolSyncQualityCounter = 0;
+            m_numflips = 0;
+        }
+
+        // min/max calculation
+
+        if (m_lmmidx < 24)
+        {
+            m_lmmidx++;
+        }
+        else
+        {
+            m_lmmidx = 0;
+            snapMinMax();
+        }
+
+        return true; // new symbol available
+    }
+    else
+    {
+        m_sampleIndex++; // wait for next sample
+        return false;
+    }
+}
+
+bool DSDSymbol::pushSampleClassic(short sample)
+{
     // process sample
     if (m_dsdDecoder->m_opts.use_cosine_filter)
     {
@@ -106,8 +259,6 @@ bool DSDSymbol::pushSample(short sample)
     m_filteredSample = sample;
     m_sampleBuffer.push(sample);
     m_lmmSamples.update(sample); // store for running min/max calculaion
-    short sampleSq = ((((int) sample)- m_center) * (((int) sample)- m_center)) >> 15;
-    m_symbolSyncSample = m_ringingFilter.run(sampleSq);
 
     // zero crossing
 
@@ -141,7 +292,7 @@ bool DSDSymbol::pushSample(short sample)
                 }
 
                 m_numflips++;
-                //m_symbolSyncSample = m_min;
+                m_symbolSyncSample = m_min;
             }
 
             m_zeroCrossingInCycle = false;
@@ -177,7 +328,7 @@ bool DSDSymbol::pushSample(short sample)
 
     if (m_sampleIndex == 0) // cycle start
     {
-        //m_symbolSyncSample = m_center;
+        m_symbolSyncSample = m_center;
 
         if (m_zeroCrossing != 0) // cycle start
         {
@@ -200,7 +351,7 @@ bool DSDSymbol::pushSample(short sample)
     {
         if (m_sampleIndex == 2)
         {
-            //m_symbolSyncSample = m_max;
+            m_symbolSyncSample = m_max;
             m_sum += sample;
             m_count++;
         }
@@ -209,7 +360,7 @@ bool DSDSymbol::pushSample(short sample)
     {
         if (m_sampleIndex == 10)
         {
-            //m_symbolSyncSample = m_max;
+            m_symbolSyncSample = m_max;
         }
 
         if ((m_sampleIndex >= 7)
@@ -223,7 +374,7 @@ bool DSDSymbol::pushSample(short sample)
     {
         if (m_sampleIndex == 5)
         {
-            //m_symbolSyncSample = m_max;
+            m_symbolSyncSample = m_max;
         }
 
         if ((m_sampleIndex >= 4)
@@ -492,24 +643,28 @@ void DSDSymbol::setSamplesPerSymbol(int samplesPerSymbol)
         memcpy(m_zeroCrossingCorrectionProfile, m_zeroCrossingCorrectionProfile9600, 11*sizeof(int));
         m_sampleBuffer.resize(5);
         m_lmmSamples.resize(5*24);
+        m_ringingFilter.setFrequencies(48000.0, 9600.0);
     }
     else if (m_samplesPerSymbol == 10)
     {
         memcpy(m_zeroCrossingCorrectionProfile, m_zeroCrossingCorrectionProfile4800, 11*sizeof(int));
         m_sampleBuffer.resize(10);
         m_lmmSamples.resize(10*24);
+        m_ringingFilter.setFrequencies(48000.0, 4800.0);
     }
     else if (m_samplesPerSymbol == 20)
     {
         memcpy(m_zeroCrossingCorrectionProfile, m_zeroCrossingCorrectionProfile2400, 11*sizeof(int));
         m_sampleBuffer.resize(20);
         m_lmmSamples.resize(20*24);
+        m_ringingFilter.setFrequencies(48000.0, 2400.0);
     }
     else
     {
         memcpy(m_zeroCrossingCorrectionProfile, m_zeroCrossingCorrectionProfile4800, 11*sizeof(int));
         m_sampleBuffer.resize(10);
         m_lmmSamples.resize(10*24);
+        m_ringingFilter.setFrequencies(48000.0, 4800.0);
     }
 }
 
