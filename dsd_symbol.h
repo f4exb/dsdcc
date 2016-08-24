@@ -48,6 +48,7 @@ public:
     int getZeroCrossingPos() const { return m_zeroCrossingPos; }
     int getSymbolSyncQuality() const { return m_symbolSyncQuality; }
     short getFilteredSample() const { return m_filteredSample; }
+    short getSymbolSyncSample() const { return m_symbolSyncSample; }
     int getSamplesPerSymbol() const { return m_samplesPerSymbol; }
 
     static void compressBits(const char *bitArray, unsigned char *byteArray, int nbBytes)
@@ -105,6 +106,7 @@ private:
     int m_symbolSyncQualityCounter;
     short m_lastsample;
     short m_filteredSample;
+    short m_symbolSyncSample;
     unsigned int m_nbFSKSymbols;
     bool m_invertedFSK;
     int  m_samplesPerSymbol;

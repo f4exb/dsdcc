@@ -188,6 +188,7 @@ public:
 
     void run(short sample);
     short getFilteredSample() const { return m_dsdSymbol.getFilteredSample(); }
+    short getSymbolSyncSample() const { return m_dsdSymbol.getSymbolSyncSample(); }
 
     /** DVSI support */
     const unsigned char *getMbeDVFrame() const {

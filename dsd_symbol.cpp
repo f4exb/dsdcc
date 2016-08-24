@@ -138,6 +138,7 @@ bool DSDSymbol::pushSample(short sample)
                 }
 
                 m_numflips++;
+                m_symbolSyncSample = m_min;
             }
 
             m_zeroCrossingInCycle = false;
@@ -171,18 +172,23 @@ bool DSDSymbol::pushSample(short sample)
 
     // timing control
 
-    if ((m_sampleIndex == 0) && (m_zeroCrossing != 0)) // cycle start
+    if (m_sampleIndex == 0) // cycle start
     {
-        if (m_zeroCrossing < 0)
-        {
-            m_sampleIndex -= m_zeroCrossingCorrectionProfile[-m_zeroCrossing];
-        }
-        else
-        {
-            m_sampleIndex += m_zeroCrossingCorrectionProfile[m_zeroCrossing];
-        }
+        m_symbolSyncSample = m_center;
 
-        m_zeroCrossing = 0;
+        if (m_zeroCrossing != 0) // cycle start
+        {
+            if (m_zeroCrossing < 0)
+            {
+                m_sampleIndex -= m_zeroCrossingCorrectionProfile[-m_zeroCrossing];
+            }
+            else
+            {
+                m_sampleIndex += m_zeroCrossingCorrectionProfile[m_zeroCrossing];
+            }
+
+            m_zeroCrossing = 0;
+        }
     }
 
     // symbol estimation
@@ -191,12 +197,18 @@ bool DSDSymbol::pushSample(short sample)
     {
         if (m_sampleIndex == 2)
         {
+            m_symbolSyncSample = m_max;
             m_sum += sample;
             m_count++;
         }
     }
     else if (m_samplesPerSymbol == 20) // 2400 baud
     {
+        if (m_sampleIndex == 10)
+        {
+            m_symbolSyncSample = m_max;
+        }
+
         if ((m_sampleIndex >= 7)
          && (m_sampleIndex <= 12))
         {
@@ -206,6 +218,11 @@ bool DSDSymbol::pushSample(short sample)
     }
     else // 4800 baud - default
     {
+        if (m_sampleIndex == 5)
+        {
+            m_symbolSyncSample = m_max;
+        }
+
         if ((m_sampleIndex >= 4)
          && (m_sampleIndex <= 5))
         {
