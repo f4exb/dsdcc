@@ -111,7 +111,7 @@ bool DSDSymbol::pushSample(short sample)
 
     // zero crossing - rising edge only with enough steepness
 
-    if ((sampleRinging > 0) && (m_lastsample < 0) && (sampleRinging - m_lastsample > 100))
+    if ((sampleRinging > 0) && (m_lastsample < 0) && (sampleRinging - m_lastsample > (m_max - m_min) / 328))
     {
         m_symbolSyncSample = 16384;
         int targetZero = (m_sampleIndex - (m_samplesPerSymbol/4)) % m_samplesPerSymbol; // empirically should be ~T/4 away
