@@ -25,7 +25,7 @@ namespace DSDcc
 {
 
                                                             //   0  1  2  3  4  5  6  7  8  9 10
-const int DSDSymbol::m_zeroCrossingCorrectionProfile2400[11] = { 0, 0, 1, 1, 1, 1, 1, 2, 2, 3, 3}; // base: /5
+const int DSDSymbol::m_zeroCrossingCorrectionProfile2400[11] = { 0, 1, 1, 1, 2, 2, 3, 3, 4, 4, 4}; // base: /2
 const int DSDSymbol::m_zeroCrossingCorrectionProfile4800[11] = { 0, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2}; // base: /2
 const int DSDSymbol::m_zeroCrossingCorrectionProfile9600[11] = { 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}; // base: /1
 
