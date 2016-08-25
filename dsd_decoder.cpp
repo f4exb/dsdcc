@@ -1162,6 +1162,8 @@ void DSDDecoder::noCarrier()
 
     sprintf(m_state.fsubtype, "              ");
     sprintf(m_state.ftype, "             ");
+    m_state.fsubtype[0] = '\0';
+    m_state.ftype[0] = '\0';
 
     m_state.errs = 0;
     m_state.errs2 = 0;
