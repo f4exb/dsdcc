@@ -67,8 +67,6 @@ public:
     }
 
 private:
-    bool pushSampleClassic(short sample); //!< push a new sample into the decoder. Returns true if a new symbol is available
-    bool pushSampleOld(short sample); //!< push a new sample into the decoder. Returns true if a new symbol is available
     void resetSymbol();
     void resetZeroCrossing();
     int get_dibit_and_analog_signal(int* out_analog_signal);
@@ -89,16 +87,10 @@ private:
     int m_zeroCrossing;
     bool m_zeroCrossingInCycle;
     int m_zeroCrossingPos;
-    int m_zeroCrossingSlopeMin;
     int m_zeroCrossingCorrectionProfile[11];
-    int m_zeroCrossingIndex;
-    DoubleBuffer<short> m_sampleBuffer;
-    short m_sampleBuffer2[20];
 
-    int m_symCount1;   //!< Symbol counter #1
     int m_lbuf[32*2], m_lbuf2[32]; //!< symbol buffers for min/max
-    int m_lmmidx; //!< index in min/max symbol buffer
-    int m_lmin, m_lmax;
+    int m_lmmidx;                  //!< index in min/max symbol buffer
     int m_min, m_max;
     int m_center;
     int m_umid, m_lmid;
