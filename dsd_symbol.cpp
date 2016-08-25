@@ -32,6 +32,7 @@ const int DSDSymbol::m_zeroCrossingCorrectionProfile9600[11] = { 0, 1, 1, 1, 1, 
 DSDSymbol::DSDSymbol(DSDDecoder *dsdDecoder) :
         m_dsdDecoder(dsdDecoder),
         m_symbol(0),
+        m_zeroCrossingSlopeDivisor(232), // for 10 samples per symbol
         m_lmmSamples(10*24),
 		m_ringingFilter(48000.0, 4800.0, 0.99)
 {
@@ -111,7 +112,7 @@ bool DSDSymbol::pushSample(short sample)
 
     // zero crossing - rising edge only with enough steepness
 
-    if ((sampleRinging > 0) && (m_lastsample < 0) && (sampleRinging - m_lastsample > (m_max - m_min) / 328))
+    if ((sampleRinging > 0) && (m_lastsample < 0) && (sampleRinging - m_lastsample > (m_max - m_min) / m_zeroCrossingSlopeDivisor))
     {
         m_symbolSyncSample = 16384;
         int targetZero = (m_sampleIndex - (m_samplesPerSymbol/4)) % m_samplesPerSymbol; // empirically should be ~T/4 away
@@ -288,24 +289,28 @@ void DSDSymbol::setSamplesPerSymbol(int samplesPerSymbol)
     if (m_samplesPerSymbol == 5)
     {
         memcpy(m_zeroCrossingCorrectionProfile, m_zeroCrossingCorrectionProfile9600, 11*sizeof(int));
+        m_zeroCrossingSlopeDivisor = 164;
         m_lmmSamples.resize(5*24);
         m_ringingFilter.setFrequencies(48000.0, 9600.0);
     }
     else if (m_samplesPerSymbol == 10)
     {
         memcpy(m_zeroCrossingCorrectionProfile, m_zeroCrossingCorrectionProfile4800, 11*sizeof(int));
+        m_zeroCrossingSlopeDivisor = 232;
         m_lmmSamples.resize(10*24);
         m_ringingFilter.setFrequencies(48000.0, 4800.0);
     }
     else if (m_samplesPerSymbol == 20)
     {
         memcpy(m_zeroCrossingCorrectionProfile, m_zeroCrossingCorrectionProfile2400, 11*sizeof(int));
+        m_zeroCrossingSlopeDivisor = 328;
         m_lmmSamples.resize(20*24);
         m_ringingFilter.setFrequencies(48000.0, 2400.0);
     }
     else
     {
         memcpy(m_zeroCrossingCorrectionProfile, m_zeroCrossingCorrectionProfile4800, 11*sizeof(int));
+        m_zeroCrossingSlopeDivisor = 232;
         m_lmmSamples.resize(10*24);
         m_ringingFilter.setFrequencies(48000.0, 4800.0);
     }

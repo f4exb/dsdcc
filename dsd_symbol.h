@@ -88,6 +88,7 @@ private:
     bool m_zeroCrossingInCycle;
     int m_zeroCrossingPos;
     int m_zeroCrossingCorrectionProfile[11];
+    int m_zeroCrossingSlopeDivisor;
 
     int m_lbuf[32*2], m_lbuf2[32]; //!< symbol buffers for min/max
     int m_lmmidx;                  //!< index in min/max symbol buffer
