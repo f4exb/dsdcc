@@ -99,6 +99,8 @@ DSDdPMR::DSDdPMR(DSDDecoder *dsdDecoder) :
         m_colourCode(0),
         m_calledId(0),
         m_ownId(0),
+        m_calledIdHalf(false),
+        m_ownIdHalf(false),
         m_frameNumber(0xFF),
         w(0),
         x(0),
@@ -181,7 +183,6 @@ void DSDdPMR::processHeader()
         {
             m_state = DPMRPostFrame;
             m_symbolIndex = 0;
-            m_frameIndex = 0;
         }
     }
     else // out of sync => terminate
@@ -376,11 +377,14 @@ void DSDdPMR::processSuperFrame()
     if (m_symbolIndex == 0) // new frame
     {
         m_frameType = DPMRPayloadFrame;
+        m_frameIndex = 0;
         m_dsdDecoder->getLogger().log("DSDdPMR::processSuperFrame: start\n"); // DEBUG
     }
 
     if (m_symbolIndex < 36) // Start of frame 0 - CCH0
     {
+        m_calledIdHalf = false;
+        m_ownIdHalf = false;
         processCCH(m_symbolIndex, dibit);
         m_symbolIndex++;
     }
@@ -391,7 +395,6 @@ void DSDdPMR::processSuperFrame()
     }
     else if (m_symbolIndex < 36 + 144 + 12) // Start of frame 1 - CC0
     {
-        m_frameIndex++;
         processColourCode(m_symbolIndex - (36 + 144), dibit);
         m_symbolIndex++;
     }
@@ -407,7 +410,6 @@ void DSDdPMR::processSuperFrame()
     }
     else if (m_symbolIndex < 36 + 144 + 12 + 36 + 144 + 12) // Start of frame 2 - FS2-1
     {
-        m_frameIndex++;
         processFS2(m_symbolIndex - (36 + 144 + 12 + 36 + 144), dibit);
         m_symbolIndex++;
     }
@@ -423,7 +425,6 @@ void DSDdPMR::processSuperFrame()
     }
     else if (m_symbolIndex < 36 + 144 + 12 + 36 + 144 + 12 + 36 + 144 + 12) // Start of frame 3 - CC1
     {
-        m_frameIndex++;
         processColourCode(m_symbolIndex - (36 + 144 + 12 + 36 + 144 + 12 + 36 + 144), dibit);
         m_symbolIndex++;
     }
@@ -442,7 +443,6 @@ void DSDdPMR::processSuperFrame()
             m_frameType = DPMRNoFrame; // look for continuation or end
             m_state = DPMRPostFrame;
             m_symbolIndex = 0;
-            m_frameIndex = 0;
         }
     }
     else // shouldn´t go there => out of sync error
@@ -552,6 +552,81 @@ void DSDdPMR::processCCH(int symbolIndex, int dibit)
 
             m_frameIndex = m_frameNumber; // re-sync frame index
 
+            if (m_frameNumber == 0)
+            {
+                m_calledIdWork = ((m_bitBuffer[2]<<23)
+                        + (m_bitBuffer[3]<<22)
+                        + (m_bitBuffer[4]<<21)
+                        + (m_bitBuffer[5]<<20)
+                        + (m_bitBuffer[6]<<19)
+                        + (m_bitBuffer[7]<<18)
+                        + (m_bitBuffer[8]<<17)
+                        + (m_bitBuffer[9]<<16)
+                        + (m_bitBuffer[10]<<15)
+                        + (m_bitBuffer[11]<<14)
+                        + (m_bitBuffer[12]<<13)
+                        + (m_bitBuffer[13]<<12));
+                m_calledIdHalf = true;
+            }
+            else if (m_frameNumber == 1)
+            {
+                if (m_calledIdHalf)
+                {
+                    m_calledIdWork += ((m_bitBuffer[2]<<11)
+                            + (m_bitBuffer[3]<<10)
+                            + (m_bitBuffer[4]<<9)
+                            + (m_bitBuffer[5]<<8)
+                            + (m_bitBuffer[6]<<7)
+                            + (m_bitBuffer[7]<<6)
+                            + (m_bitBuffer[8]<<5)
+                            + (m_bitBuffer[9]<<4)
+                            + (m_bitBuffer[10]<<3)
+                            + (m_bitBuffer[11]<<2)
+                            + (m_bitBuffer[12]<<1)
+                            + (m_bitBuffer[13]));
+                    m_calledId = m_calledIdWork;
+                }
+
+                m_calledIdHalf = false;
+            }
+            else if (m_frameNumber == 2)
+            {
+                m_ownIdWork = ((m_bitBuffer[2]<<23)
+                        + (m_bitBuffer[3]<<22)
+                        + (m_bitBuffer[4]<<21)
+                        + (m_bitBuffer[5]<<20)
+                        + (m_bitBuffer[6]<<19)
+                        + (m_bitBuffer[7]<<18)
+                        + (m_bitBuffer[8]<<17)
+                        + (m_bitBuffer[9]<<16)
+                        + (m_bitBuffer[10]<<15)
+                        + (m_bitBuffer[11]<<14)
+                        + (m_bitBuffer[12]<<13)
+                        + (m_bitBuffer[13]<<12));
+                m_ownIdHalf = true;
+            }
+            else if (m_frameNumber == 3)
+            {
+                if (m_ownIdHalf)
+                {
+                    m_ownIdWork += ((m_bitBuffer[2]<<11)
+                            + (m_bitBuffer[3]<<10)
+                            + (m_bitBuffer[4]<<9)
+                            + (m_bitBuffer[5]<<8)
+                            + (m_bitBuffer[6]<<7)
+                            + (m_bitBuffer[7]<<6)
+                            + (m_bitBuffer[8]<<5)
+                            + (m_bitBuffer[9]<<4)
+                            + (m_bitBuffer[10]<<3)
+                            + (m_bitBuffer[11]<<2)
+                            + (m_bitBuffer[12]<<1)
+                            + (m_bitBuffer[13]));
+                    m_ownId = m_ownIdWork;
+                }
+
+                m_ownIdHalf = false;
+            }
+
             if (mode < 6) {
                 m_commMode = (DPMRCommMode) mode;
             } else {
@@ -596,6 +671,8 @@ void DSDdPMR::processCCH(int symbolIndex, int dibit)
             m_frameType = DPMRPayloadFrame; // invalid
             break;
         }
+
+        m_frameIndex++;
     }
 }
 

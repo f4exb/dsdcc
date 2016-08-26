@@ -160,6 +160,10 @@ private:
     DPMRCommFormat m_commFormat;
     unsigned int m_calledId;
     unsigned int m_ownId;
+    unsigned int m_calledIdWork;
+    unsigned int m_ownIdWork;
+    bool m_calledIdHalf;
+    bool m_ownIdHalf;
     unsigned char m_frameNumber;
 
     static const int rW[36];
