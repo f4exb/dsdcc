@@ -42,6 +42,7 @@ public:
     int getSymbol() const { return m_symbol; }
     bool pushSample(short sample); //!< push a new sample into the decoder. Returns true if a new symbol is available
     int getDibit(); //!< from the last retrieved symbol Returns either the bit (0,1) or the dibit value (0,1,2,3)
+    unsigned char *getDibitBack(unsigned int shift) { return m_binSymbolBuffer.getBack(shift); }
     static int invert_dibit(int dibit);
     int getLevel() const { return (m_max - m_min) / 328; }
     int getCarrierPos() const { return m_center / 164; }

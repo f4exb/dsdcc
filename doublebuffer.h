@@ -74,13 +74,25 @@ public:
         }
         else
         {
-            return &m_buffer[m_index];
+            return &m_buffer[m_index]; // oldest
         }
     }
 
     T& getLatest()
     {
         return m_buffer[m_index + m_size - 1];
+    }
+
+    T* getBack(unsigned int shift = 0) // point to oldest by default
+    {
+        if (shift < m_size)
+        {
+            return &m_buffer[(m_index - shift) % m_size];
+        }
+        else
+        {
+            return &m_buffer[m_index]; // oldest
+        }
     }
 
 private:
