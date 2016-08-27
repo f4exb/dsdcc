@@ -624,14 +624,10 @@ int DSDDecoder::getFrameSync()
     //determine dibit state
     if (m_dsdSymbol.getSymbol() > 0)
     {
-        *m_state.dibit_buf_p = 1;
-        m_state.dibit_buf_p++;
         m_dibit = 49; // ASCII character '1'
     }
     else
     {
-        *m_state.dibit_buf_p = 3;
-        m_state.dibit_buf_p++;
         m_dibit = 51; // ASCII character '3'
     }
 

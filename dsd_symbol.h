@@ -72,6 +72,7 @@ private:
     int get_dibit();
     void use_symbol(int symbol);
     int digitize(int symbol);
+    void digitizeIntoDibitBuffer();
     void snapMinMax();
     static int comp(const void *a, const void *b);
     static int compShort(const void *a, const void *b);
