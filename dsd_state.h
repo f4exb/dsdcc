@@ -49,7 +49,6 @@ public:
     float *audio_out_temp_buf_p;
     int audio_out_idx;
     int audio_out_idx2;
-    int synctype;
     int maxbuf[1024];
     int minbuf[1024];
     int midx;
@@ -57,7 +56,6 @@ public:
     char fsubtype[16];
     char ftype[16];
     int symbolcnt;
-    int lastsynctype;
     int lastp25type;
     int offset;
     int carrier;

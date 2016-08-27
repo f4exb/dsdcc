@@ -180,7 +180,9 @@ public:
     {
         DSDMBERateNone,
         DSDMBERate3600x2400, //!< D-Star
-        DSDMBERate3600x2450  //!< DMR and the likes
+        DSDMBERate3600x2450, //!< DMR, dPMR and the likes
+        DSDMBERate7200x4400,
+        DSDMBERate7100x4400
     } DSDMBERate;
 
     DSDDecoder();
@@ -228,11 +230,7 @@ public:
 
     DSDSyncType getSyncType() const
     {
-        if (m_state.lastsynctype < 0) {
-            return DSDSyncNone;
-        } else {
-            return (DSDSyncType) m_state.lastsynctype;
-        }
+        return m_lastSyncType;
     }
 
     const DSDStationType getStationType() const { return m_stationType; }
@@ -325,6 +323,8 @@ private:
     DSDdPMR m_dsdDPMR;
     DSDNXDN m_dsdNXDN;
     DSDRate m_dataRate;
+    DSDSyncType m_syncType;
+    DSDSyncType m_lastSyncType;
 };
 
 } // namespace dsdcc

@@ -44,8 +44,6 @@ DSDState::DSDState()
     audio_out_idx = 0;
     audio_out_idx2 = 0;
 
-    synctype = -1;
-
     for (i = 0; i < 1024; i++)
     {
         maxbuf[i] = 15000;
@@ -61,7 +59,6 @@ DSDState::DSDState()
     sprintf(fsubtype, "              ");
     sprintf(ftype, "             ");
     symbolcnt = 0;
-    lastsynctype = -1;
     lastp25type = 0;
     offset = 0;
     carrier = 0;

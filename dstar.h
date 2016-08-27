@@ -30,7 +30,7 @@ public:
     DSDDstar(DSDDecoder *dsdDecoder);
     ~DSDDstar();
 
-    void init();
+    void init(bool header = false);
     void process();
     void processHD();
 

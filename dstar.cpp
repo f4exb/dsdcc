@@ -142,21 +142,20 @@ void DSDDstar::reset_header_strings()
     m_mySign.clear();
 }
 
-void DSDDstar::init()
+void DSDDstar::init(bool header)
 {
     //fprintf(stderr, "DSDDstar::init: symbol %d (%d)\n", m_dsdDecoder->m_state.symbolcnt, m_dsdDecoder->m_dsdSymbol.getSymbol());
 
-    if (m_dsdDecoder->m_state.synctype == 18) {
+    if (header)
+    {
         framecount = 0;
-        m_dsdDecoder->m_state.synctype = 6;
-    } else if (m_dsdDecoder->m_state.synctype == 19) {
-        framecount = 0;
-        m_dsdDecoder->m_state.synctype = 7;
-    } else {
+    }
+    else
+    {
         framecount = 1; //just saw a sync frame; there should be 20 not 21 till the next
     }
 
-    if ((m_dsdDecoder->m_opts.errorbars == 1) && ((m_dsdDecoder->m_state.synctype == 6) || (m_dsdDecoder->m_state.synctype == 7)))
+    if ((m_dsdDecoder->m_opts.errorbars == 1) && (!header))
     {
         m_dsdDecoder->getLogger().log( "e:"); // print this only for voice/data frames
     }

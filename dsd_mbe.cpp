@@ -44,20 +44,20 @@ void DSDMBEDecoder::processFrame(char imbe_fr[8][23], char ambe_fr[4][24], char 
 #ifdef DSD_USE_MBELIB
     memset((void *) imbe_d, 0, 88);
 
-    if ((m_dsdDecoder->m_state.synctype == 0) || (m_dsdDecoder->m_state.synctype == 1))
+    if (m_dsdDecoder->m_mbeRate == DSDDecoder::DSDMBERate7200x4400)
     {
         mbe_processImbe7200x4400Framef(m_dsdDecoder->m_state.audio_out_temp_buf, &m_dsdDecoder->m_state.errs,
                 &m_dsdDecoder->m_state.errs2, m_dsdDecoder->m_state.err_str, imbe_fr, imbe_d, m_dsdDecoder->m_state.cur_mp,
                 m_dsdDecoder->m_state.prev_mp, m_dsdDecoder->m_state.prev_mp_enhanced, m_dsdDecoder->m_opts.uvquality);
     }
-    else if ((m_dsdDecoder->m_state.synctype == 14) || (m_dsdDecoder->m_state.synctype == 15))
+    else if (m_dsdDecoder->m_mbeRate == DSDDecoder::DSDMBERate7100x4400)
     {
         mbe_processImbe7100x4400Framef(m_dsdDecoder->m_state.audio_out_temp_buf, &m_dsdDecoder->m_state.errs,
                 &m_dsdDecoder->m_state.errs2, m_dsdDecoder->m_state.err_str, imbe7100_fr, imbe_d,
                 m_dsdDecoder->m_state.cur_mp, m_dsdDecoder->m_state.prev_mp, m_dsdDecoder->m_state.prev_mp_enhanced,
                 m_dsdDecoder->m_opts.uvquality);
     }
-    else if ((m_dsdDecoder->m_state.synctype == 6) || (m_dsdDecoder->m_state.synctype == 7))
+    else if (m_dsdDecoder->m_mbeRate == DSDDecoder::DSDMBERate3600x2400)
     {
         mbe_processAmbe3600x2400Framef(m_dsdDecoder->m_state.audio_out_temp_buf, &m_dsdDecoder->m_state.errs,
                 &m_dsdDecoder->m_state.errs2, m_dsdDecoder->m_state.err_str, ambe_fr, ambe_d, m_dsdDecoder->m_state.cur_mp,
