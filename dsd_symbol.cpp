@@ -305,16 +305,12 @@ void DSDSymbol::setSamplesPerSymbol(int samplesPerSymbol)
     }
 }
 
-int DSDSymbol::get_dibit_and_analog_signal(int* out_analog_signal)
+int DSDSymbol::get_dibit()
 {
     int symbol;
     int dibit;
 
     symbol = m_symbol;
-
-    if (out_analog_signal != 0) {
-        *out_analog_signal = symbol;
-    }
 
     use_symbol(symbol);
 
@@ -413,7 +409,7 @@ int DSDSymbol::invert_dibit(int dibit)
 
 int DSDSymbol::getDibit()
 {
-    return get_dibit_and_analog_signal(0);
+    return get_dibit();
 }
 
 int DSDSymbol::comp(const void *a, const void *b)

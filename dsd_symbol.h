@@ -69,7 +69,7 @@ public:
 private:
     void resetSymbol();
     void resetZeroCrossing();
-    int get_dibit_and_analog_signal(int* out_analog_signal);
+    int get_dibit();
     void use_symbol(int symbol);
     int digitize(int symbol);
     void snapMinMax();
