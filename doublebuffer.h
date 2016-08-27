@@ -18,6 +18,7 @@
 #define DOUBLEBUFFER_H_
 
 #include <string.h>
+#include <assert.h>
 
 namespace DSDcc
 {
@@ -30,6 +31,7 @@ public:
         m_size(size),
         m_index(0)
     {
+        assert(m_size > 0);
         m_buffer = new T[2*m_size];
     }
 
@@ -64,7 +66,7 @@ public:
         m_index = (m_index + distance) % m_size;
     }
 
-    T *getData(unsigned int shift = 0)
+    T *getData(unsigned int shift = 0) // point to oldest by default
     {
         if (shift < m_size)
         {
@@ -74,6 +76,11 @@ public:
         {
             return &m_buffer[m_index];
         }
+    }
+
+    T& getLatest()
+    {
+        return m_buffer[m_index + m_size - 1];
     }
 
 private:

@@ -71,8 +71,8 @@ private:
     void resetZeroCrossing();
     int get_dibit();
     void use_symbol(int symbol);
-    int digitize(int symbol);
-    void digitizeIntoDibitBuffer();
+    unsigned char digitize(int symbol);
+    void digitizeIntoBinaryBuffer();
     void snapMinMax();
     static int comp(const void *a, const void *b);
     static int compShort(const void *a, const void *b);
@@ -107,6 +107,7 @@ private:
     int  m_samplesPerSymbol;
     lemiremaxmintruestreaming<short> m_lmmSamples; //!< running min/max calculator
     DSDSecondOrderRecursiveFilter m_ringingFilter;
+    DoubleBuffer<unsigned char> m_binSymbolBuffer;
 
     static const int m_zeroCrossingCorrectionProfile2400[11];
     static const int m_zeroCrossingCorrectionProfile4800[11];
