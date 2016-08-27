@@ -381,54 +381,8 @@ int DSDSymbol::digitize(int symbol)
 void DSDSymbol::digitizeIntoDibitBuffer()
 {
     // determine dibit state
-
-    if (m_nbFSKSymbols == 2)
-    {
-        if (m_symbol > m_center)
-        {
-            *m_dsdDecoder->m_state.dibit_buf_p = 1; // store non-inverted values in dibit_buf
-            m_dsdDecoder->m_state.dibit_buf_p++;
-        }
-        else
-        {
-            *m_dsdDecoder->m_state.dibit_buf_p = 3; // store non-inverted values in dibit_buf
-            m_dsdDecoder->m_state.dibit_buf_p++;
-        }
-    }
-    else if (m_nbFSKSymbols == 4)
-    {
-        int dibit;
-
-        if (m_symbol > m_center)
-        {
-            if (m_symbol > m_umid)
-            {
-                *m_dsdDecoder->m_state.dibit_buf_p = 1; // store non-inverted values in dibit_buf
-            }
-            else
-            {
-                *m_dsdDecoder->m_state.dibit_buf_p = 0; // store non-inverted values in dibit_buf
-            }
-        }
-        else
-        {
-            if (m_symbol < m_lmid)
-            {
-                *m_dsdDecoder->m_state.dibit_buf_p = 3; // store non-inverted values in dibit_buf
-            }
-            else
-            {
-                *m_dsdDecoder->m_state.dibit_buf_p = 2; // store non-inverted values in dibit_buf
-            }
-        }
-
-        m_dsdDecoder->m_state.dibit_buf_p++;
-    }
-    else // invalid
-    {
-        *m_dsdDecoder->m_state.dibit_buf_p = 0;
-        m_dsdDecoder->m_state.dibit_buf_p++;
-    }
+    *m_dsdDecoder->m_state.dibit_buf_p = digitize(m_symbol);
+    m_dsdDecoder->m_state.dibit_buf_p++;
 }
 
 int DSDSymbol::invert_dibit(int dibit)
