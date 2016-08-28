@@ -30,6 +30,7 @@ DSDDecoder::DSDDecoder() :
         m_mbeDecoder(this),
         m_dsdDMRVoice(this),
         m_dsdDMRData(this),
+        m_dsdDMR(this),
         m_dsdDstar(this),
         m_dsdYSF(this),
         m_dsdDPMR(this),

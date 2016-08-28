@@ -30,6 +30,7 @@ set(dsdcc_SOURCES
     descramble.cpp
     dmr_data.cpp
     dmr_voice.cpp
+    dmr.cpp
     dsd_decoder.cpp
     dsd_filters.cpp
     dsd_logger.cpp
@@ -49,6 +50,7 @@ set(dsdcc_HEADERS
     descramble.h
     dmr_data.h
     dmr_voice.h
+    dmr.h
     dsd_decoder.h
     dsd_filters.h
     dsd_logger.h
