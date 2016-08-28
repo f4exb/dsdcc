@@ -130,6 +130,8 @@ public:
         DSDprocessNXDNData,
         DSDprocessDSTAR,
         DSDprocessDSTAR_HD,
+        DSDprocessDMRvoiceBS,
+        DSDprocessDMRdataBS,
         DSDprocessDMRvoice,
         DSDprocessDMRdata,
         DSDprocessX2TDMAvoice,
@@ -292,6 +294,7 @@ private:
     DSDLogger m_dsdLogger;
     DSDFSMState m_fsmState;
     DSDStationType m_stationType;
+    DSDDMR::DSDDMRBurstType m_dmrBurstType;
     // sync engine:
     int m_sync; //!< The current internal sync type
     int m_dibit, m_synctest_pos;

@@ -29,8 +29,8 @@ public:
     {
         DSDDMRBurstNone,
         DSDDMRBaseStation,       //!< BS sourced voice or data
-        DSDDMRMobileSstation,    //!< MS sourced voice or data
-        DSDDMRMobileSstationRC,  //!< MS sourced standalone RC
+        DSDDMRMobileStation,     //!< MS sourced voice or data
+        DSDDMRMobileStationRC,   //!< MS sourced standalone RC
         DSDDMRDirectSlot1,       //!< TDMA direct mode time slot 1 voice or data
         DSDDMRDirectSlot2        //!< TDMA direct mode time slot 2 voice or data
     } DSDDMRBurstType;
@@ -62,8 +62,10 @@ public:
     DSDDMR(DSDDecoder *dsdDecoder);
     ~DSDDMR();
 
-    void processData(DSDDMRBurstType burstType);
-    void processVoice(DSDDMRBurstType burstType);
+    void initData(DSDDMRBurstType burstType);
+    void initVoice(DSDDMRBurstType burstType);
+    void processData();
+    void processVoice();
 
 private:
 
@@ -107,11 +109,14 @@ private:
     unsigned char m_lcss;
     unsigned char m_colorCode;
     DSDDMRDataTYpe m_dataType;
+    char *m_slotText;
+    int m_slotTextIndex;
     unsigned char m_slotTypePDU_dibits[10];
     Hamming_7_4 m_hamming_7_4;
     Golay_20_8 m_golay_20_8;
 
     static const int m_cachInterleave[24];
+    static const char *m_slotTypeText[13];
 };
 
 } // namespace DSDcc

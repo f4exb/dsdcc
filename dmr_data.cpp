@@ -173,14 +173,14 @@ void DSDDMRData::preProcess()
     if ((strcmp(sync, DMR_BS_DATA_SYNC) == 0)
      || (strcmp(sync, DMR_MS_DATA_SYNC) == 0))
     {
-        if (m_dsdDecoder->m_state.currentslot == 0)
-        {
-            sprintf(m_dsdDecoder->m_state.slot0light, "[slot0]");
-        }
-        else
-        {
-            sprintf(m_dsdDecoder->m_state.slot1light, "[slot1]");
-        }
+//        if (m_dsdDecoder->m_state.currentslot == 0)
+//        {
+//            sprintf(m_dsdDecoder->m_state.slot0light, "[slot0]");
+//        }
+//        else
+//        {
+//            sprintf(m_dsdDecoder->m_state.slot1light, "[slot1]");
+//        }
     }
 
     if (m_dsdDecoder->m_opts.errorbars == 1)

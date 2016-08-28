@@ -81,8 +81,8 @@ DSDState::DSDState()
     optind = 0;
     numtdulc = 0;
     firstframe = 0;
-    sprintf(slot0light, " slot0 ");
-    sprintf(slot1light, " slot1 ");
+//    sprintf(slot0light, " slot0 ");
+//    sprintf(slot1light, " slot1 ");
     aout_gain = 25;
     memset(aout_max_buf, 0, sizeof(float) * 200);
     aout_max_buf_p = aout_max_buf;

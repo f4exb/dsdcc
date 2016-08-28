@@ -412,7 +412,8 @@ void DSDDecoder::run(short sample)
             m_dsdDMRVoice.process();
             break;
         case DSDprocessDMRdata:
-            m_dsdDMRData.process();
+            m_dsdDMR.processData();
+//            m_dsdDMRData.process();
             break;
         case DSDprocessDSTAR:
             m_dsdDstar.process();
@@ -465,8 +466,10 @@ void DSDDecoder::processFrameInit()
         else
         {
             m_state.err_str[0] = 0;
+            m_dsdDMR.initData(m_dmrBurstType);    // initializations not consuming a live symbol
+            m_dsdDMR.processData(); // process current symbol first
             m_dsdDMRData.init();    // initializations not consuming a live symbol
-            m_dsdDMRData.process(); // process current symbol first
+//            m_dsdDMRData.process(); // process current symbol first
             m_fsmState = DSDprocessDMRdata;
         }
     }
@@ -644,6 +647,7 @@ int DSDDecoder::getFrameSync()
 
         strncpy(m_synctest, (m_synctest_p - 23), 24);
         m_stationType = DSDStationTypeNotApplicable;
+        m_dmrBurstType = DSDDMR::DSDDMRBurstNone;
 
         if (m_opts.frame_p25p1 == 1)
         {
@@ -810,10 +814,15 @@ int DSDDecoder::getFrameSync()
                 m_state.offset = m_synctest_pos;
                 m_dsdSymbol.setFSK(4);
 
-                if (strcmp(m_synctest, DMR_BS_DATA_SYNC) == 0) {
+                if (strcmp(m_synctest, DMR_BS_DATA_SYNC) == 0)
+                {
                     m_stationType = DSDBaseStation;
-                } else {
+                    m_dmrBurstType = DSDDMR::DSDDMRBaseStation;
+                }
+                else
+                {
                     m_stationType = DSDMobileStation;
+                    m_dmrBurstType = DSDDMR::DSDDMRMobileStation;
                 }
 
 				// data frame
@@ -835,10 +844,15 @@ int DSDDecoder::getFrameSync()
                 m_state.offset = m_synctest_pos;
                 m_dsdSymbol.setFSK(4);
 
-                if (strcmp(m_synctest, DMR_BS_VOICE_SYNC) == 0) {
+                if (strcmp(m_synctest, DMR_BS_VOICE_SYNC) == 0)
+                {
                     m_stationType = DSDBaseStation;
-                } else {
+                    m_dmrBurstType = DSDDMR::DSDDMRBaseStation;
+                }
+                else
+                {
                     m_stationType = DSDMobileStation;
+                    m_dmrBurstType = DSDDMR::DSDDMRMobileStation;
                 }
 
 				// voice frame
@@ -1172,8 +1186,8 @@ void DSDDecoder::noCarrier()
     m_state.nac = 0;
     m_state.numtdulc = 0;
 
-    sprintf(m_state.slot0light, " slot0 ");
-    sprintf(m_state.slot1light, " slot1 ");
+//    sprintf(m_state.slot0light, " slot0 ");
+//    sprintf(m_state.slot1light, " slot1 ");
 
     m_state.firstframe = 0;
 

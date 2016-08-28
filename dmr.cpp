@@ -14,6 +14,7 @@
 // along with this program. If not, see <http://www.gnu.org/licenses/>.          //
 ///////////////////////////////////////////////////////////////////////////////////
 
+#include <iostream>
 #include <string.h>
 #include "dmr.h"
 #include "dsd_decoder.h"
@@ -22,6 +23,21 @@ namespace DSDcc
 {
 
 const int DSDDMR::m_cachInterleave[24] = {0, 4, 8, 12, 14, 18, 22, 1, 2, 3, 5, 6, 7, 9, 10, 11, 13, 15, 16, 17, 19, 20, 21, 23};
+const char *DSDDMR::m_slotTypeText[13] = {
+        "PIH",
+        "VLC",
+        "TLC",
+        "CSB",
+        "MBH",
+        "MBC",
+        "DAH",
+        "D12",
+        "D34",
+        "IDL",
+        "D01",
+        "RES",
+        "UNK"
+};
 
 const unsigned char DSDDMR::Hamming_7_4::m_H[7*3] = {
         1, 1, 1, 0,   1, 0, 0,
@@ -68,20 +84,30 @@ DSDDMR::DSDDMR(DSDDecoder *dsdDecoder) :
         m_colorCode(0),
         m_dataType(DSDDMRDataUnknown)
 {
+    m_slotText = m_dsdDecoder->m_state.slot0light;
+    m_slotText[0] = '*';
+    m_slotTextIndex = 1;
 }
 
 DSDDMR::~DSDDMR()
 {
 }
 
-void DSDDMR::processData(DSDDMRBurstType burstType)
+void DSDDMR::initData(DSDDMRBurstType burstType)
 {
     m_burstType = burstType;
     processDataFirstHalf();
 
+    m_symbolIndex = 13; // start counting right of center as in ETSI TS 102 361-1 p.58
+}
+
+void DSDDMR::processData()
+{
+    int dibit = m_dsdDecoder->m_dsdSymbol.getDibit(); // get dibit from symbol
+
     if (m_symbolIndex < 18)
     {
-        m_slotTypePDU_dibits[5 + m_symbolIndex - 13];
+        m_slotTypePDU_dibits[5 + m_symbolIndex - 13] = dibit;
 
         if (m_symbolIndex == 17)
         {
@@ -90,20 +116,24 @@ void DSDDMR::processData(DSDDMRBurstType burstType)
     }
     else if (m_symbolIndex == 66) // last dibit
     {
+        m_slotText[m_slotTextIndex] = '\0';
         m_dsdDecoder->resetFrameSync(); // end
     }
 
     m_symbolIndex++;
 }
 
-void DSDDMR::processVoice(DSDDMRBurstType burstType)
+void DSDDMR::processVoice()
 {
 
 }
 
 void DSDDMR::processDataFirstHalf()
 {
-    unsigned char *dibit_p = m_dsdDecoder->m_dsdSymbol.getDibitBack(90);
+    unsigned char *dibit_p = m_dsdDecoder->m_dsdSymbol.getDibitBack(90+1);
+
+    m_slotText = m_dsdDecoder->m_state.slot0light;
+    m_slotText[0] = '*';
 
     if (m_burstType == DSDDMRBaseStation) // CACH is for base station only
     {
@@ -115,11 +145,11 @@ void DSDDMR::processDataFirstHalf()
     dibit_p += 49; // move after first half info block
 
     memcpy((void *) m_slotTypePDU_dibits, (const void *) dibit_p, 5);
+    processSlotTypePDU();
+
     dibit_p += 5;  // move after first half slot type PDU
 
     dibit_p += 24; // move after SYNC or embedded signaling
-
-    m_symbolIndex = 13; // start counting right of center as in ETSI TS 102 361-1 p.58
 }
 
 void DSDDMR::processVoiceFirstHalf()
@@ -142,8 +172,29 @@ void DSDDMR::processCACH(unsigned char *dibit_p)
     // Hamming (7,4) decode and store results if successful
     if (m_hamming_7_4.decode(cachBits))
     {
+        unsigned int slotIndex = cachBits[1] & 1;
+        m_dsdDecoder->m_state.currentslot = slotIndex; // FIXME: remove this when done with new voice processing
+
+        if (slotIndex)
+        {
+            m_slotText = m_dsdDecoder->m_state.slot1light;
+            m_slotText[0] = ' ';
+            m_slotTextIndex = 1;
+        }
+        else
+        {
+            m_slotText = m_dsdDecoder->m_state.slot0light;
+            m_slotTextIndex = 0;
+        }
+
         m_slot = (DSDDMRSlot) (cachBits[1] + 1);
         m_lcss = 2*cachBits[2] + cachBits[3];
+
+        std::cerr << "DSDDMR::processCACH: OK: Slot: " << (int) cachBits[1] << " LCSS: " << (int) m_lcss << std::endl;
+    }
+    else
+    {
+        std::cerr << "DSDDMR::processCACH: KO" << std::endl;
     }
 }
 
@@ -157,20 +208,37 @@ void DSDDMR::processSlotTypePDU()
         slotTypeBits[2*i + 1] = m_slotTypePDU_dibits[i] & 1;
     }
 
+    sprintf(&m_slotText[m_slotTextIndex], "--"); // color code
+
     if (m_golay_20_8.decode(slotTypeBits))
     {
         m_colorCode = (slotTypeBits[0] << 3) + (slotTypeBits[1] << 2) + (slotTypeBits[2] << 1) + slotTypeBits[3];
+        sprintf(&m_slotText[m_slotTextIndex], "%02d", m_colorCode);
+
         unsigned int dataType = (slotTypeBits[4] << 3) + (slotTypeBits[5] << 2) + (slotTypeBits[6] << 1) + slotTypeBits[7];
 
         if (dataType > 10)
         {
             m_dataType = DSDDMRDataReserved;
+            sprintf(&m_slotText[m_slotTextIndex+2], " RES");
         }
         else
         {
             m_dataType = (DSDDMRDataTYpe) dataType;
+            sprintf(&m_slotText[m_slotTextIndex+2], " %s", m_slotTypeText[dataType]);
         }
+
+        std::cerr << "DSDDMR::processSlotTypePDU OK: CC: " << (int) m_colorCode << " DT: " << dataType << std::endl;
     }
+    else
+    {
+        std::cerr << "DSDDMR::processSlotTypePDU KO" << std::endl;
+        m_dataType = DSDDMRDataUnknown;
+        sprintf(&m_slotText[m_slotTextIndex+2], " UNK" );
+    }
+
+
+    m_slotTextIndex += 6;
 }
 
 // ========================================================================================
