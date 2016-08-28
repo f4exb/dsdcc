@@ -221,21 +221,6 @@ void DSDDMRVoice::processSlot1(int symbolIndex) // Slot1 is a 12 symbol slot
             if (i == 2)
             {
                 m_dsdDecoder->m_state.currentslot = (1 & (dibit >> 1));  // bit 1
-
-                if (m_dsdDecoder->m_state.currentslot == 0)
-                {
-                    m_dsdDecoder->m_state.slot0light[0] = '[';
-                    m_dsdDecoder->m_state.slot0light[6] = ']';
-                    m_dsdDecoder->m_state.slot1light[0] = ' ';
-                    m_dsdDecoder->m_state.slot1light[6] = ' ';
-                }
-                else
-                {
-                    m_dsdDecoder->m_state.slot1light[0] = '[';
-                    m_dsdDecoder->m_state.slot1light[6] = ']';
-                    m_dsdDecoder->m_state.slot0light[0] = ' ';
-                    m_dsdDecoder->m_state.slot0light[6] = ' ';
-                }
             }
         }
 
@@ -364,14 +349,6 @@ void DSDDMRVoice::processSlot4(int symbolIndex) // Slot4 is a 24 symbol slot
          || (strcmp(sync, DMR_MS_DATA_SYNC) == 0))
         {
             mutecurrentslot = 1;
-            if (m_dsdDecoder->m_state.currentslot == 0)
-            {
-                sprintf(m_dsdDecoder->m_state.slot0light, "[slot0]");
-            }
-            else
-            {
-                sprintf(m_dsdDecoder->m_state.slot1light, "[slot1]");
-            }
         }
         else if ((strcmp(sync, DMR_BS_VOICE_SYNC) == 0)
               || (strcmp(sync, DMR_MS_VOICE_SYNC) == 0))
@@ -379,11 +356,13 @@ void DSDDMRVoice::processSlot4(int symbolIndex) // Slot4 is a 24 symbol slot
             mutecurrentslot = 0;
             if (m_dsdDecoder->m_state.currentslot == 0)
             {
-                sprintf(m_dsdDecoder->m_state.slot0light, "[SLOT0]");
+                memcpy(&m_dsdDecoder->m_state.slot0light[3], "VOX", 3);
+//                sprintf(m_dsdDecoder->m_state.slot0light, "[SLOT0]");
             }
             else
             {
-                sprintf(m_dsdDecoder->m_state.slot1light, "[SLOT1]");
+                memcpy(&m_dsdDecoder->m_state.slot1light[3], "VOX", 3);
+//                sprintf(m_dsdDecoder->m_state.slot1light, "[SLOT1]");
             }
         }
         else

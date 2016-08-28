@@ -85,8 +85,7 @@ DSDDMR::DSDDMR(DSDDecoder *dsdDecoder) :
         m_dataType(DSDDMRDataUnknown)
 {
     m_slotText = m_dsdDecoder->m_state.slot0light;
-    m_slotText[0] = '*';
-    m_slotTextIndex = 1;
+    m_slotTextIndex = 0;
 }
 
 DSDDMR::~DSDDMR()
@@ -96,6 +95,9 @@ DSDDMR::~DSDDMR()
 void DSDDMR::initData(DSDDMRBurstType burstType)
 {
     m_burstType = burstType;
+    m_slotText = m_dsdDecoder->m_state.slot0light;
+    m_slotTextIndex = 0;
+
     processDataFirstHalf();
 
     m_symbolIndex = 13; // start counting right of center as in ETSI TS 102 361-1 p.58
@@ -116,7 +118,6 @@ void DSDDMR::processData()
     }
     else if (m_symbolIndex == 66) // last dibit
     {
-        m_slotText[m_slotTextIndex] = '\0';
         m_dsdDecoder->resetFrameSync(); // end
     }
 
@@ -131,9 +132,6 @@ void DSDDMR::processVoice()
 void DSDDMR::processDataFirstHalf()
 {
     unsigned char *dibit_p = m_dsdDecoder->m_dsdSymbol.getDibitBack(90+1);
-
-    m_slotText = m_dsdDecoder->m_state.slot0light;
-    m_slotText[0] = '*';
 
     if (m_burstType == DSDDMRBaseStation) // CACH is for base station only
     {
@@ -154,7 +152,6 @@ void DSDDMR::processDataFirstHalf()
 
 void DSDDMR::processVoiceFirstHalf()
 {
-
 }
 
 void DSDDMR::processCACH(unsigned char *dibit_p)
@@ -167,8 +164,6 @@ void DSDDMR::processCACH(unsigned char *dibit_p)
         cachBits[m_cachInterleave[2*i+1]] = dibit_p[i] & 1;
     }
 
-    m_slot = DSDDMRSlotUndefined;
-
     // Hamming (7,4) decode and store results if successful
     if (m_hamming_7_4.decode(cachBits))
     {
@@ -178,23 +173,22 @@ void DSDDMR::processCACH(unsigned char *dibit_p)
         if (slotIndex)
         {
             m_slotText = m_dsdDecoder->m_state.slot1light;
-            m_slotText[0] = ' ';
-            m_slotTextIndex = 1;
         }
         else
         {
             m_slotText = m_dsdDecoder->m_state.slot0light;
-            m_slotTextIndex = 0;
         }
 
         m_slot = (DSDDMRSlot) (cachBits[1] + 1);
         m_lcss = 2*cachBits[2] + cachBits[3];
 
-        std::cerr << "DSDDMR::processCACH: OK: Slot: " << (int) cachBits[1] << " LCSS: " << (int) m_lcss << std::endl;
+//        std::cerr << "DSDDMR::processCACH: OK: Slot: " << (int) cachBits[1] << " LCSS: " << (int) m_lcss << std::endl;
     }
     else
     {
-        std::cerr << "DSDDMR::processCACH: KO" << std::endl;
+        m_slot = DSDDMRSlotUndefined;
+        m_slotText = m_dsdDecoder->m_state.slot1light;
+//        std::cerr << "DSDDMR::processCACH: KO" << std::endl;
     }
 }
 
@@ -208,37 +202,31 @@ void DSDDMR::processSlotTypePDU()
         slotTypeBits[2*i + 1] = m_slotTypePDU_dibits[i] & 1;
     }
 
-    sprintf(&m_slotText[m_slotTextIndex], "--"); // color code
-
     if (m_golay_20_8.decode(slotTypeBits))
     {
         m_colorCode = (slotTypeBits[0] << 3) + (slotTypeBits[1] << 2) + (slotTypeBits[2] << 1) + slotTypeBits[3];
-        sprintf(&m_slotText[m_slotTextIndex], "%02d", m_colorCode);
+        sprintf(m_slotText, "%02d ", m_colorCode);
 
         unsigned int dataType = (slotTypeBits[4] << 3) + (slotTypeBits[5] << 2) + (slotTypeBits[6] << 1) + slotTypeBits[7];
 
         if (dataType > 10)
         {
             m_dataType = DSDDMRDataReserved;
-            sprintf(&m_slotText[m_slotTextIndex+2], " RES");
+            memcpy(&m_slotText[3], "RES", 3);
         }
         else
         {
             m_dataType = (DSDDMRDataTYpe) dataType;
-            sprintf(&m_slotText[m_slotTextIndex+2], " %s", m_slotTypeText[dataType]);
+            memcpy(&m_slotText[3], m_slotTypeText[dataType], 3);
         }
 
-        std::cerr << "DSDDMR::processSlotTypePDU OK: CC: " << (int) m_colorCode << " DT: " << dataType << std::endl;
+//        std::cerr << "DSDDMR::processSlotTypePDU OK: CC: " << (int) m_colorCode << " DT: " << dataType << std::endl;
     }
     else
     {
-        std::cerr << "DSDDMR::processSlotTypePDU KO" << std::endl;
-        m_dataType = DSDDMRDataUnknown;
-        sprintf(&m_slotText[m_slotTextIndex+2], " UNK" );
+        memcpy(m_slotText, "-- UNK", 6);
+//        std::cerr << "DSDDMR::processSlotTypePDU KO" << std::endl;
     }
-
-
-    m_slotTextIndex += 6;
 }
 
 // ========================================================================================

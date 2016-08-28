@@ -57,20 +57,6 @@ void DSDDMRData::preProcess()
         if (i == 2)
         {
             m_dsdDecoder->m_state.currentslot = (1 & (dibit >> 1));      // bit 1
-            if (m_dsdDecoder->m_state.currentslot == 0)
-            {
-                m_dsdDecoder->m_state.slot0light[0] = '[';
-                m_dsdDecoder->m_state.slot0light[6] = ']';
-                m_dsdDecoder->m_state.slot1light[0] = ' ';
-                m_dsdDecoder->m_state.slot1light[6] = ' ';
-            }
-            else
-            {
-                m_dsdDecoder->m_state.slot1light[0] = '[';
-                m_dsdDecoder->m_state.slot1light[6] = ']';
-                m_dsdDecoder->m_state.slot0light[0] = ' ';
-                m_dsdDecoder->m_state.slot0light[6] = ' ';
-            }
         }
     }
 
