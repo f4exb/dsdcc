@@ -179,6 +179,7 @@ void DSDDMR::processCACH(unsigned char *dibit_p)
             m_slotText = m_dsdDecoder->m_state.slot0light;
         }
 
+        m_slotText[0] = ((cachBits[0] & 1) ? '*' : '.');
         m_slot = (DSDDMRSlot) (cachBits[1] + 1);
         m_lcss = 2*cachBits[2] + cachBits[3];
 
@@ -187,7 +188,8 @@ void DSDDMR::processCACH(unsigned char *dibit_p)
     else
     {
         m_slot = DSDDMRSlotUndefined;
-        m_slotText = m_dsdDecoder->m_state.slot1light;
+        m_slotText = m_dsdDecoder->m_state.slot0light;
+        m_dsdDecoder->m_state.slot0light[0] = '/';
 //        std::cerr << "DSDDMR::processCACH: KO" << std::endl;
     }
 }
@@ -205,26 +207,26 @@ void DSDDMR::processSlotTypePDU()
     if (m_golay_20_8.decode(slotTypeBits))
     {
         m_colorCode = (slotTypeBits[0] << 3) + (slotTypeBits[1] << 2) + (slotTypeBits[2] << 1) + slotTypeBits[3];
-        sprintf(m_slotText, "%02d ", m_colorCode);
+        sprintf(&m_slotText[1], "%02d ", m_colorCode);
 
         unsigned int dataType = (slotTypeBits[4] << 3) + (slotTypeBits[5] << 2) + (slotTypeBits[6] << 1) + slotTypeBits[7];
 
         if (dataType > 10)
         {
             m_dataType = DSDDMRDataReserved;
-            memcpy(&m_slotText[3], "RES", 3);
+            memcpy(&m_slotText[4], "RES", 3);
         }
         else
         {
             m_dataType = (DSDDMRDataTYpe) dataType;
-            memcpy(&m_slotText[3], m_slotTypeText[dataType], 3);
+            memcpy(&m_slotText[4], m_slotTypeText[dataType], 3);
         }
 
 //        std::cerr << "DSDDMR::processSlotTypePDU OK: CC: " << (int) m_colorCode << " DT: " << dataType << std::endl;
     }
     else
     {
-        memcpy(m_slotText, "-- UNK", 6);
+        memcpy(&m_slotText[1], "-- UNK", 6);
 //        std::cerr << "DSDDMR::processSlotTypePDU KO" << std::endl;
     }
 }
