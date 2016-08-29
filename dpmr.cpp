@@ -875,7 +875,7 @@ bool DSDdPMR::Hamming_12_8::decode(unsigned char *rxBits, unsigned char *decoded
                          + (rxBits[12*ic +  8] * m_H[12*is +  8])
                          + (rxBits[12*ic +  9] * m_H[12*is +  9])
                          + (rxBits[12*ic + 10] * m_H[12*is + 10])
-                         + (rxBits[12*ic + 11] * m_H[12*is + 11])) % 2) << is;
+                         + (rxBits[12*ic + 11] * m_H[12*is + 11])) % 2) << (3-is);
         }
 
         // correct bit
