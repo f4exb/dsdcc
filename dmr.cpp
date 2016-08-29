@@ -254,7 +254,7 @@ bool DSDDMR::Hamming_7_4::decode(unsigned char *rxBits) // corrects in place
                     + (rxBits[3] * m_H[7*is + 3])
                     + (rxBits[4] * m_H[7*is + 4])
                     + (rxBits[5] * m_H[7*is + 5])
-                    + (rxBits[6] * m_H[7*is + 6])) % 2) << is;
+                    + (rxBits[6] * m_H[7*is + 6])) % 2) << (2-is);
     }
 
     if (syndromeI > 0)
