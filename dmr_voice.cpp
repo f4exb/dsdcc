@@ -356,13 +356,11 @@ void DSDDMRVoice::processSlot4(int symbolIndex) // Slot4 is a 24 symbol slot
             mutecurrentslot = 0;
             if (m_dsdDecoder->m_state.currentslot == 0)
             {
-                memcpy(&m_dsdDecoder->m_state.slot0light[3], "VOX", 3);
-//                sprintf(m_dsdDecoder->m_state.slot0light, "[SLOT0]");
+                memcpy(&m_dsdDecoder->m_state.slot0light[4], "VOX", 3);
             }
             else
             {
-                memcpy(&m_dsdDecoder->m_state.slot1light[3], "VOX", 3);
-//                sprintf(m_dsdDecoder->m_state.slot1light, "[SLOT1]");
+                memcpy(&m_dsdDecoder->m_state.slot1light[4], "VOX", 3);
             }
         }
         else
