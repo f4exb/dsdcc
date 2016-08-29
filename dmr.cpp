@@ -39,6 +39,8 @@ const char *DSDDMR::m_slotTypeText[13] = {
         "UNK"
 };
 
+// ========================================================================================
+
 const unsigned char DSDDMR::Hamming_7_4::m_H[7*3] = {
         1, 1, 1, 0,   1, 0, 0,
         0, 1, 1, 1,   0, 1, 0,
@@ -71,6 +73,20 @@ const unsigned char DSDDMR::Golay_20_8::m_H[20*12] = {
         0, 0, 1, 1, 1, 1, 1, 0,    0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0,
         1, 0, 0, 1, 1, 1, 1, 1,    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0,
         0, 1, 1, 1, 0, 1, 0, 1,    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+};
+
+// ========================================================================================
+
+const unsigned char DSDDMR::QR_16_7_6::m_H[16*9] = {
+        0, 1, 1,  1, 1, 0, 0,   1, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 1,  1, 1, 1, 0,   0, 1, 0, 0, 0, 0, 0, 0, 0,
+        1, 0, 0,  1, 1, 1, 1,   0, 0, 1, 0, 0, 0, 0, 0, 0,
+        0, 0, 1,  1, 0, 1, 1,   0, 0, 0, 1, 0, 0, 0, 0, 0,
+        0, 1, 1,  0, 0, 0, 1,   0, 0, 0, 0, 1, 0, 0, 0, 0,
+        1, 1, 0,  0, 1, 0, 0,   0, 0, 0, 0, 0, 1, 0, 0, 0,
+        1, 1, 1,  0, 0, 1, 0,   0, 0, 0, 0, 0, 0, 1, 0, 0,
+        1, 1, 1,  1, 0, 0, 1,   0, 0, 0, 0, 0, 0, 0, 1, 0,
+        1, 0, 1,  0, 1, 1, 1,   0, 0, 0, 0, 0, 0, 0, 0, 1,
 };
 
 // ========================================================================================
@@ -363,6 +379,98 @@ bool DSDDMR::Golay_20_8::decode(unsigned char *rxBits)
         int i = 0;
 
         for (; i < 3; i++)
+        {
+            if (m_corr[syndromeI][i] == 0xFF)
+            {
+                break;
+            }
+            else
+            {
+                rxBits[m_corr[syndromeI][i]] ^= 1; // flip bit
+            }
+        }
+
+        if (i == 0)
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+// ========================================================================================
+
+DSDDMR::QR_16_7_6::QR_16_7_6()
+{
+    init();
+}
+
+DSDDMR::QR_16_7_6::~QR_16_7_6()
+{
+}
+
+void DSDDMR::QR_16_7_6::init()
+{
+    memset (m_corr, 0xFF, 2*512);
+
+    for (int i1 = 0; i1 < 7; i1++)
+    {
+        for (int i2 = i1+1; i2 < 7; i2++)
+        {
+            // 2 bit patterns
+            int syndromeI = 0;
+
+            for (int ir = 0; ir < 9; ir++)
+            {
+                syndromeI += ((m_H[16*ir + i1] +  m_H[16*ir + i2]) % 2) << (8-ir);
+            }
+
+            m_corr[syndromeI][0] = i1;
+            m_corr[syndromeI][1] = i2;
+        }
+
+        // single bit patterns
+        int syndromeI = 0;
+
+        for (int ir = 0; ir < 9; ir++)
+        {
+            syndromeI += m_H[16*ir + i1] << (8-ir);
+        }
+
+        m_corr[syndromeI][0] = i1;
+    }
+}
+
+bool DSDDMR::QR_16_7_6::decode(unsigned char *rxBits)
+{
+    unsigned int syndromeI = 0; // syndrome index
+
+    for (int is = 0; is < 9; is++)
+    {
+        syndromeI += (((rxBits[0] * m_H[16*is + 0])
+                    + (rxBits[1] * m_H[16*is + 1])
+                    + (rxBits[2] * m_H[16*is + 2])
+                    + (rxBits[3] * m_H[16*is + 3])
+                    + (rxBits[4] * m_H[16*is + 4])
+                    + (rxBits[5] * m_H[16*is + 5])
+                    + (rxBits[6] * m_H[16*is + 6])
+                    + (rxBits[7] * m_H[16*is + 7])
+                    + (rxBits[8] * m_H[16*is + 8])
+                    + (rxBits[9] * m_H[16*is + 9])
+                    + (rxBits[10] * m_H[16*is + 10])
+                    + (rxBits[11] * m_H[16*is + 11])
+                    + (rxBits[12] * m_H[16*is + 12])
+                    + (rxBits[13] * m_H[16*is + 13])
+                    + (rxBits[14] * m_H[16*is + 14])
+                    + (rxBits[15] * m_H[16*is + 15])) % 2) << (8-is);
+    }
+
+    if (syndromeI > 0)
+    {
+        int i = 0;
+
+        for (; i < 2; i++)
         {
             if (m_corr[syndromeI][i] == 0xFF)
             {

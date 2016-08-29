@@ -97,6 +97,20 @@ private:
         static const unsigned char m_H[20*12]; //!< Parity check matrix of bits
     };
 
+    class QR_16_7_6
+    {
+    public:
+        QR_16_7_6();
+        ~QR_16_7_6();
+
+        void init();
+        bool decode(unsigned char *rxBits);
+
+    private:
+        unsigned char m_corr[512][2];          //!< up to 2 bit error correction by syndrome index
+        static const unsigned char m_H[16*9];  //!< Parity check matrix of bits
+    };
+
     void processDataFirstHalf();  //!< Because sync is in the middle of a frame you need to process the first half first: CACH to end of SYNC
     void processVoiceFirstHalf(); //!< Because sync is in the middle of a frame you need to process the first half first: CACH to end of SYNC
     void processCACH(unsigned char *dibit_p);
@@ -114,6 +128,7 @@ private:
     unsigned char m_slotTypePDU_dibits[10];
     Hamming_7_4 m_hamming_7_4;
     Golay_20_8 m_golay_20_8;
+    QR_16_7_6 m_qr_16_7_6;
 
     static const int m_cachInterleave[24];
     static const char *m_slotTypeText[13];
