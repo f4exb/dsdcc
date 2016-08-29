@@ -355,7 +355,7 @@ bool DSDDMR::Golay_20_8::decode(unsigned char *rxBits)
                     + (rxBits[16] * m_H[20*is + 16])
                     + (rxBits[17] * m_H[20*is + 17])
                     + (rxBits[18] * m_H[20*is + 18])
-                    + (rxBits[19] * m_H[20*is + 19])) % 2) << is;
+                    + (rxBits[19] * m_H[20*is + 19])) % 2) << (11-is);
     }
 
     if (syndromeI > 0)
