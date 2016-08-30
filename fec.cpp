@@ -20,6 +20,13 @@
 namespace DSDcc
 {
 
+const unsigned char Hamming_7_4::m_G[7*4] = {
+        1, 0, 0, 0,   1, 0, 1,
+        0, 1, 0, 0,   1, 1, 1,
+        0, 0, 1, 0,   1, 1, 0,
+        0, 0, 0, 1,   0, 1, 1,
+};
+
 const unsigned char Hamming_7_4::m_H[7*3] = {
         1, 1, 1, 0,   1, 0, 0,
         0, 1, 1, 1,   0, 1, 0,
@@ -38,6 +45,17 @@ void Hamming_7_4::init()
 }
 
 // ========================================================================================
+
+const unsigned char Hamming_12_8::m_G[12*8] = {
+        1, 0, 0, 0, 0, 0, 0, 0,   1, 1, 1, 0,
+        0, 1, 0, 0, 0, 0, 0, 0,   0, 1, 1, 1,
+        0, 0, 1, 0, 0, 0, 0, 0,   1, 0, 1, 0,
+        0, 0, 0, 1, 0, 0, 0, 0,   0, 1, 0, 1,
+        0, 0, 0, 0, 1, 0, 0, 0,   1, 0, 1, 1,
+        0, 0, 0, 0, 0, 1, 0, 0,   1, 1, 0, 0,
+        0, 0, 0, 0, 0, 0, 1, 0,   0, 1, 1, 0,
+        0, 0, 0, 0, 0, 0, 0, 1,   0, 0, 1, 1,
+};
 
 const unsigned char Hamming_12_8::m_H[12*4] = {
         1, 0, 1, 0, 1, 1, 0, 0,   1, 0, 0, 0,
@@ -63,6 +81,17 @@ void Hamming_12_8::init()
 
 // ========================================================================================
 
+const unsigned char Golay_20_8::m_G[20*8] = {
+        1, 0, 0, 0, 0, 0, 0, 0,    0, 0, 1, 1,  1, 1, 0, 1,  1, 0, 1, 0,
+        0, 1, 0, 0, 0, 0, 0, 0,    1, 1, 0, 1,  1, 0, 0, 1,  1, 0, 0, 1,
+        0, 0, 1, 0, 0, 0, 0, 0,    0, 1, 1, 0,  1, 1, 0, 0,  1, 1, 0, 1,
+        0, 0, 0, 1, 0, 0, 0, 0,    0, 0, 1, 1,  0, 1, 1, 0,  0, 1, 1, 1,
+        0, 0, 0, 0, 1, 0, 0, 0,    1, 1, 0, 1,  1, 1, 0, 0,  0, 1, 1, 0,
+        0, 0, 0, 0, 0, 1, 0, 0,    1, 0, 1, 0,  1, 0, 0, 1,  0, 1, 1, 1,
+        0, 0, 0, 0, 0, 0, 1, 0,    1, 0, 0, 1,  0, 0, 1, 1,  1, 1, 1, 0,
+        0, 0, 0, 0, 0, 0, 0, 1,    1, 0, 0, 0,  1, 1, 1, 0,  1, 0, 1, 1,
+};
+
 const unsigned char Golay_20_8::m_H[20*12] = {
         0, 1, 0, 0, 1, 1, 1, 1,    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 1, 1, 0, 1, 0, 0, 0,    0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -80,6 +109,15 @@ const unsigned char Golay_20_8::m_H[20*12] = {
 
 // ========================================================================================
 
+const unsigned char QR_16_7_6::m_G[16*7] = {
+        1, 0, 0, 0, 0, 0, 0,    0, 0, 1, 0, 0, 1, 1, 1, 1,
+        0, 1, 0, 0, 0, 0, 0,    1, 0, 0, 0, 1, 1, 1, 1, 0,
+        0, 0, 1, 0, 0, 0, 0,    1, 1, 0, 1, 1, 0, 1, 1, 1,
+        0, 0, 0, 1, 0, 0, 0,    1, 1, 1, 1, 0, 0, 0, 1, 0,
+        0, 0, 0, 0, 1, 0, 0,    1, 1, 1, 0, 0, 1, 0, 0, 1,
+        0, 0, 0, 0, 0, 1, 0,    0, 1, 1, 1, 0, 0, 1, 0, 1,
+        0, 0, 0, 0, 0, 0, 1,    0, 0, 1, 1, 1, 0, 0, 1, 1,
+};
 const unsigned char QR_16_7_6::m_H[16*9] = {
         0, 1, 1,  1, 1, 0, 0,   1, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 1,  1, 1, 1, 0,   0, 1, 0, 0, 0, 0, 0, 0, 0,
@@ -101,6 +139,25 @@ Hamming_7_4::Hamming_7_4()
 
 Hamming_7_4::~Hamming_7_4()
 {
+}
+
+// Not very efficient but encode is used for unit testing only
+void Hamming_7_4::encode(unsigned char *origBits, unsigned char *encodedBits)
+{
+    memset(encodedBits, 0, 7);
+
+    for (int i = 0; i < 4; i++)
+    {
+        for (int j = 0; j < 7; j++)
+        {
+            encodedBits[j] += origBits[i] * m_G[7*i + j];
+        }
+    }
+
+    for (int i = 0; i < 7; i++)
+    {
+        encodedBits[i] %= 2;
+    }
 }
 
 bool Hamming_7_4::decode(unsigned char *rxBits) // corrects in place
@@ -142,6 +199,25 @@ Hamming_12_8::Hamming_12_8()
 
 Hamming_12_8::~Hamming_12_8()
 {
+}
+
+// Not very efficient but encode is used for unit testing only
+void Hamming_12_8::encode(unsigned char *origBits, unsigned char *encodedBits)
+{
+    memset(encodedBits, 0, 12);
+
+    for (int i = 0; i < 8; i++)
+    {
+        for (int j = 0; j < 12; j++)
+        {
+            encodedBits[j] += origBits[i] * m_G[12*i + j];
+        }
+    }
+
+    for (int i = 0; i < 12; i++)
+    {
+        encodedBits[i] %= 2;
+    }
 }
 
 bool Hamming_12_8::decode(unsigned char *rxBits, unsigned char *decodedBits, int nbCodewords)
@@ -250,6 +326,25 @@ void Golay_20_8::init()
     }
 }
 
+// Not very efficient but encode is used for unit testing only
+void Golay_20_8::encode(unsigned char *origBits, unsigned char *encodedBits)
+{
+    memset(encodedBits, 0, 20);
+
+    for (int i = 0; i < 8; i++)
+    {
+        for (int j = 0; j < 20; j++)
+        {
+            encodedBits[j] += origBits[i] * m_G[20*i + j];
+        }
+    }
+
+    for (int i = 0; i < 20; i++)
+    {
+        encodedBits[i] %= 2;
+    }
+}
+
 bool Golay_20_8::decode(unsigned char *rxBits)
 {
     unsigned int syndromeI = 0; // syndrome index
@@ -343,6 +438,25 @@ void QR_16_7_6::init()
         }
 
         m_corr[syndromeI][0] = i1;
+    }
+}
+
+// Not very efficient but encode is used for unit testing only
+void QR_16_7_6::encode(unsigned char *origBits, unsigned char *encodedBits)
+{
+    memset(encodedBits, 0, 16);
+
+    for (int i = 0; i < 7; i++)
+    {
+        for (int j = 0; j < 16; j++)
+        {
+            encodedBits[j] += origBits[i] * m_G[16*i + j];
+        }
+    }
+
+    for (int i = 0; i < 16; i++)
+    {
+        encodedBits[i] %= 2;
     }
 }
 

@@ -1,3 +1,8 @@
 .cproject
 .project
 build
+testfec/*.o
+testfec/qr
+testfec/golay
+testfec/hamming7
+testfec/hamming12

@@ -27,10 +27,12 @@ public:
 	~Hamming_7_4();
 
 	void init();
+	void encode(unsigned char *origBits, unsigned char *encodedBits);
 	bool decode(unsigned char *rxBits);
 
 private:
 	unsigned char m_corr[8];             //!< single bit error correction by syndrome index
+    static const unsigned char m_G[7*4]; //!< Generator matrix of bits
 	static const unsigned char m_H[7*3]; //!< Parity check matrix of bits
 };
 
@@ -41,10 +43,12 @@ public:
     ~Hamming_12_8();
 
     void init();
+	void encode(unsigned char *origBits, unsigned char *encodedBits);
     bool decode(unsigned char *rxBits, unsigned char *decodedBits, int nbCodewords);
 
 private:
-    unsigned char m_corr[16];                       //!< single bit error correction by syndrome index
+    unsigned char m_corr[16];             //!< single bit error correction by syndrome index
+    static const unsigned char m_G[12*8]; //!< Generator matrix of bits
     static const unsigned char m_H[12*4]; //!< Parity check matrix of bits
 };
 
@@ -55,11 +59,13 @@ public:
 	~Golay_20_8();
 
 	void init();
+	void encode(unsigned char *origBits, unsigned char *encodedBits);
 	bool decode(unsigned char *rxBits);
 
 private:
 	unsigned char m_corr[4096][3];         //!< up to 3 bit error correction by syndrome index
-	static const unsigned char m_H[20*12]; //!< Parity check matrix of bits
+    static const unsigned char m_G[20*8];  //!< Generator matrix of bits
+    static const unsigned char m_H[20*12]; //!< Parity check matrix of bits
 };
 
 class QR_16_7_6
@@ -69,10 +75,12 @@ public:
 	~QR_16_7_6();
 
 	void init();
+	void encode(unsigned char *origBits, unsigned char *encodedBits);
 	bool decode(unsigned char *rxBits);
 
 private:
 	unsigned char m_corr[512][2];          //!< up to 2 bit error correction by syndrome index
+    static const unsigned char m_G[16*7];  //!< Generator matrix of bits
 	static const unsigned char m_H[16*9];  //!< Parity check matrix of bits
 };
 
