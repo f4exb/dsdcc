@@ -35,6 +35,18 @@ public:
     void initMbeParms();
     void processFrame(char imbe_fr[8][23], char ambe_fr[4][24], char imbe7100_fr[7][24]);
 
+    short *getAudio(int& nbSamples)
+    {
+        nbSamples = m_audio_out_nb_samples;
+        return m_audio_out_buf;
+    }
+
+    void resetAudio()
+    {
+        m_audio_out_nb_samples = 0;
+        m_audio_out_buf_p = m_audio_out_buf;
+    }
+
 private:
     void processAudio();
     void upsample(int upsampling, float invalue);
@@ -50,13 +62,23 @@ private:
     int m_errs;
     int m_errs2;
     char m_err_str[64];
+
     float m_audio_out_temp_buf[160];   //!< output of decoder
     float *m_audio_out_temp_buf_p;
+
     float m_audio_out_float_buf[1120]; //!< output of upsampler - 1 frame of 160 samples upampled up to 7 times
     float *m_audio_out_float_buf_p;
+
     float m_aout_max_buf[200];
     float *m_aout_max_buf_p;
     int m_aout_max_buf_idx;
+
+    short m_audio_out_buf[2*48000];    //!< final result - 1s of L+R S16LE samples
+    short *m_audio_out_buf_p;
+    int   m_audio_out_nb_samples;
+    int   m_audio_out_buf_size;
+    int   m_audio_out_idx;
+    int   m_audio_out_idx2;
 };
 
 }

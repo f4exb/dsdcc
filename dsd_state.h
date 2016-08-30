@@ -35,12 +35,6 @@ public:
     int *dibit_buf;
     int *dibit_buf_p;
     int repeat;
-    short *audio_out_buf;          //!< final result
-    short *audio_out_buf_p;
-    int   audio_out_nb_samples;
-    int   audio_out_buf_size;
-    int audio_out_idx;
-    int audio_out_idx2;
     int maxbuf[1024];
     int minbuf[1024];
     int midx;

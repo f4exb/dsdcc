@@ -215,14 +215,12 @@ public:
 
     short *getAudio(int& nbSamples)
     {
-        nbSamples = m_state.audio_out_nb_samples;
-        return m_state.audio_out_buf;
+        return m_mbeDecoder.getAudio(nbSamples);
     }
 
     void resetAudio()
     {
-        m_state.audio_out_nb_samples = 0;
-        m_state.audio_out_buf_p = m_state.audio_out_buf;
+        m_mbeDecoder.resetAudio();
     }
 
     //DSDOpts *getOpts() { return &m_opts; }

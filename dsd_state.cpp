@@ -29,15 +29,6 @@ DSDState::DSDState()
     memset(dibit_buf, 0, sizeof(int) * 200);
     dibit_buf_p = dibit_buf + 200;
 
-    audio_out_buf = (short *) malloc(sizeof(short) * 2 * 48000); // 1s of L+R S16LE samples
-    memset(audio_out_buf, 0, sizeof(short) * 2 * 48000);
-    audio_out_buf_p = audio_out_buf;
-    audio_out_nb_samples = 0;
-    audio_out_buf_size = 48000; // given in number of unique samples
-
-    audio_out_idx = 0;
-    audio_out_idx2 = 0;
-
     for (i = 0; i < 1024; i++)
     {
         maxbuf[i] = 15000;
@@ -91,7 +82,7 @@ DSDState::DSDState()
 
 DSDState::~DSDState()
 {
-    free(audio_out_buf);
+//    free(audio_out_buf);
     free(dibit_buf);
 }
 
