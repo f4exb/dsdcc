@@ -30,6 +30,8 @@ DSDMBEDecoder::DSDMBEDecoder(DSDDecoder *dsdDecoder) :
     m_prev_mp = (mbe_parms *) malloc(sizeof(mbe_parms));
     m_prev_mp_enhanced = (mbe_parms *) malloc(sizeof(mbe_parms));
 
+    m_audio_out_temp_buf_p = m_audio_out_temp_buf;
+
 	initMbeParms();
 }
 
@@ -58,26 +60,26 @@ void DSDMBEDecoder::processFrame(char imbe_fr[8][23], char ambe_fr[4][24], char 
 
     if (m_dsdDecoder->m_mbeRate == DSDDecoder::DSDMBERate7200x4400)
     {
-        mbe_processImbe7200x4400Framef(m_dsdDecoder->m_state.audio_out_temp_buf, &m_errs,
+        mbe_processImbe7200x4400Framef(m_audio_out_temp_buf, &m_errs,
                 &m_errs2, m_err_str, imbe_fr, imbe_d, m_cur_mp,
                 m_prev_mp, m_prev_mp_enhanced, m_dsdDecoder->m_opts.uvquality);
     }
     else if (m_dsdDecoder->m_mbeRate == DSDDecoder::DSDMBERate7100x4400)
     {
-        mbe_processImbe7100x4400Framef(m_dsdDecoder->m_state.audio_out_temp_buf, &m_errs,
+        mbe_processImbe7100x4400Framef(m_audio_out_temp_buf, &m_errs,
                 &m_errs2, m_err_str, imbe7100_fr, imbe_d,
                 m_cur_mp, m_prev_mp, m_prev_mp_enhanced,
                 m_dsdDecoder->m_opts.uvquality);
     }
     else if (m_dsdDecoder->m_mbeRate == DSDDecoder::DSDMBERate3600x2400)
     {
-        mbe_processAmbe3600x2400Framef(m_dsdDecoder->m_state.audio_out_temp_buf, &m_errs,
+        mbe_processAmbe3600x2400Framef(m_audio_out_temp_buf, &m_errs,
                 &m_errs2, m_err_str, ambe_fr, ambe_d, m_cur_mp,
                 m_prev_mp, m_prev_mp_enhanced, m_dsdDecoder->m_opts.uvquality);
     }
     else
     {
-        mbe_processAmbe3600x2450Framef(m_dsdDecoder->m_state.audio_out_temp_buf, &m_errs,
+        mbe_processAmbe3600x2450Framef(m_audio_out_temp_buf, &m_errs,
                 &m_errs2, m_err_str, ambe_fr, ambe_d, m_cur_mp,
                 m_prev_mp, m_prev_mp_enhanced, m_dsdDecoder->m_opts.uvquality);
     }
@@ -100,18 +102,18 @@ void DSDMBEDecoder::processAudio()
     {
         // detect max level
         max = 0;
-        m_dsdDecoder->m_state.audio_out_temp_buf_p = m_dsdDecoder->m_state.audio_out_temp_buf;
+        m_audio_out_temp_buf_p = m_audio_out_temp_buf;
 
         for (n = 0; n < 160; n++)
         {
-            aout_abs = fabsf(*m_dsdDecoder->m_state.audio_out_temp_buf_p);
+            aout_abs = fabsf(*m_audio_out_temp_buf_p);
 
             if (aout_abs > max)
             {
                 max = aout_abs;
             }
 
-            m_dsdDecoder->m_state.audio_out_temp_buf_p++;
+            m_audio_out_temp_buf_p++;
         }
 
         *m_dsdDecoder->m_state.aout_max_buf_p = max;
@@ -175,20 +177,20 @@ void DSDMBEDecoder::processAudio()
     if (m_dsdDecoder->m_opts.audio_gain >= 0)
     {
         // adjust output gain
-        m_dsdDecoder->m_state.audio_out_temp_buf_p = m_dsdDecoder->m_state.audio_out_temp_buf;
+        m_audio_out_temp_buf_p = m_audio_out_temp_buf;
 
         for (n = 0; n < 160; n++)
         {
-            *m_dsdDecoder->m_state.audio_out_temp_buf_p = (m_dsdDecoder->m_state.aout_gain
-                    + ((float) n * gaindelta)) * (*m_dsdDecoder->m_state.audio_out_temp_buf_p);
-            m_dsdDecoder->m_state.audio_out_temp_buf_p++;
+            *m_audio_out_temp_buf_p = (m_dsdDecoder->m_state.aout_gain
+                    + ((float) n * gaindelta)) * (*m_audio_out_temp_buf_p);
+            m_audio_out_temp_buf_p++;
         }
 
         m_dsdDecoder->m_state.aout_gain += ((float) 160 * gaindelta);
     }
 
     // copy audio data to output buffer and upsample if necessary
-    m_dsdDecoder->m_state.audio_out_temp_buf_p = m_dsdDecoder->m_state.audio_out_temp_buf;
+    m_audio_out_temp_buf_p = m_audio_out_temp_buf;
 
     if ((m_dsdDecoder->m_opts.upsample == 6) || (m_dsdDecoder->m_opts.upsample == 7)) // upsampling to 48k
     {
@@ -203,8 +205,8 @@ void DSDMBEDecoder::processAudio()
 
         for (n = 0; n < 160; n++)
         {
-            upsample(upsampling, *m_dsdDecoder->m_state.audio_out_temp_buf_p);
-            m_dsdDecoder->m_state.audio_out_temp_buf_p++;
+            upsample(upsampling, *m_audio_out_temp_buf_p);
+            m_audio_out_temp_buf_p++;
             m_dsdDecoder->m_state.audio_out_float_buf_p += upsampling;
             m_dsdDecoder->m_state.audio_out_idx += upsampling;
             m_dsdDecoder->m_state.audio_out_idx2 += upsampling;
@@ -248,16 +250,16 @@ void DSDMBEDecoder::processAudio()
 
         for (n = 0; n < 160; n++)
         {
-            if (*m_dsdDecoder->m_state.audio_out_temp_buf_p > (float) 32760)
+            if (*m_audio_out_temp_buf_p > (float) 32760)
             {
-                *m_dsdDecoder->m_state.audio_out_temp_buf_p = (float) 32760;
+                *m_audio_out_temp_buf_p = (float) 32760;
             }
-            else if (*m_dsdDecoder->m_state.audio_out_temp_buf_p < (float) -32760)
+            else if (*m_audio_out_temp_buf_p < (float) -32760)
             {
-                *m_dsdDecoder->m_state.audio_out_temp_buf_p = (float) -32760;
+                *m_audio_out_temp_buf_p = (float) -32760;
             }
 
-            *m_dsdDecoder->m_state.audio_out_buf_p = (short) *m_dsdDecoder->m_state.audio_out_temp_buf_p;
+            *m_dsdDecoder->m_state.audio_out_buf_p = (short) *m_audio_out_temp_buf_p;
             m_dsdDecoder->m_state.audio_out_buf_p++;
 
             if (m_dsdDecoder->m_opts.stereo) // produce second channel
@@ -267,7 +269,7 @@ void DSDMBEDecoder::processAudio()
             }
 
             m_dsdDecoder->m_state.audio_out_nb_samples++;
-            m_dsdDecoder->m_state.audio_out_temp_buf_p++;
+            m_audio_out_temp_buf_p++;
             m_dsdDecoder->m_state.audio_out_idx++;
             m_dsdDecoder->m_state.audio_out_idx2++;
         }

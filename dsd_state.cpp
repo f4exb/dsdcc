@@ -39,8 +39,6 @@ DSDState::DSDState()
     audio_out_nb_samples = 0;
     audio_out_buf_size = 48000; // given in number of unique samples
 
-    audio_out_temp_buf_p = audio_out_temp_buf;
-
     audio_out_idx = 0;
     audio_out_idx2 = 0;
 

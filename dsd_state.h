@@ -41,8 +41,6 @@ public:
     int   audio_out_buf_size;
     float *audio_out_float_buf;    //!< output of upsampler
     float *audio_out_float_buf_p;
-    float audio_out_temp_buf[160]; //!< output of decoder
-    float *audio_out_temp_buf_p;
     int audio_out_idx;
     int audio_out_idx2;
     int maxbuf[1024];

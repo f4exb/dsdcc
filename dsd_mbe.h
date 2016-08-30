@@ -50,6 +50,8 @@ private:
     int m_errs;
     int m_errs2;
     char m_err_str[64];
+    float m_audio_out_temp_buf[160]; //!< output of decoder
+    float *m_audio_out_temp_buf_p;
 };
 
 }
