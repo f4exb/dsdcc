@@ -31,6 +31,8 @@ DSDMBEDecoder::DSDMBEDecoder(DSDDecoder *dsdDecoder) :
     m_prev_mp_enhanced = (mbe_parms *) malloc(sizeof(mbe_parms));
 
     m_audio_out_temp_buf_p = m_audio_out_temp_buf;
+    memset(m_audio_out_float_buf, 0, sizeof(float) * 1120);
+    m_audio_out_float_buf_p = m_audio_out_float_buf;
 
 	initMbeParms();
 }
@@ -201,42 +203,42 @@ void DSDMBEDecoder::processAudio()
             m_dsdDecoder->resetAudio();
         }
 
-        m_dsdDecoder->m_state.audio_out_float_buf_p = m_dsdDecoder->m_state.audio_out_float_buf;
+        m_audio_out_float_buf_p = m_audio_out_float_buf;
 
         for (n = 0; n < 160; n++)
         {
             upsample(upsampling, *m_audio_out_temp_buf_p);
             m_audio_out_temp_buf_p++;
-            m_dsdDecoder->m_state.audio_out_float_buf_p += upsampling;
+            m_audio_out_float_buf_p += upsampling;
             m_dsdDecoder->m_state.audio_out_idx += upsampling;
             m_dsdDecoder->m_state.audio_out_idx2 += upsampling;
         }
 
-        m_dsdDecoder->m_state.audio_out_float_buf_p = m_dsdDecoder->m_state.audio_out_float_buf;
+        m_audio_out_float_buf_p = m_audio_out_float_buf;
 
         // copy to output (short) buffer
         for (n = 0; n < (160*upsampling); n++)
         {
-            if (*m_dsdDecoder->m_state.audio_out_float_buf_p > (float) 32760)
+            if (*m_audio_out_float_buf_p > (float) 32760)
             {
-                *m_dsdDecoder->m_state.audio_out_float_buf_p = (float) 32760;
+                *m_audio_out_float_buf_p = (float) 32760;
             }
-            else if (*m_dsdDecoder->m_state.audio_out_float_buf_p < (float) -32760)
+            else if (*m_audio_out_float_buf_p < (float) -32760)
             {
-                *m_dsdDecoder->m_state.audio_out_float_buf_p = (float) -32760;
+                *m_audio_out_float_buf_p = (float) -32760;
             }
 
-            *m_dsdDecoder->m_state.audio_out_buf_p = (short) *m_dsdDecoder->m_state.audio_out_float_buf_p;
+            *m_dsdDecoder->m_state.audio_out_buf_p = (short) *m_audio_out_float_buf_p;
             m_dsdDecoder->m_state.audio_out_buf_p++;
 
             if (m_dsdDecoder->m_opts.stereo) // produce second channel
             {
-                *m_dsdDecoder->m_state.audio_out_buf_p = (short) *m_dsdDecoder->m_state.audio_out_float_buf_p;
+                *m_dsdDecoder->m_state.audio_out_buf_p = (short) *m_audio_out_float_buf_p;
                 m_dsdDecoder->m_state.audio_out_buf_p++;
             }
 
             m_dsdDecoder->m_state.audio_out_nb_samples++;
-            m_dsdDecoder->m_state.audio_out_float_buf_p++;
+            m_audio_out_float_buf_p++;
         }
     }
     else // leave at 8k
@@ -246,7 +248,7 @@ void DSDMBEDecoder::processAudio()
             m_dsdDecoder->resetAudio();
         }
 
-        m_dsdDecoder->m_state.audio_out_float_buf_p = m_dsdDecoder->m_state.audio_out_float_buf;
+        m_audio_out_float_buf_p = m_audio_out_float_buf;
 
         for (n = 0; n < 160; n++)
         {
@@ -264,7 +266,7 @@ void DSDMBEDecoder::processAudio()
 
             if (m_dsdDecoder->m_opts.stereo) // produce second channel
             {
-                *m_dsdDecoder->m_state.audio_out_buf_p = (short) *m_dsdDecoder->m_state.audio_out_float_buf_p;
+                *m_dsdDecoder->m_state.audio_out_buf_p = (short) *m_audio_out_float_buf_p;
                 m_dsdDecoder->m_state.audio_out_buf_p++;
             }
 
@@ -281,7 +283,7 @@ void DSDMBEDecoder::upsample(int upsampling, float invalue)
     int i, j, sum;
     float *outbuf1, c, d;
 
-    outbuf1 = m_dsdDecoder->m_state.audio_out_float_buf_p;
+    outbuf1 = m_audio_out_float_buf_p;
 //    outbuf1--;
 //    c = *outbuf1;
     c = m_upsamplerLastValue;

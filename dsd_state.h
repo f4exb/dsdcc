@@ -39,8 +39,6 @@ public:
     short *audio_out_buf_p;
     int   audio_out_nb_samples;
     int   audio_out_buf_size;
-    float *audio_out_float_buf;    //!< output of upsampler
-    float *audio_out_float_buf_p;
     int audio_out_idx;
     int audio_out_idx2;
     int maxbuf[1024];
