@@ -1201,7 +1201,7 @@ void DSDDecoder::noCarrier()
     m_state.aout_max_buf_idx = 0;
     sprintf(m_state.algid, "________");
     sprintf(m_state.keyid, "________________");
-    mbe_initMbeParms(m_state.cur_mp, m_state.prev_mp, m_state.prev_mp_enhanced);
+    m_mbeDecoder.initMbeParms();
 }
 
 void DSDDecoder::printFrameInfo()

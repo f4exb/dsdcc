@@ -19,10 +19,6 @@
 #include "dsd_mbe.h"
 #include "dsd_decoder.h"
 
-extern "C" {
-#include <mbelib.h>
-}
-
 namespace DSDcc
 {
 
@@ -30,10 +26,23 @@ DSDMBEDecoder::DSDMBEDecoder(DSDDecoder *dsdDecoder) :
         m_dsdDecoder(dsdDecoder),
         m_upsamplerLastValue(0.0f)
 {
+    m_cur_mp = (mbe_parms *) malloc(sizeof(mbe_parms));
+    m_prev_mp = (mbe_parms *) malloc(sizeof(mbe_parms));
+    m_prev_mp_enhanced = (mbe_parms *) malloc(sizeof(mbe_parms));
+
+	initMbeParms();
 }
 
 DSDMBEDecoder::~DSDMBEDecoder()
 {
+    free(m_prev_mp_enhanced);
+    free(m_prev_mp);
+    free(m_cur_mp);
+}
+
+void DSDMBEDecoder::initMbeParms()
+{
+	mbe_initMbeParms(m_cur_mp, m_prev_mp, m_prev_mp_enhanced);
 }
 
 void DSDMBEDecoder::processFrame(char imbe_fr[8][23], char ambe_fr[4][24], char imbe7100_fr[7][24])
@@ -47,27 +56,27 @@ void DSDMBEDecoder::processFrame(char imbe_fr[8][23], char ambe_fr[4][24], char 
     if (m_dsdDecoder->m_mbeRate == DSDDecoder::DSDMBERate7200x4400)
     {
         mbe_processImbe7200x4400Framef(m_dsdDecoder->m_state.audio_out_temp_buf, &m_dsdDecoder->m_state.errs,
-                &m_dsdDecoder->m_state.errs2, m_dsdDecoder->m_state.err_str, imbe_fr, imbe_d, m_dsdDecoder->m_state.cur_mp,
-                m_dsdDecoder->m_state.prev_mp, m_dsdDecoder->m_state.prev_mp_enhanced, m_dsdDecoder->m_opts.uvquality);
+                &m_dsdDecoder->m_state.errs2, m_dsdDecoder->m_state.err_str, imbe_fr, imbe_d, m_cur_mp,
+                m_prev_mp, m_prev_mp_enhanced, m_dsdDecoder->m_opts.uvquality);
     }
     else if (m_dsdDecoder->m_mbeRate == DSDDecoder::DSDMBERate7100x4400)
     {
         mbe_processImbe7100x4400Framef(m_dsdDecoder->m_state.audio_out_temp_buf, &m_dsdDecoder->m_state.errs,
                 &m_dsdDecoder->m_state.errs2, m_dsdDecoder->m_state.err_str, imbe7100_fr, imbe_d,
-                m_dsdDecoder->m_state.cur_mp, m_dsdDecoder->m_state.prev_mp, m_dsdDecoder->m_state.prev_mp_enhanced,
+                m_cur_mp, m_prev_mp, m_prev_mp_enhanced,
                 m_dsdDecoder->m_opts.uvquality);
     }
     else if (m_dsdDecoder->m_mbeRate == DSDDecoder::DSDMBERate3600x2400)
     {
         mbe_processAmbe3600x2400Framef(m_dsdDecoder->m_state.audio_out_temp_buf, &m_dsdDecoder->m_state.errs,
-                &m_dsdDecoder->m_state.errs2, m_dsdDecoder->m_state.err_str, ambe_fr, ambe_d, m_dsdDecoder->m_state.cur_mp,
-                m_dsdDecoder->m_state.prev_mp, m_dsdDecoder->m_state.prev_mp_enhanced, m_dsdDecoder->m_opts.uvquality);
+                &m_dsdDecoder->m_state.errs2, m_dsdDecoder->m_state.err_str, ambe_fr, ambe_d, m_cur_mp,
+                m_prev_mp, m_prev_mp_enhanced, m_dsdDecoder->m_opts.uvquality);
     }
     else
     {
         mbe_processAmbe3600x2450Framef(m_dsdDecoder->m_state.audio_out_temp_buf, &m_dsdDecoder->m_state.errs,
-                &m_dsdDecoder->m_state.errs2, m_dsdDecoder->m_state.err_str, ambe_fr, ambe_d, m_dsdDecoder->m_state.cur_mp,
-                m_dsdDecoder->m_state.prev_mp, m_dsdDecoder->m_state.prev_mp_enhanced, m_dsdDecoder->m_opts.uvquality);
+                &m_dsdDecoder->m_state.errs2, m_dsdDecoder->m_state.err_str, ambe_fr, ambe_d, m_cur_mp,
+                m_prev_mp, m_prev_mp_enhanced, m_dsdDecoder->m_opts.uvquality);
     }
 
     if (m_dsdDecoder->m_opts.errorbars == 1)

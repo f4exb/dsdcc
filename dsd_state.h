@@ -21,10 +21,6 @@
 #include <stdio.h>
 #include <string.h>
 
-extern "C" {
-#include <mbelib.h>
-}
-
 #include "p25p1_heuristics.h"
 
 namespace DSDcc
@@ -81,9 +77,6 @@ public:
     char algid[9];
     char keyid[17];
     int currentslot;
-    mbe_parms *cur_mp;
-    mbe_parms *prev_mp;
-    mbe_parms *prev_mp_enhanced;
     int p25kid;
     int last_dibit;                                     //!< Last dibit read
     DSDP25Heuristics::P25Heuristics p25_heuristics;     //!< Heuristics state data for +P5 signals

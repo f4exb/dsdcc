@@ -17,6 +17,10 @@
 #ifndef DSDCC_DSD_MBE_H_
 #define DSDCC_DSD_MBE_H_
 
+extern "C" {
+#include <mbelib.h>
+}
+
 namespace DSDcc
 {
 
@@ -28,6 +32,7 @@ public:
     DSDMBEDecoder(DSDDecoder *dsdDecoder);
     ~DSDMBEDecoder();
 
+    void initMbeParms();
     void processFrame(char imbe_fr[8][23], char ambe_fr[4][24], char imbe7100_fr[7][24]);
 
 private:
@@ -38,6 +43,10 @@ private:
     char imbe_d[88];
     char ambe_d[49];
     float m_upsamplerLastValue;
+
+    mbe_parms *m_cur_mp;
+    mbe_parms *m_prev_mp;
+    mbe_parms *m_prev_mp_enhanced;
 };
 
 }

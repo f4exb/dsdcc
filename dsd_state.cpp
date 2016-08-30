@@ -91,10 +91,6 @@ DSDState::DSDState()
     sprintf(algid, "________");
     sprintf(keyid, "________________");
     currentslot = 0;
-    cur_mp = (mbe_parms *) malloc(sizeof(mbe_parms));
-    prev_mp = (mbe_parms *) malloc(sizeof(mbe_parms));
-    prev_mp_enhanced = (mbe_parms *) malloc(sizeof(mbe_parms));
-    mbe_initMbeParms(cur_mp, prev_mp, prev_mp_enhanced);
     p25kid = 0;
 
     output_finished = 0;
@@ -107,9 +103,6 @@ DSDState::DSDState()
 
 DSDState::~DSDState()
 {
-    free(prev_mp_enhanced);
-    free(prev_mp);
-    free(cur_mp);
     free(audio_out_buf);
     free(audio_out_float_buf);
     free(dibit_buf);
