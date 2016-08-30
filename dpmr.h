@@ -17,6 +17,8 @@
 #ifndef DPMR_H_
 #define DPMR_H_
 
+#include "fec.h"
+
 namespace DSDcc
 {
 
@@ -96,20 +98,6 @@ private:
 
     private:
         unsigned int m_sr;
-    };
-
-    class Hamming_12_8
-    {
-    public:
-        Hamming_12_8();
-        ~Hamming_12_8();
-
-        void init();
-        bool decode(unsigned char *rxBits, unsigned char *decodedBits, int nbCodewords);
-
-    private:
-        unsigned char m_corr[16];                       //!< single bit error correction by syndrome index
-        static const unsigned char m_H[12*4]; //!< Parity check matrix of bits
     };
 
     typedef enum

@@ -34,6 +34,20 @@ private:
 	static const unsigned char m_H[7*3]; //!< Parity check matrix of bits
 };
 
+class Hamming_12_8
+{
+public:
+    Hamming_12_8();
+    ~Hamming_12_8();
+
+    void init();
+    bool decode(unsigned char *rxBits, unsigned char *decodedBits, int nbCodewords);
+
+private:
+    unsigned char m_corr[16];                       //!< single bit error correction by syndrome index
+    static const unsigned char m_H[12*4]; //!< Parity check matrix of bits
+};
+
 class Golay_20_8
 {
 public:

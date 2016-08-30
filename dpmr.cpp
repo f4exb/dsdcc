@@ -67,28 +67,6 @@ const unsigned char DSDdPMR::m_fs2[12]      = {1, 1, 3, 3, 3, 3, 1, 3, 1, 3, 3, 
 const unsigned char DSDdPMR::m_fs3[12]      = {1, 3, 3, 1, 3, 1, 3, 3, 3, 3, 1, 1};
 const unsigned char DSDdPMR::m_preamble[12] = {1, 1, 3, 3, 1, 1, 3, 3, 1, 1, 3, 3};
 
-const unsigned char DSDdPMR::Hamming_12_8::m_H[12*4] = {
-        1, 0, 1, 0, 1, 1, 0, 0,   1, 0, 0, 0,
-        1, 1, 0, 1, 0, 1, 1, 0,   0, 1, 0, 0,
-        1, 1, 1, 0, 1, 0, 1, 1,   0, 0, 1, 0,
-        0, 1, 0, 1, 1, 0, 0, 1,   0, 0, 0, 1
-//      0  1  2  3  4  5  6  7 <- correctable bit positions
-};
-
-void DSDdPMR::Hamming_12_8::init()
-{
-    // correctable bit positions given syndrome bits as index (see above)
-    memset(m_corr, 0xFF, 16); // initialize with all invalid positions
-    m_corr[0b1110] = 0;
-    m_corr[0b0111] = 1;
-    m_corr[0b1010] = 2;
-    m_corr[0b0101] = 3;
-    m_corr[0b1011] = 4;
-    m_corr[0b1100] = 5;
-    m_corr[0b0110] = 6;
-    m_corr[0b0011] = 7;
-}
-
 DSDdPMR::DSDdPMR(DSDDecoder *dsdDecoder) :
         m_dsdDecoder(dsdDecoder),
         m_state(DPMRHeader),
@@ -842,61 +820,5 @@ unsigned int DSDdPMR::LFSRGenerator::next()
     return res;
 }
 
-DSDdPMR::Hamming_12_8::Hamming_12_8()
-{
-    init();
-}
-
-DSDdPMR::Hamming_12_8::~Hamming_12_8()
-{
-}
-
-bool DSDdPMR::Hamming_12_8::decode(unsigned char *rxBits, unsigned char *decodedBits, int nbCodewords)
-{
-    bool correctable = true;
-
-    for (int ic = 0; ic < nbCodewords; ic++)
-    {
-        // calculate syndrome
-
-        bool error = false;
-        int syndromeI = 0; // syndrome index
-
-        for (int is = 0; is < 4; is++)
-        {
-            syndromeI += (((rxBits[12*ic +  0] * m_H[12*is +  0])
-                         + (rxBits[12*ic +  1] * m_H[12*is +  1])
-                         + (rxBits[12*ic +  2] * m_H[12*is +  2])
-                         + (rxBits[12*ic +  3] * m_H[12*is +  3])
-                         + (rxBits[12*ic +  4] * m_H[12*is +  4])
-                         + (rxBits[12*ic +  5] * m_H[12*is +  5])
-                         + (rxBits[12*ic +  6] * m_H[12*is +  6])
-                         + (rxBits[12*ic +  7] * m_H[12*is +  7])
-                         + (rxBits[12*ic +  8] * m_H[12*is +  8])
-                         + (rxBits[12*ic +  9] * m_H[12*is +  9])
-                         + (rxBits[12*ic + 10] * m_H[12*is + 10])
-                         + (rxBits[12*ic + 11] * m_H[12*is + 11])) % 2) << (3-is);
-        }
-
-        // correct bit
-
-        if (syndromeI > 0) // single bit error correction
-        {
-            if (m_corr[syndromeI] == 0xFF) // uncorrectable error
-            {
-                correctable = false;
-            }
-            else
-            {
-                rxBits[m_corr[syndromeI]] ^= 1; // flip bit
-            }
-        }
-
-        // move information bits
-        memcpy(&decodedBits[8*ic], &rxBits[12*ic], 8);
-    }
-
-    return correctable;
-}
-
 } // namespace DSDcc
+
