@@ -17,6 +17,8 @@
 #ifndef DMR_H_
 #define DMR_H_
 
+#include "fec.h"
+
 namespace DSDcc
 {
 
@@ -68,49 +70,6 @@ public:
     void processVoice();
 
 private:
-
-    class Hamming_7_4
-    {
-    public:
-        Hamming_7_4();
-        ~Hamming_7_4();
-
-        void init();
-        bool decode(unsigned char *rxBits);
-
-    private:
-        unsigned char m_corr[8];             //!< single bit error correction by syndrome index
-        static const unsigned char m_H[7*3]; //!< Parity check matrix of bits
-    };
-
-    class Golay_20_8
-    {
-    public:
-        Golay_20_8();
-        ~Golay_20_8();
-
-        void init();
-        bool decode(unsigned char *rxBits);
-
-    private:
-        unsigned char m_corr[4096][3];         //!< up to 3 bit error correction by syndrome index
-        static const unsigned char m_H[20*12]; //!< Parity check matrix of bits
-    };
-
-    class QR_16_7_6
-    {
-    public:
-        QR_16_7_6();
-        ~QR_16_7_6();
-
-        void init();
-        bool decode(unsigned char *rxBits);
-
-    private:
-        unsigned char m_corr[512][2];          //!< up to 2 bit error correction by syndrome index
-        static const unsigned char m_H[16*9];  //!< Parity check matrix of bits
-    };
-
     void processDataFirstHalf();  //!< Because sync is in the middle of a frame you need to process the first half first: CACH to end of SYNC
     void processVoiceFirstHalf(); //!< Because sync is in the middle of a frame you need to process the first half first: CACH to end of SYNC
     void processCACH(unsigned char *dibit_p);

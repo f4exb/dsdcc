@@ -44,6 +44,7 @@ set(dsdcc_SOURCES
     nxdn.cpp
     p25p1_heuristics.cpp
     dsd_upsample.cpp
+    fec.cpp
 )
 
 set(dsdcc_HEADERS
@@ -66,6 +67,7 @@ set(dsdcc_HEADERS
     dsd_upsample.h
     runningmaxmin.h
     doublebuffer.h
+    fec.h
 )
 
 include_directories(
