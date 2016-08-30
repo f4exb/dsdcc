@@ -63,10 +63,6 @@ public:
     char slot1light[8];
     unsigned char ccnum;
     float aout_gain;
-    float aout_max_buf[200];
-    float *aout_max_buf_p;
-    int aout_max_buf_idx;
-//    int samplesPerSymbol;
     char algid[9];
     char keyid[17];
     int currentslot;

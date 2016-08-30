@@ -33,6 +33,9 @@ DSDMBEDecoder::DSDMBEDecoder(DSDDecoder *dsdDecoder) :
     m_audio_out_temp_buf_p = m_audio_out_temp_buf;
     memset(m_audio_out_float_buf, 0, sizeof(float) * 1120);
     m_audio_out_float_buf_p = m_audio_out_float_buf;
+    memset(m_aout_max_buf, 0, sizeof(float) * 200);
+    m_aout_max_buf_p = m_aout_max_buf;
+    m_aout_max_buf_idx = 0;
 
 	initMbeParms();
 }
@@ -118,20 +121,20 @@ void DSDMBEDecoder::processAudio()
             m_audio_out_temp_buf_p++;
         }
 
-        *m_dsdDecoder->m_state.aout_max_buf_p = max;
-        m_dsdDecoder->m_state.aout_max_buf_p++;
-        m_dsdDecoder->m_state.aout_max_buf_idx++;
+        *m_aout_max_buf_p = max;
+        m_aout_max_buf_p++;
+        m_aout_max_buf_idx++;
 
-        if (m_dsdDecoder->m_state.aout_max_buf_idx > 24)
+        if (m_aout_max_buf_idx > 24)
         {
-            m_dsdDecoder->m_state.aout_max_buf_idx = 0;
-            m_dsdDecoder->m_state.aout_max_buf_p = m_dsdDecoder->m_state.aout_max_buf;
+            m_aout_max_buf_idx = 0;
+            m_aout_max_buf_p = m_aout_max_buf;
         }
 
         // lookup max history
         for (i = 0; i < 25; i++)
         {
-            maxbuf = m_dsdDecoder->m_state.aout_max_buf[i];
+            maxbuf = m_aout_max_buf[i];
 
             if (maxbuf > max)
             {

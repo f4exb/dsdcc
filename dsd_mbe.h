@@ -54,6 +54,9 @@ private:
     float *m_audio_out_temp_buf_p;
     float m_audio_out_float_buf[1120]; //!< output of upsampler - 1 frame of 160 samples upampled up to 7 times
     float *m_audio_out_float_buf_p;
+    float m_aout_max_buf[200];
+    float *m_aout_max_buf_p;
+    int m_aout_max_buf_idx;
 };
 
 }

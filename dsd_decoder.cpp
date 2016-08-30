@@ -1192,9 +1192,6 @@ void DSDDecoder::noCarrier()
         m_state.aout_gain = 25;
     }
 
-    memset(m_state.aout_max_buf, 0, sizeof(float) * 200);
-    m_state.aout_max_buf_p = m_state.aout_max_buf;
-    m_state.aout_max_buf_idx = 0;
     sprintf(m_state.algid, "________");
     sprintf(m_state.keyid, "________________");
     m_mbeDecoder.initMbeParms();
