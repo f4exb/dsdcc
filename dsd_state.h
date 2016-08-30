@@ -48,7 +48,6 @@ public:
     int maxbuf[1024];
     int minbuf[1024];
     int midx;
-    char err_str[64];
     char fsubtype[16];
     char ftype[16];
     int symbolcnt;
@@ -60,8 +59,6 @@ public:
     int lasttg;
     int lastsrc;
     int nac;
-    int errs;
-    int errs2;
     int mbe_file_type;
     int optind;
     int numtdulc;

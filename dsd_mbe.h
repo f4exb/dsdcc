@@ -47,6 +47,9 @@ private:
     mbe_parms *m_cur_mp;
     mbe_parms *m_prev_mp;
     mbe_parms *m_prev_mp_enhanced;
+    int m_errs;
+    int m_errs2;
+    char m_err_str[64];
 };
 
 }

@@ -55,7 +55,6 @@ DSDState::DSDState()
     }
 
     midx = 0;
-    err_str[0] = 0;
     sprintf(fsubtype, "              ");
     sprintf(ftype, "             ");
     symbolcnt = 0;
@@ -75,8 +74,6 @@ DSDState::DSDState()
     lasttg = 0;
     lastsrc = 0;
     nac = 0;
-    errs = 0;
-    errs2 = 0;
     mbe_file_type = -1;
     optind = 0;
     numtdulc = 0;

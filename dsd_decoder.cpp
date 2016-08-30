@@ -465,7 +465,6 @@ void DSDDecoder::processFrameInit()
         }
         else
         {
-            m_state.err_str[0] = 0;
             m_dsdDMR.initData(m_dmrBurstType);    // initializations not consuming a live symbol
             m_dsdDMR.processData(); // process current symbol first
             m_dsdDMRData.init();    // initializations not consuming a live symbol
@@ -1170,15 +1169,12 @@ void DSDDecoder::noCarrier()
 
     m_lastSyncType = DSDSyncNone;
     m_state.carrier = 0;
-    m_state.err_str[0] = 0;
 
     sprintf(m_state.fsubtype, "              ");
     sprintf(m_state.ftype, "             ");
     m_state.fsubtype[0] = '\0';
     m_state.ftype[0] = '\0';
 
-    m_state.errs = 0;
-    m_state.errs2 = 0;
     m_state.lasttg = 0;
     m_state.lastsrc = 0;
     m_state.lastp25type = 0;
