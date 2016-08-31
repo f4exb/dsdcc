@@ -388,9 +388,9 @@ int main(int argc, char **argv)
 #ifdef DSD_USE_SERIALDV
         if (dvController.isOpen())
         {
-            if (dsdDecoder.mbeDVReady())
+            if (dsdDecoder.mbeDVReady1())
             {
-                dvController.decode(dvAudioSamples, (const unsigned char *) dsdDecoder.getMbeDVFrame(), (SerialDV::DVRate) dsdDecoder.getMbeRate(), dvGain_dB);
+                dvController.decode(dvAudioSamples, (const unsigned char *) dsdDecoder.getMbeDVFrame1(), (SerialDV::DVRate) dsdDecoder.getMbeRate(), dvGain_dB);
                 if (dsdDecoder.upsampling())
                 {
                     upsamplingEngine.upsample(dsdDecoder.upsampling(), dvAudioSamples, &dvAudioSamples[SerialDV::MBE_AUDIO_BLOCK_SIZE], SerialDV::MBE_AUDIO_BLOCK_SIZE);
@@ -400,7 +400,7 @@ int main(int argc, char **argv)
                 {
                     result = write(out_file_fd, (const void *) dvAudioSamples, SerialDV::MBE_AUDIO_BLOCK_BYTES); // TODO: upsampling
                 }
-                dsdDecoder.resetMbeDV();
+                dsdDecoder.resetMbeDV1();
             }
         }
         else
