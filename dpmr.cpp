@@ -679,7 +679,7 @@ void DSDdPMR::processVoiceFrame(int symbolIndex, int dibit)
         x = rX;
         y = rY;
         z = rZ;
-        memset((void *) m_dsdDecoder->m_mbeDVFrame, 0, 9); // initialize DVSI frame
+        memset((void *) m_dsdDecoder->m_mbeDVFrame1, 0, 9); // initialize DVSI frame
     }
 
     m_dsdDecoder->ambe_fr[*w][*x] = (1 & (dibit >> 1)); // bit 1
@@ -694,7 +694,7 @@ void DSDdPMR::processVoiceFrame(int symbolIndex, int dibit)
     if (symbolIndex % 36 == 35)
     {
         m_dsdDecoder->m_mbeDecoder1.processFrame(0, m_dsdDecoder->ambe_fr, 0);
-        m_dsdDecoder->m_mbeDVReady = true; // Indicate that a DVSI frame is available
+        m_dsdDecoder->m_mbeDVReady1 = true; // Indicate that a DVSI frame is available
 
         if (m_dsdDecoder->m_opts.errorbars == 1)
         {
@@ -715,7 +715,7 @@ void DSDdPMR::storeSymbolDV(int dibitindex, unsigned char dibit, bool invertDibi
         dibit = DSDcc::DSDSymbol::invert_dibit(dibit);
     }
 
-    m_dsdDecoder->m_mbeDVFrame[dibitindex/4] |= (dibit << (6 - 2*(dibitindex % 4)));
+    m_dsdDecoder->m_mbeDVFrame1[dibitindex/4] |= (dibit << (6 - 2*(dibitindex % 4)));
 }
 
 void DSDdPMR::initScrambling()

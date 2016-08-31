@@ -197,20 +197,20 @@ public:
     short getSymbolSyncSample() const { return m_dsdSymbol.getSymbolSyncSample(); }
 
     /** DVSI support */
-    const unsigned char *getMbeDVFrame() const {
-        return m_mbeDVFrame;
+    const unsigned char *getMbeDVFrame1() const {
+        return m_mbeDVFrame1;
     }
 
     DSDMBERate getMbeRate() const {
         return m_mbeRate;
     }
 
-    bool mbeDVReady() const {
-        return m_mbeDVReady;
+    bool mbeDVReady1() const {
+        return m_mbeDVReady1;
     }
 
-    void resetMbeDV() {
-        m_mbeDVReady = false;
+    void resetMbeDV1() {
+        m_mbeDVReady1 = false;
     }
 
     short *getAudio1(int& nbSamples)
@@ -316,8 +316,8 @@ private:
     DSDMBERate m_mbeRate;
     DSDMBEDecoder m_mbeDecoder1; //!< AMBE decoder for TDMA unique or first slot
     // DVSI AMBE3000 serial device support
-    unsigned char m_mbeDVFrame[9];
-    bool m_mbeDVReady;
+    unsigned char m_mbeDVFrame1[9]; //!< AMBE encoded frame for TDMA unique or first slot
+    bool m_mbeDVReady1;             //!< AMBE encoded frame ready status for TDMA unique or first slot
     // Frame decoders
     DSDDMRVoice m_dsdDMRVoice;
     DSDDMRData m_dsdDMRData;

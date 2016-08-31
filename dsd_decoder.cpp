@@ -23,7 +23,7 @@ namespace DSDcc
 
 DSDDecoder::DSDDecoder() :
         m_fsmState(DSDLookForSync),
-        m_mbeDVReady(false),
+        m_mbeDVReady1(false),
         m_mbelibEnable(true),
         m_mbeRate(DSDMBERateNone),
         m_dsdSymbol(this),
