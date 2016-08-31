@@ -39,9 +39,9 @@ public:
 
     typedef enum
     {
-        DSDDMRSlotUndefined,
         DSDDMRSlot1,
-        DSDDMRSlot2
+        DSDDMRSlot2,
+        DSDDMRSlotUndefined
     } DSDDMRSlot;
 
     typedef enum
@@ -72,25 +72,36 @@ public:
 private:
     void processDataFirstHalf();  //!< Because sync is in the middle of a frame you need to process the first half first: CACH to end of SYNC
     void processVoiceFirstHalf(); //!< Because sync is in the middle of a frame you need to process the first half first: CACH to end of SYNC
-    void processCACH(unsigned char *dibit_p);
+    bool processCACH(unsigned char *dibit_p);
     void processSlotTypePDU();
+    void storeSymbolDV(unsigned char *mbeFrame, int dibitindex, unsigned char dibit, bool invertDibit = false);
 
     DSDDecoder *m_dsdDecoder;
     int  m_symbolIndex;                   //!< current symbol index in non HD sequence
     DSDDMRBurstType m_burstType;
     DSDDMRSlot m_slot;
+    DSDDMRSlot m_prevSlot;
     unsigned char m_lcss;
     unsigned char m_colorCode;
     DSDDMRDataTYpe m_dataType;
     char *m_slotText;
-    int m_slotTextIndex;
     unsigned char m_slotTypePDU_dibits[10];
+    unsigned int m_voice1FrameCount; //!< current frame count in voice superframe: [0..5] else no superframe on going
+    unsigned int m_voice2FrameCount; //!< current frame count in voice superframe: [0..5] else no superframe on going
+
     Hamming_7_4 m_hamming_7_4;
     Golay_20_8 m_golay_20_8;
     QR_16_7_6 m_qr_16_7_6;
 
+    const int *w, *x, *y, *z;
+
     static const int m_cachInterleave[24];
     static const char *m_slotTypeText[13];
+
+    static const int rW[36];
+    static const int rX[36];
+    static const int rY[36];
+    static const int rZ[36];
 };
 
 } // namespace DSDcc
