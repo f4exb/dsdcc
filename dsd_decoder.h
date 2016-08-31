@@ -197,12 +197,9 @@ public:
     short getSymbolSyncSample() const { return m_dsdSymbol.getSymbolSyncSample(); }
 
     /** DVSI support */
+
     const unsigned char *getMbeDVFrame1() const {
         return m_mbeDVFrame1;
-    }
-
-    DSDMBERate getMbeRate() const {
-        return m_mbeRate;
     }
 
     bool mbeDVReady1() const {
@@ -213,6 +210,20 @@ public:
         m_mbeDVReady1 = false;
     }
 
+    const unsigned char *getMbeDVFrame2() const {
+        return m_mbeDVFrame2;
+    }
+
+    bool mbeDVReady2() const {
+        return m_mbeDVReady2;
+    }
+
+    void resetMbeDV2() {
+        m_mbeDVReady2 = false;
+    }
+
+    /** MBElib support */
+
     short *getAudio1(int& nbSamples)
     {
         return m_mbeDecoder1.getAudio(nbSamples);
@@ -221,6 +232,16 @@ public:
     void resetAudio1()
     {
         m_mbeDecoder1.resetAudio();
+    }
+
+    short *getAudio2(int& nbSamples)
+    {
+        return m_mbeDecoder2.getAudio(nbSamples);
+    }
+
+    void resetAudio2()
+    {
+        m_mbeDecoder2.resetAudio();
     }
 
     //DSDOpts *getOpts() { return &m_opts; }
@@ -276,7 +297,12 @@ public:
     void setDataRate(DSDRate dataRate);
 
     // parameter getters:
+
     int upsampling() const { return m_mbeDecoder1.getUpsamplingFactor(); }
+
+    DSDMBERate getMbeRate() const {
+        return m_mbeRate;
+    }
 
 private:
     int getFrameSync();
@@ -315,9 +341,12 @@ private:
     bool m_mbelibEnable;
     DSDMBERate m_mbeRate;
     DSDMBEDecoder m_mbeDecoder1; //!< AMBE decoder for TDMA unique or first slot
+    DSDMBEDecoder m_mbeDecoder2; //!< AMBE decoder for TDMA second slot
     // DVSI AMBE3000 serial device support
     unsigned char m_mbeDVFrame1[9]; //!< AMBE encoded frame for TDMA unique or first slot
     bool m_mbeDVReady1;             //!< AMBE encoded frame ready status for TDMA unique or first slot
+    unsigned char m_mbeDVFrame2[9]; //!< AMBE encoded frame for TDMA second slot
+    bool m_mbeDVReady2;             //!< AMBE encoded frame ready status for TDMA second slot
     // Frame decoders
     DSDDMRVoice m_dsdDMRVoice;
     DSDDMRData m_dsdDMRData;
