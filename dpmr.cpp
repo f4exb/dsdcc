@@ -693,7 +693,7 @@ void DSDdPMR::processVoiceFrame(int symbolIndex, int dibit)
 
     if (symbolIndex % 36 == 35)
     {
-        m_dsdDecoder->m_mbeDecoder.processFrame(0, m_dsdDecoder->ambe_fr, 0);
+        m_dsdDecoder->m_mbeDecoder1.processFrame(0, m_dsdDecoder->ambe_fr, 0);
         m_dsdDecoder->m_mbeDVReady = true; // Indicate that a DVSI frame is available
 
         if (m_dsdDecoder->m_opts.errorbars == 1)

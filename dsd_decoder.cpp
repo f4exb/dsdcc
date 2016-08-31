@@ -27,7 +27,7 @@ DSDDecoder::DSDDecoder() :
         m_mbelibEnable(true),
         m_mbeRate(DSDMBERateNone),
         m_dsdSymbol(this),
-        m_mbeDecoder(this),
+        m_mbeDecoder1(this),
         m_dsdDMRVoice(this),
         m_dsdDMRData(this),
         m_dsdDMR(this),
@@ -241,14 +241,14 @@ void DSDDecoder::setAudioGain(float gain)
     else if (m_opts.audio_gain == 0.0f)
     {
         m_dsdLogger.log("Enabling audio out auto-gain\n");
-    	m_mbeDecoder.setAudioGain(25);
-    	m_mbeDecoder.setAutoGain(true);
+    	m_mbeDecoder1.setAudioGain(25);
+    	m_mbeDecoder1.setAutoGain(true);
     }
     else
     {
         m_dsdLogger.log("Setting audio out gain to %f\n", m_opts.audio_gain);
-        m_mbeDecoder.setAudioGain(m_opts.audio_gain);
-        m_mbeDecoder.setAutoGain(false);
+        m_mbeDecoder1.setAudioGain(m_opts.audio_gain);
+        m_mbeDecoder1.setAutoGain(false);
     }
 }
 
@@ -271,13 +271,13 @@ void DSDDecoder::setUpsampling(int upsampling)
     	upsampling = 0;
     }
 
-    m_mbeDecoder.setUpsamplingFactor(upsampling);
+    m_mbeDecoder1.setUpsamplingFactor(upsampling);
     m_dsdLogger.log("Setting upsampling to x%d\n", (upsampling == 0 ? 1 : upsampling));
 }
 
 void DSDDecoder::setStereo(bool on)
 {
-	m_mbeDecoder.setStereo(on);
+	m_mbeDecoder1.setStereo(on);
 }
 
 void DSDDecoder::setInvertedXTDMA(bool on)
@@ -1186,7 +1186,7 @@ void DSDDecoder::noCarrier()
 
     sprintf(m_state.algid, "________");
     sprintf(m_state.keyid, "________________");
-    m_mbeDecoder.initMbeParms();
+    m_mbeDecoder1.initMbeParms();
 }
 
 void DSDDecoder::printFrameInfo()

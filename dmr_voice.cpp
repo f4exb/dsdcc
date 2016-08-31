@@ -270,7 +270,7 @@ void DSDDMRVoice::processSlot2(int symbolIndex) // Slot2 is a 36 symbol slot
                 m_dsdDecoder->getLogger().log("\nMBE: ");
             }
 
-            m_dsdDecoder->m_mbeDecoder.processFrame(0, m_dsdDecoder->ambe_fr, 0);
+            m_dsdDecoder->m_mbeDecoder1.processFrame(0, m_dsdDecoder->ambe_fr, 0);
             m_dsdDecoder->m_mbeDVReady = true; // Indicate that a DVSI frame is available
 
             if (m_dsdDecoder->m_opts.errorbars == 1) {
@@ -431,7 +431,7 @@ void DSDDMRVoice::processSlot5(int symbolIndex) // Slot5 is a 18 symbol slot
 //            }
 //            else
             {
-                m_dsdDecoder->m_mbeDecoder.processFrame(0, m_dsdDecoder->ambe_fr, 0);
+                m_dsdDecoder->m_mbeDecoder1.processFrame(0, m_dsdDecoder->ambe_fr, 0);
                 m_dsdDecoder->m_mbeDVReady = true; // Indicate that a DVSI frame is available
 
                 if (m_dsdDecoder->m_opts.errorbars == 1) {
@@ -484,7 +484,7 @@ void DSDDMRVoice::processSlot6(int symbolIndex) // Slot6 is a 36 symbol slot
 //            }
 //            else
             {
-                m_dsdDecoder->m_mbeDecoder.processFrame(0, m_dsdDecoder->ambe_fr, 0);
+                m_dsdDecoder->m_mbeDecoder1.processFrame(0, m_dsdDecoder->ambe_fr, 0);
                 m_dsdDecoder->m_mbeDVReady = true; // Indicate that a DVSI frame is available
 
                 if (m_dsdDecoder->m_opts.errorbars == 1) {

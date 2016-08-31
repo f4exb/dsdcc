@@ -406,7 +406,7 @@ int main(int argc, char **argv)
         else
 #endif
         {
-            audioSamples = dsdDecoder.getAudio(nbAudioSamples);
+            audioSamples = dsdDecoder.getAudio1(nbAudioSamples);
 
             if (nbAudioSamples > 0)
             {
@@ -418,7 +418,7 @@ int main(int argc, char **argv)
                     fprintf(stderr, "Written %d out of %d audio samples\n", result/2, nbAudioSamples);
                 }
 
-                dsdDecoder.resetAudio();
+                dsdDecoder.resetAudio1();
             }
         }
     }

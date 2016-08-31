@@ -213,14 +213,14 @@ public:
         m_mbeDVReady = false;
     }
 
-    short *getAudio(int& nbSamples)
+    short *getAudio1(int& nbSamples)
     {
-        return m_mbeDecoder.getAudio(nbSamples);
+        return m_mbeDecoder1.getAudio(nbSamples);
     }
 
-    void resetAudio()
+    void resetAudio1()
     {
-        m_mbeDecoder.resetAudio();
+        m_mbeDecoder1.resetAudio();
     }
 
     //DSDOpts *getOpts() { return &m_opts; }
@@ -276,7 +276,7 @@ public:
     void setDataRate(DSDRate dataRate);
 
     // parameter getters:
-    int upsampling() const { return m_mbeDecoder.getUpsamplingFactor(); }
+    int upsampling() const { return m_mbeDecoder1.getUpsamplingFactor(); }
 
 private:
     int getFrameSync();
@@ -314,7 +314,7 @@ private:
     char ambe_fr[4][24];
     bool m_mbelibEnable;
     DSDMBERate m_mbeRate;
-    DSDMBEDecoder m_mbeDecoder;
+    DSDMBEDecoder m_mbeDecoder1; //!< AMBE decoder for TDMA unique or first slot
     // DVSI AMBE3000 serial device support
     unsigned char m_mbeDVFrame[9];
     bool m_mbeDVReady;
