@@ -276,7 +276,7 @@ public:
     void setDataRate(DSDRate dataRate);
 
     // parameter getters:
-    int upsampling() const { return m_opts.upsample; }
+    int upsampling() const { return m_mbeDecoder.getUpsamplingFactor(); }
 
 private:
     int getFrameSync();

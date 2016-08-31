@@ -49,6 +49,8 @@ public:
 
     void setAudioGain(float aout_gain) { m_aout_gain = aout_gain; }
     void setAutoGain(bool auto_gain) { m_auto_gain = auto_gain; }
+    void setUpsamplingFactor(int upsample) { m_upsample = upsample; }
+    int getUpsamplingFactor() const { return m_upsample; }
 
 private:
     void processAudio();
@@ -85,6 +87,8 @@ private:
 
     float m_aout_gain;
     bool m_auto_gain;
+
+    int m_upsample; //!< upsampling factor
 };
 
 }

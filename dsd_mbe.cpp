@@ -47,6 +47,8 @@ DSDMBEDecoder::DSDMBEDecoder(DSDDecoder *dsdDecoder) :
     m_aout_gain = 25;
     m_auto_gain = true;
 
+    m_upsample = 0;
+
 	initMbeParms();
 }
 
@@ -209,9 +211,9 @@ void DSDMBEDecoder::processAudio()
     // copy audio data to output buffer and upsample if necessary
     m_audio_out_temp_buf_p = m_audio_out_temp_buf;
 
-    if ((m_dsdDecoder->m_opts.upsample == 6) || (m_dsdDecoder->m_opts.upsample == 7)) // upsampling to 48k
+    if ((m_upsample == 6) || (m_upsample == 7)) // upsampling to 48k
     {
-        int upsampling = m_dsdDecoder->m_opts.upsample;
+        int upsampling = m_upsample;
 
         if (m_audio_out_nb_samples + (160*upsampling) >= m_audio_out_buf_size)
         {
