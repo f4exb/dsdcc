@@ -236,17 +236,19 @@ void DSDDecoder::setAudioGain(float gain)
 
     if (m_opts.audio_gain < 0.0f)
     {
-        m_dsdLogger.log("Disabling audio out gain setting\n");
+        m_dsdLogger.log("Audio out gain invalid\n");
     }
     else if (m_opts.audio_gain == 0.0f)
     {
-        m_opts.audio_gain = 0.0f;
         m_dsdLogger.log("Enabling audio out auto-gain\n");
+    	m_mbeDecoder.setAudioGain(25);
+    	m_mbeDecoder.setAutoGain(true);
     }
     else
     {
         m_dsdLogger.log("Setting audio out gain to %f\n", m_opts.audio_gain);
         m_mbeDecoder.setAudioGain(m_opts.audio_gain);
+        m_mbeDecoder.setAutoGain(false);
     }
 }
 

@@ -48,6 +48,7 @@ public:
     }
 
     void setAudioGain(float aout_gain) { m_aout_gain = aout_gain; }
+    void setAutoGain(bool auto_gain) { m_auto_gain = auto_gain; }
 
 private:
     void processAudio();
@@ -83,6 +84,7 @@ private:
     int   m_audio_out_idx2;
 
     float m_aout_gain;
+    bool m_auto_gain;
 };
 
 }

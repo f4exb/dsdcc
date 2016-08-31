@@ -45,6 +45,7 @@ DSDMBEDecoder::DSDMBEDecoder(DSDDecoder *dsdDecoder) :
     m_audio_out_idx2 = 0;
 
     m_aout_gain = 25;
+    m_auto_gain = true;
 
 	initMbeParms();
 }
@@ -63,7 +64,7 @@ void DSDMBEDecoder::initMbeParms()
 	m_errs2 = 0;
 	m_err_str[0] = 0;
 
-    if (m_dsdDecoder->m_opts.audio_gain == (float) 0)
+    if (m_auto_gain)
     {
         m_aout_gain = 25;
     }
@@ -117,7 +118,7 @@ void DSDMBEDecoder::processAudio()
     int i, n;
     float aout_abs, max, gainfactor, gaindelta, maxbuf;
 
-    if (m_dsdDecoder->m_opts.audio_gain == (float) 0)
+    if (m_auto_gain)
     {
         // detect max level
         max = 0;
@@ -193,20 +194,17 @@ void DSDMBEDecoder::processAudio()
         gaindelta = (float) 0;
     }
 
-    if (m_dsdDecoder->m_opts.audio_gain >= 0)
-    {
-        // adjust output gain
-        m_audio_out_temp_buf_p = m_audio_out_temp_buf;
+	// adjust output gain
+	m_audio_out_temp_buf_p = m_audio_out_temp_buf;
 
-        for (n = 0; n < 160; n++)
-        {
-            *m_audio_out_temp_buf_p = (m_aout_gain
-                    + ((float) n * gaindelta)) * (*m_audio_out_temp_buf_p);
-            m_audio_out_temp_buf_p++;
-        }
+	for (n = 0; n < 160; n++)
+	{
+		*m_audio_out_temp_buf_p = (m_aout_gain
+				+ ((float) n * gaindelta)) * (*m_audio_out_temp_buf_p);
+		m_audio_out_temp_buf_p++;
+	}
 
-        m_aout_gain += ((float) 160 * gaindelta);
-    }
+	m_aout_gain += ((float) 160 * gaindelta);
 
     // copy audio data to output buffer and upsample if necessary
     m_audio_out_temp_buf_p = m_audio_out_temp_buf;
