@@ -44,6 +44,8 @@ DSDMBEDecoder::DSDMBEDecoder(DSDDecoder *dsdDecoder) :
     m_audio_out_idx = 0;
     m_audio_out_idx2 = 0;
 
+    m_aout_gain = 25;
+
 	initMbeParms();
 }
 
@@ -60,6 +62,11 @@ void DSDMBEDecoder::initMbeParms()
 	m_errs = 0;
 	m_errs2 = 0;
 	m_err_str[0] = 0;
+
+    if (m_dsdDecoder->m_opts.audio_gain == (float) 0)
+    {
+        m_aout_gain = 25;
+    }
 }
 
 void DSDMBEDecoder::processFrame(char imbe_fr[8][23], char ambe_fr[4][24], char imbe7100_fr[7][24])
@@ -159,9 +166,9 @@ void DSDMBEDecoder::processAudio()
             gainfactor = (float) 50;
         }
 
-        if (gainfactor < m_dsdDecoder->m_state.aout_gain)
+        if (gainfactor < m_aout_gain)
         {
-            m_dsdDecoder->m_state.aout_gain = gainfactor;
+            m_aout_gain = gainfactor;
             gaindelta = (float) 0;
         }
         else
@@ -171,11 +178,11 @@ void DSDMBEDecoder::processAudio()
                 gainfactor = (float) 50;
             }
 
-            gaindelta = gainfactor - m_dsdDecoder->m_state.aout_gain;
+            gaindelta = gainfactor - m_aout_gain;
 
-            if (gaindelta > ((float) 0.05 * m_dsdDecoder->m_state.aout_gain))
+            if (gaindelta > ((float) 0.05 * m_aout_gain))
             {
-                gaindelta = ((float) 0.05 * m_dsdDecoder->m_state.aout_gain);
+                gaindelta = ((float) 0.05 * m_aout_gain);
             }
         }
 
@@ -193,12 +200,12 @@ void DSDMBEDecoder::processAudio()
 
         for (n = 0; n < 160; n++)
         {
-            *m_audio_out_temp_buf_p = (m_dsdDecoder->m_state.aout_gain
+            *m_audio_out_temp_buf_p = (m_aout_gain
                     + ((float) n * gaindelta)) * (*m_audio_out_temp_buf_p);
             m_audio_out_temp_buf_p++;
         }
 
-        m_dsdDecoder->m_state.aout_gain += ((float) 160 * gaindelta);
+        m_aout_gain += ((float) 160 * gaindelta);
     }
 
     // copy audio data to output buffer and upsample if necessary
@@ -255,7 +262,7 @@ void DSDMBEDecoder::processAudio()
     {
         if (m_audio_out_nb_samples + 160 >= m_audio_out_buf_size)
         {
-            m_dsdDecoder->resetAudio();
+            resetAudio();
         }
 
         m_audio_out_float_buf_p = m_audio_out_float_buf;

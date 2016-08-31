@@ -246,7 +246,7 @@ void DSDDecoder::setAudioGain(float gain)
     else
     {
         m_dsdLogger.log("Setting audio out gain to %f\n", m_opts.audio_gain);
-        m_state.aout_gain = m_opts.audio_gain;
+        m_mbeDecoder.setAudioGain(m_opts.audio_gain);
     }
 }
 
@@ -1154,10 +1154,6 @@ void DSDDecoder::printFrameSync(const char *frametype, int offset)
     {
         m_dsdLogger.log("o: %4i ", offset);
     }
-    if (m_opts.verbose > 2)
-    {
-        m_dsdLogger.log("g: %f ", m_state.aout_gain);
-    }
 }
 
 void DSDDecoder::noCarrier()
@@ -1186,11 +1182,6 @@ void DSDDecoder::noCarrier()
 //    sprintf(m_state.slot1light, " slot1 ");
 
     m_state.firstframe = 0;
-
-    if (m_opts.audio_gain == (float) 0)
-    {
-        m_state.aout_gain = 25;
-    }
 
     sprintf(m_state.algid, "________");
     sprintf(m_state.keyid, "________________");

@@ -47,6 +47,8 @@ public:
         m_audio_out_buf_p = m_audio_out_buf;
     }
 
+    void setAudioGain(float aout_gain) { m_aout_gain = aout_gain; }
+
 private:
     void processAudio();
     void upsample(int upsampling, float invalue);
@@ -79,6 +81,8 @@ private:
     int   m_audio_out_buf_size;
     int   m_audio_out_idx;
     int   m_audio_out_idx2;
+
+    float m_aout_gain;
 };
 
 }

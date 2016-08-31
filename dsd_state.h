@@ -56,7 +56,6 @@ public:
     char slot0light[8];
     char slot1light[8];
     unsigned char ccnum;
-    float aout_gain;
     char algid[9];
     char keyid[17];
     int currentslot;

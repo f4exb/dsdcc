@@ -65,7 +65,6 @@ DSDState::DSDState()
     firstframe = 0;
     sprintf(slot0light, "        ");
     sprintf(slot1light, "        ");
-    aout_gain = 25;
 //    samplesPerSymbol = 10;
     sprintf(algid, "________");
     sprintf(keyid, "________________");
