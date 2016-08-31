@@ -49,6 +49,7 @@ public:
 
     void setAudioGain(float aout_gain) { m_aout_gain = aout_gain; }
     void setAutoGain(bool auto_gain) { m_auto_gain = auto_gain; }
+    void setStereo(bool stereo) { m_stereo = stereo; }
     void setUpsamplingFactor(int upsample) { m_upsample = upsample; }
     int getUpsamplingFactor() const { return m_upsample; }
 
@@ -87,8 +88,8 @@ private:
 
     float m_aout_gain;
     bool m_auto_gain;
-
-    int m_upsample; //!< upsampling factor
+    int m_upsample;    //!< upsampling factor
+    bool m_stereo;     //!< double each audio sample to produce L+R channels
 };
 
 }

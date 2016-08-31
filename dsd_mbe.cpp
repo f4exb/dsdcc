@@ -46,7 +46,7 @@ DSDMBEDecoder::DSDMBEDecoder(DSDDecoder *dsdDecoder) :
 
     m_aout_gain = 25;
     m_auto_gain = true;
-
+    m_stereo = false;
     m_upsample = 0;
 
 	initMbeParms();
@@ -217,7 +217,7 @@ void DSDMBEDecoder::processAudio()
 
         if (m_audio_out_nb_samples + (160*upsampling) >= m_audio_out_buf_size)
         {
-            m_dsdDecoder->resetAudio();
+            resetAudio();
         }
 
         m_audio_out_float_buf_p = m_audio_out_float_buf;
@@ -248,7 +248,7 @@ void DSDMBEDecoder::processAudio()
             *m_audio_out_buf_p = (short) *m_audio_out_float_buf_p;
             m_audio_out_buf_p++;
 
-            if (m_dsdDecoder->m_opts.stereo) // produce second channel
+            if (m_stereo) // produce second channel
             {
                 *m_audio_out_buf_p = (short) *m_audio_out_float_buf_p;
                 m_audio_out_buf_p++;
@@ -281,7 +281,7 @@ void DSDMBEDecoder::processAudio()
             *m_audio_out_buf_p = (short) *m_audio_out_temp_buf_p;
             m_audio_out_buf_p++;
 
-            if (m_dsdDecoder->m_opts.stereo) // produce second channel
+            if (m_stereo) // produce second channel
             {
                 *m_audio_out_buf_p = (short) *m_audio_out_float_buf_p;
                 m_audio_out_buf_p++;

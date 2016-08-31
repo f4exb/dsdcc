@@ -50,7 +50,6 @@ DSDOpts::DSDOpts()
     delay = 0;
     use_cosine_filter = 1;
     unmute_encrypted_p25 = 0;
-    stereo = 0;
 }
 
 DSDOpts::~DSDOpts()

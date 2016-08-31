@@ -57,7 +57,6 @@ public:
     int delay;
     int use_cosine_filter;
     int unmute_encrypted_p25;
-    int stereo;   //!< double each audio sample to produce L+R channels
 };
 
 } // namespace dsdcc

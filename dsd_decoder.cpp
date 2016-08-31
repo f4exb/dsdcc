@@ -277,7 +277,7 @@ void DSDDecoder::setUpsampling(int upsampling)
 
 void DSDDecoder::setStereo(bool on)
 {
-    m_opts.stereo = (on ? 1 : 0);
+	m_mbeDecoder.setStereo(on);
 }
 
 void DSDDecoder::setInvertedXTDMA(bool on)
