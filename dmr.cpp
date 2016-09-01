@@ -130,16 +130,9 @@ void DSDDMR::processData()
 
     int dibit = m_dsdDecoder->m_dsdSymbol.getDibit(); // get dibit from symbol
 
-    if (m_symbolIndex < 90 + 5)
-    {
-        m_slotTypePDU_dibits[5 + m_symbolIndex - 90] = dibit;
+    processDataDibit(dibit);
 
-        if (m_symbolIndex == 90 + 5 - 1)
-        {
-            processSlotTypePDU();
-        }
-    }
-    else if (m_symbolIndex == 90 + 5 + 49) // last dibit
+    if (m_symbolIndex == 144 - 1) // last dibit
     {
         m_prevSlot = m_slot;
         m_dsdDecoder->resetFrameSync(); // end TODO: continuation if super frame on going
@@ -150,6 +143,14 @@ void DSDDMR::processData()
 
 void DSDDMR::processVoice()
 {
+    if (!m_cachOK)
+    {
+        m_slotText = m_dsdDecoder->m_state.slot0light;
+        memcpy(m_dsdDecoder->m_state.slot0light, "/-- UNK", 7);
+        m_dsdDecoder->resetFrameSync();
+        return; // abort
+    }
+
 	int dibit = m_dsdDecoder->m_dsdSymbol.getDibit(); // get dibit from symbol
 
 	processVoiceDibit(dibit);
@@ -177,12 +178,11 @@ void DSDDMR::processDataFirstHalf()
 void DSDDMR::processVoiceFirstHalf()
 {
     unsigned char *dibit_p = m_dsdDecoder->m_dsdSymbol.getDibitBack(90+1);
+    m_cachOK = true;
 
     for (m_symbolIndex = 0; m_symbolIndex < 90; m_symbolIndex++)
     {
-    	if (!processVoiceDibit(dibit_p[m_symbolIndex])) {
-    		break; // abort
-    	}
+        processVoiceDibit(dibit_p[m_symbolIndex]);
     }
 }
 
@@ -192,7 +192,7 @@ void DSDDMR::processDataDibit(unsigned char dibit)
 
 	unsigned char cachBits[24];
 
-	if ((m_symbolIndex < 12) && (m_burstType == DSDDMRBaseStation)) // CACH is for base station only
+	if (m_symbolIndex < 12)
 	{
         cachBits[m_cachInterleave[2*m_symbolIndex]]   = (dibit >> 1) & 1;
         cachBits[m_cachInterleave[2*m_symbolIndex+1]] = dibit & 1;
@@ -247,7 +247,7 @@ void DSDDMR::processDataDibit(unsigned char dibit)
     }
 }
 
-bool DSDDMR::processVoiceDibit(unsigned char dibit)
+void DSDDMR::processVoiceDibit(unsigned char dibit)
 {
 	// CACH
 
@@ -262,7 +262,7 @@ bool DSDDMR::processVoiceDibit(unsigned char dibit)
         {
             if (!decodeCACH(cachBits)) // unrecoverable sync error
             {
-                return false; // abort
+                m_cachOK = false; // abort later
             }
         }
 	}
@@ -439,8 +439,6 @@ bool DSDDMR::processVoiceDibit(unsigned char dibit)
 		    }
 		}
 	}
-
-	return true;
 }
 
 bool DSDDMR::processCACH(unsigned char *dibit_p)
