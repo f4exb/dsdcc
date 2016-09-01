@@ -90,6 +90,7 @@ private:
     unsigned char m_slotTypePDU_dibits[10];
     unsigned int m_voice1FrameCount; //!< current frame count in voice superframe: [0..5] else no superframe on going
     unsigned int m_voice2FrameCount; //!< current frame count in voice superframe: [0..5] else no superframe on going
+    unsigned char m_mbeDVFrame[9];
 
     Hamming_7_4 m_hamming_7_4;
     Golay_20_8 m_golay_20_8;
