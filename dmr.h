@@ -76,7 +76,7 @@ private:
     bool decodeCACH(unsigned char *cachBits);
     void processSlotTypePDU();
     bool processVoiceDibit(unsigned char dibit);
-    bool processDataDibit(unsigned char dibit);
+    void processDataDibit(unsigned char dibit);
     void storeSymbolDV(unsigned char *mbeFrame, int dibitindex, unsigned char dibit, bool invertDibit = false);
 
     DSDDecoder *m_dsdDecoder;
