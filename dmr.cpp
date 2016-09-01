@@ -134,11 +134,38 @@ void DSDDMR::processData()
 
     if (m_symbolIndex == 144 - 1) // last dibit
     {
+        m_cachOK = true;
         m_prevSlot = m_slot;
-        m_dsdDecoder->resetFrameSync(); // end TODO: continuation if super frame on going
-    }
 
-    m_symbolIndex++;
+        if (m_slot == DSDDMRSlot1)
+        {
+            if (m_voice2FrameCount < 6)
+            {
+                m_symbolIndex = 0; // continuation as super frame on slot 2 is not complete
+                m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDMRvoice;
+            }
+            else
+            {
+                m_dsdDecoder->resetFrameSync(); // back to sync
+            }
+        }
+        else if (m_slot == DSDDMRSlot2)
+        {
+            if (m_voice1FrameCount < 6)
+            {
+                m_symbolIndex = 0; // continuation as super frame on slot 2 is not complete
+                m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDMRvoice;
+            }
+            else
+            {
+                m_dsdDecoder->resetFrameSync(); // back to sync
+            }
+        }
+    }
+    else
+    {
+        m_symbolIndex++;
+    }
 }
 
 void DSDDMR::processVoice()
@@ -147,6 +174,8 @@ void DSDDMR::processVoice()
     {
         m_slotText = m_dsdDecoder->m_state.slot0light;
         memcpy(m_dsdDecoder->m_state.slot0light, "/-- UNK", 7);
+        m_voice1FrameCount = 6;
+        m_voice2FrameCount = 6;
         m_dsdDecoder->resetFrameSync();
         return; // abort
     }
@@ -157,11 +186,40 @@ void DSDDMR::processVoice()
 
 	if (m_symbolIndex == 144 - 1) // last dibit
 	{
+        m_cachOK = true;
         m_prevSlot = m_slot;
-        m_dsdDecoder->resetFrameSync(); // end TODO: continuation if super frame on going
-	}
 
-	m_symbolIndex++;
+        if (m_slot == DSDDMRSlot1)
+	    {
+            m_voice1FrameCount++;
+
+	        if (m_voice2FrameCount < 6)
+	        {
+	            m_symbolIndex = 0; // continuation as super frame on slot 2 is not complete
+	        }
+	        else
+	        {
+	            m_dsdDecoder->resetFrameSync(); // back to sync
+	        }
+	    }
+        else if (m_slot == DSDDMRSlot2)
+        {
+            m_voice2FrameCount++;
+
+            if (m_voice1FrameCount < 6)
+            {
+                m_symbolIndex = 0; // continuation as super frame on slot 2 is not complete
+            }
+            else
+            {
+                m_dsdDecoder->resetFrameSync(); // back to sync
+            }
+        }
+	}
+	else
+	{
+	    m_symbolIndex++;
+	}
 }
 
 void DSDDMR::processDataFirstHalf()
@@ -183,6 +241,12 @@ void DSDDMR::processVoiceFirstHalf()
     for (m_symbolIndex = 0; m_symbolIndex < 90; m_symbolIndex++)
     {
         processVoiceDibit(dibit_p[m_symbolIndex]);
+    }
+
+    if (m_slot == DSDDMRSlot1) {
+        m_voice1FrameCount = 0;
+    } else if (m_slot == DSDDMRSlot1) {
+        m_voice2FrameCount = 0;
     }
 }
 
