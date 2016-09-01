@@ -328,6 +328,14 @@ void DSDDMR::processVoiceDibit(unsigned char dibit)
             {
                 m_cachOK = false; // abort later
             }
+            else // change display of appropriate slot
+            {
+                if (m_slot == DSDDMRSlot1) {
+                    memcpy(&m_dsdDecoder->m_state.slot0light[4], "VOX", 3);
+                } else if (m_slot == DSDDMRSlot2) {
+                    memcpy(&m_dsdDecoder->m_state.slot1light[4], "VOX", 3);
+                }
+            }
         }
 	}
 
@@ -462,7 +470,7 @@ void DSDDMR::processVoiceDibit(unsigned char dibit)
 	else if (m_symbolIndex < 12 + 36 + 18 + 24 + 18 + 36)
 	{
 		unsigned char *mbeFrame;
-		int mbeIndex = m_symbolIndex - 12 + 36 + 18 + 24 + 18;
+		int mbeIndex = m_symbolIndex - (12 + 36 + 18 + 24 + 18);
 
 		if (mbeIndex == 0)
 		{
@@ -528,15 +536,15 @@ bool DSDDMR::decodeCACH(unsigned char *cachBits)
 
         if (slotIndex)
         {
-            m_slotText = m_dsdDecoder->m_state.slot1light;
+            m_slotText = m_dsdDecoder->m_state.slot0light;
         }
         else
         {
-            m_slotText = m_dsdDecoder->m_state.slot0light;
+            m_slotText = m_dsdDecoder->m_state.slot1light;
         }
 
         m_slotText[0] = ((cachBits[0] & 1) ? '*' : '.');
-        m_slot = (DSDDMRSlot) slotIndex;
+        m_slot = (DSDDMRSlot) ((slotIndex + 1) % 2);
         m_lcss = 2*cachBits[2] + cachBits[3];
 
         if (m_prevSlot == m_slot) // conflict with previous slot

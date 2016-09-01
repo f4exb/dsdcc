@@ -417,7 +417,8 @@ void DSDDecoder::run(short sample)
             processFrameInit();   // initiate the process of the frame which sync has been found. This will change FSM state
             break;
         case DSDprocessDMRvoice:
-            m_dsdDMRVoice.process();
+            m_dsdDMR.processVoice();
+//            m_dsdDMRVoice.process();
             break;
         case DSDprocessDMRdata:
             m_dsdDMR.processData();
@@ -467,15 +468,17 @@ void DSDDecoder::processFrameInit()
         if ((m_syncType == DSDSyncDMRVoiceN) || (m_syncType == DSDSyncDMRVoiceP))
         {
             sprintf(m_state.fsubtype, " VOICE        ");
-            m_dsdDMRVoice.init();    // initializations not consuming a live symbol
-            m_dsdDMRVoice.process(); // process current symbol first
+            m_dsdDMR.initVoice(m_dmrBurstType);    // initializations not consuming a live symbol
+            m_dsdDMR.processVoice(); // process current symbol first
+//            m_dsdDMRVoice.init();    // initializations not consuming a live symbol
+//            m_dsdDMRVoice.process(); // process current symbol first
             m_fsmState = DSDprocessDMRvoice;
         }
         else
         {
             m_dsdDMR.initData(m_dmrBurstType);    // initializations not consuming a live symbol
             m_dsdDMR.processData(); // process current symbol first
-            m_dsdDMRData.init();    // initializations not consuming a live symbol
+//            m_dsdDMRData.init();    // initializations not consuming a live symbol
 //            m_dsdDMRData.process(); // process current symbol first
             m_fsmState = DSDprocessDMRdata;
         }
