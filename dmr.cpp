@@ -171,7 +171,6 @@ void DSDDMR::processDataFirstHalf()
     dibit_p += 49; // move after first half info block
 
     memcpy((void *) m_slotTypePDU_dibits, (const void *) dibit_p, 5);
-    processSlotTypePDU();
 
     dibit_p += 5;  // move after first half slot type PDU
 
@@ -184,11 +183,72 @@ void DSDDMR::processVoiceFirstHalf()
 {
     unsigned char *dibit_p = m_dsdDecoder->m_dsdSymbol.getDibitBack(90+1);
 
-    for (m_symbolIndex = 0; m_symbolIndex < 90; m_symbolIndex++, dibit_p++)
+    for (m_symbolIndex = 0; m_symbolIndex < 90; m_symbolIndex++)
     {
     	if (!processVoiceDibit(dibit_p[m_symbolIndex])) {
     		break; // abort
     	}
+    }
+}
+
+bool DSDDMR::processDataDibit(unsigned char dibit)
+{
+	// CACH
+
+	unsigned char cachBits[24];
+
+	if ((m_symbolIndex < 12) && (m_burstType == DSDDMRBaseStation)) // CACH is for base station only
+	{
+        cachBits[m_cachInterleave[2*m_symbolIndex]]   = (dibit >> 1) & 1;
+        cachBits[m_cachInterleave[2*m_symbolIndex+1]] = dibit & 1;
+
+        if(m_symbolIndex == 12-1)
+        {
+            if (!decodeCACH(cachBits)) // unrecoverable sync error
+            {
+                return false; // abort
+            }
+        }
+	}
+
+	// data first half
+
+	else if (m_symbolIndex < 12 + 49)
+	{
+		// TODO
+	}
+
+	// Slot Type first half
+
+	else if (m_symbolIndex < 12 + 49 + 5)
+	{
+		m_slotTypePDU_dibits[m_symbolIndex - (12 + 49)];
+	}
+
+	// Sync or embedded signalling
+
+	else if (m_symbolIndex < 12 + 49 + 5 + 24)
+	{
+		// TODO
+	}
+
+	// Slot Type second half
+
+    if (m_symbolIndex < 90 + 5)
+    {
+        m_slotTypePDU_dibits[5 + m_symbolIndex - 90] = dibit;
+
+        if (m_symbolIndex == 90 + 5 - 1)
+        {
+            processSlotTypePDU();
+        }
+    }
+
+    // data second half
+
+    else if (m_symbolIndex < 90 + 5 + 49)
+    {
+    	// TODO
     }
 }
 
