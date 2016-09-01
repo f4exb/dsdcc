@@ -180,18 +180,19 @@ void DSDDMR::processDataFirstHalf()
     m_symbolIndex = 90;
 }
 
-// TODO: manage loss of sync in CACH
 void DSDDMR::processVoiceFirstHalf()
 {
     unsigned char *dibit_p = m_dsdDecoder->m_dsdSymbol.getDibitBack(90+1);
 
     for (m_symbolIndex = 0; m_symbolIndex < 90; m_symbolIndex++, dibit_p++)
     {
-        processVoiceDibit(dibit_p[m_symbolIndex]);
+    	if (!processVoiceDibit(dibit_p[m_symbolIndex])) {
+    		break; // abort
+    	}
     }
 }
 
-void DSDDMR::processVoiceDibit(unsigned char dibit)
+bool DSDDMR::processVoiceDibit(unsigned char dibit)
 {
 	// CACH
 
@@ -206,7 +207,7 @@ void DSDDMR::processVoiceDibit(unsigned char dibit)
         {
             if (!decodeCACH(cachBits)) // unrecoverable sync error
             {
-                return; // abort
+                return false; // abort
             }
         }
 	}
@@ -383,6 +384,8 @@ void DSDDMR::processVoiceDibit(unsigned char dibit)
 		    }
 		}
 	}
+
+	return true;
 }
 
 bool DSDDMR::processCACH(unsigned char *dibit_p)
