@@ -109,33 +109,31 @@ void DSDDMR::initData(DSDDMRBurstType burstType)
 {
     m_burstType = burstType;
     processDataFirstHalf();
-    m_symbolIndex = 13; // start counting right of center as in ETSI TS 102 361-1 p.58
 }
 
 void DSDDMR::initVoice(DSDDMRBurstType burstType)
 {
     m_burstType = burstType;
     processVoiceFirstHalf();
-    m_symbolIndex = 13; // start counting right of center as in ETSI TS 102 361-1 p.58
 }
 
 void DSDDMR::processData()
 {
     int dibit = m_dsdDecoder->m_dsdSymbol.getDibit(); // get dibit from symbol
 
-    if (m_symbolIndex < 18)
+    if (m_symbolIndex < 90 + 5)
     {
-        m_slotTypePDU_dibits[5 + m_symbolIndex - 13] = dibit;
+        m_slotTypePDU_dibits[5 + m_symbolIndex - 90] = dibit;
 
-        if (m_symbolIndex == 17)
+        if (m_symbolIndex == 90 + 5 - 1)
         {
             processSlotTypePDU();
         }
     }
-    else if (m_symbolIndex == 66) // last dibit
+    else if (m_symbolIndex == 90 + 5 + 49) // last dibit
     {
         m_prevSlot = m_slot;
-        m_dsdDecoder->resetFrameSync(); // end TODO: comtinuation if super frame on going
+        m_dsdDecoder->resetFrameSync(); // end TODO: continuation if super frame on going
     }
 
     m_symbolIndex++;
@@ -143,7 +141,17 @@ void DSDDMR::processData()
 
 void DSDDMR::processVoice()
 {
+	int dibit = m_dsdDecoder->m_dsdSymbol.getDibit(); // get dibit from symbol
 
+	processVoiceDibit(dibit);
+
+	if (m_symbolIndex == 144 - 1) // last dibit
+	{
+        m_prevSlot = m_slot;
+        m_dsdDecoder->resetFrameSync(); // end TODO: continuation if super frame on going
+	}
+
+	m_symbolIndex++;
 }
 
 void DSDDMR::processDataFirstHalf()
@@ -168,63 +176,229 @@ void DSDDMR::processDataFirstHalf()
     dibit_p += 5;  // move after first half slot type PDU
 
     dibit_p += 24; // move after SYNC or embedded signaling
+
+    m_symbolIndex = 90;
 }
 
+// TODO: manage loss of sync in CACH
+// TODO: manage first AMBE frame with DV Serial
 void DSDDMR::processVoiceFirstHalf()
 {
     unsigned char *dibit_p = m_dsdDecoder->m_dsdSymbol.getDibitBack(90+1);
-    unsigned char *mbeFrame;
 
-    if (m_burstType == DSDDMRBaseStation) // CACH is for base station only
+    for (m_symbolIndex = 0; m_symbolIndex < 90; m_symbolIndex++, dibit_p++)
     {
-        if (!processCACH(dibit_p))
+        processVoiceDibit(dibit_p[m_symbolIndex]);
+    }
+}
+
+void DSDDMR::processVoiceDibit(unsigned char dibit)
+{
+	// CACH
+
+	unsigned char cachBits[24];
+
+	if ((m_symbolIndex < 12) && (m_burstType == DSDDMRBaseStation)) // CACH is for base station only
+	{
+        cachBits[m_cachInterleave[2*m_symbolIndex]]   = (dibit >> 1) & 1;
+        cachBits[m_cachInterleave[2*m_symbolIndex+1]] = dibit & 1;
+
+        if(m_symbolIndex == 12-1)
         {
-            return; // cannot determine slot => sync lost
+            if (!decodeCACH(cachBits)) // unrecoverable sync error
+            {
+                return; // abort
+            }
         }
-    }
+	}
 
-    dibit_p += 12; // move after either CACH or garbage
+	// voice frame 1
 
-    if (m_slot == DSDDMRSlot1) {
-        mbeFrame = m_dsdDecoder->m_mbeDVFrame1;
-    } else if (m_slot == DSDDMRSlot2) {
-        mbeFrame = m_dsdDecoder->m_mbeDVFrame2;
-    }
+	else if (m_symbolIndex < 12 + 36)
+	{
+		unsigned char *mbeFrame;
+		int mbeIndex = m_symbolIndex - 12;
 
-    // first AMBE frame
+		if (mbeIndex == 0)
+		{
+		    if (m_slot == DSDDMRSlot1) {
+		        mbeFrame = m_dsdDecoder->m_mbeDVFrame1;
+		    } else if (m_slot == DSDDMRSlot2) {
+		        mbeFrame = m_dsdDecoder->m_mbeDVFrame2;
+		    }
 
-    w = rW;
-    x = rX;
-    y = rY;
-    z = rZ;
+		    w = rW;
+		    x = rX;
+		    y = rY;
+		    z = rZ;
 
-    memset((void *) mbeFrame, 0, 9); // initialize DVSI frame
+		    memset((void *) mbeFrame, 0, 9); // initialize DVSI frame
+		}
 
-    for (int i = 0; i < 36; i++)
-    {
-        unsigned char dibit = *dibit_p;
+		m_dsdDecoder->ambe_fr[*w][*x] = (1 & (dibit >> 1)); // bit 1
+		m_dsdDecoder->ambe_fr[*y][*z] = (1 & dibit);        // bit 0
+		w++;
+		x++;
+		y++;
+		z++;
 
-        m_dsdDecoder->ambe_fr[*w][*x] = (1 & (dibit >> 1)); // bit 1
-        m_dsdDecoder->ambe_fr[*y][*z] = (1 & dibit);        // bit 0
-        w++;
-        x++;
-        y++;
-        z++;
-        dibit_p++;
+		storeSymbolDV(mbeFrame, mbeIndex, dibit); // store dibit for DVSI hardware decoder
 
-        storeSymbolDV(mbeFrame, i, dibit); // store dibit for DVSI hardware decoder
-    }
+		if (mbeIndex == 36 - 1)
+		{
+		    if (m_slot == DSDDMRSlot1)
+		    {
+		        m_dsdDecoder->m_mbeDecoder1.processFrame(0, m_dsdDecoder->ambe_fr, 0);
+		        m_dsdDecoder->m_mbeDVReady1 = true; // Indicate that a DVSI frame is available FIXME: problem since the first frame cannot be returned
+		    }
+		    else if (m_slot == DSDDMRSlot2)
+		    {
+		        m_dsdDecoder->m_mbeDecoder2.processFrame(0, m_dsdDecoder->ambe_fr, 0);
+		        m_dsdDecoder->m_mbeDVReady2 = true; // Indicate that a DVSI frame is available FIXME: problem since the first frame cannot be returned
+		    }
+		}
+	}
 
-    if (m_slot == DSDDMRSlot1)
-    {
-        m_dsdDecoder->m_mbeDecoder1.processFrame(0, m_dsdDecoder->ambe_fr, 0);
-        m_dsdDecoder->m_mbeDVReady1 = true; // Indicate that a DVSI frame is available FIXME: problem since the first frame cannot be returned
-    }
-    else if (m_slot == DSDDMRSlot2)
-    {
-        m_dsdDecoder->m_mbeDecoder2.processFrame(0, m_dsdDecoder->ambe_fr, 0);
-        m_dsdDecoder->m_mbeDVReady2 = true; // Indicate that a DVSI frame is available FIXME: problem since the first frame cannot be returned
-    }
+	// voice frame 2 first half
+
+	else if (m_symbolIndex < 12 + 36 + 18)
+	{
+		unsigned char *mbeFrame;
+		int mbeIndex = m_symbolIndex - (12 + 36);
+
+		if (mbeIndex == 0)
+		{
+			if (m_slot == DSDDMRSlot1) {
+				mbeFrame = m_dsdDecoder->m_mbeDVFrame1;
+			} else if (m_slot == DSDDMRSlot2) {
+				mbeFrame = m_dsdDecoder->m_mbeDVFrame2;
+			}
+
+			w = rW;
+			x = rX;
+			y = rY;
+			z = rZ;
+
+			memset((void *) mbeFrame, 0, 9); // initialize DVSI frame
+		}
+
+		m_dsdDecoder->ambe_fr[*w][*x] = (1 & (dibit >> 1)); // bit 1
+		m_dsdDecoder->ambe_fr[*y][*z] = (1 & dibit);        // bit 0
+		w++;
+		x++;
+		y++;
+		z++;
+
+		storeSymbolDV(mbeFrame, mbeIndex, dibit); // store dibit for DVSI hardware decoder
+	}
+
+	// EMB first half
+
+	else if (m_symbolIndex < 12 + 36 + 18 + 4)
+	{
+		// TODO
+	}
+
+	// Embedded signaling
+
+	else if (m_symbolIndex < 12 + 36 + 18 + 4 + 16)
+	{
+
+	}
+
+	// EMB second half
+
+	else if (m_symbolIndex < 12 + 36 + 18 + 4 + 16 + 4)
+	{
+
+	}
+
+	// voice frame 2 second half
+
+	else if (m_symbolIndex < 12 + 36 + 18 + 24 + 18)
+	{
+		unsigned char *mbeFrame;
+		int mbeIndex = m_symbolIndex - (12 + 36 + 24);
+
+		if (mbeIndex == 18)
+		{
+			if (m_slot == DSDDMRSlot1) {
+				mbeFrame = m_dsdDecoder->m_mbeDVFrame1;
+			} else if (m_slot == DSDDMRSlot2) {
+				mbeFrame = m_dsdDecoder->m_mbeDVFrame2;
+			}
+		}
+
+		m_dsdDecoder->ambe_fr[*w][*x] = (1 & (dibit >> 1)); // bit 1
+		m_dsdDecoder->ambe_fr[*y][*z] = (1 & dibit);        // bit 0
+		w++;
+		x++;
+		y++;
+		z++;
+
+		storeSymbolDV(mbeFrame, mbeIndex, dibit); // store dibit for DVSI hardware decoder
+
+		if (mbeIndex == 36 - 1)
+		{
+			if (m_slot == DSDDMRSlot1)
+			{
+				m_dsdDecoder->m_mbeDecoder1.processFrame(0, m_dsdDecoder->ambe_fr, 0);
+				m_dsdDecoder->m_mbeDVReady1 = true; // Indicate that a DVSI frame is available FIXME: problem since the first frame cannot be returned
+			}
+			else if (m_slot == DSDDMRSlot2)
+			{
+				m_dsdDecoder->m_mbeDecoder2.processFrame(0, m_dsdDecoder->ambe_fr, 0);
+				m_dsdDecoder->m_mbeDVReady2 = true; // Indicate that a DVSI frame is available FIXME: problem since the first frame cannot be returned
+			}
+		}
+	}
+
+	// voice frame 3
+
+	else if (m_symbolIndex < 12 + 36 + 18 + 24 + 18 + 36)
+	{
+		unsigned char *mbeFrame;
+		int mbeIndex = m_symbolIndex - 12 + 36 + 18 + 24 + 18;
+
+		if (mbeIndex == 0)
+		{
+		    if (m_slot == DSDDMRSlot1) {
+		        mbeFrame = m_dsdDecoder->m_mbeDVFrame1;
+		    } else if (m_slot == DSDDMRSlot2) {
+		        mbeFrame = m_dsdDecoder->m_mbeDVFrame2;
+		    }
+
+		    w = rW;
+		    x = rX;
+		    y = rY;
+		    z = rZ;
+
+		    memset((void *) mbeFrame, 0, 9); // initialize DVSI frame
+		}
+
+		m_dsdDecoder->ambe_fr[*w][*x] = (1 & (dibit >> 1)); // bit 1
+		m_dsdDecoder->ambe_fr[*y][*z] = (1 & dibit);        // bit 0
+		w++;
+		x++;
+		y++;
+		z++;
+
+		storeSymbolDV(mbeFrame, mbeIndex, dibit); // store dibit for DVSI hardware decoder
+
+		if (mbeIndex == 36 - 1)
+		{
+		    if (m_slot == DSDDMRSlot1)
+		    {
+		        m_dsdDecoder->m_mbeDecoder1.processFrame(0, m_dsdDecoder->ambe_fr, 0);
+		        m_dsdDecoder->m_mbeDVReady1 = true; // Indicate that a DVSI frame is available FIXME: problem since the first frame cannot be returned
+		    }
+		    else if (m_slot == DSDDMRSlot2)
+		    {
+		        m_dsdDecoder->m_mbeDecoder2.processFrame(0, m_dsdDecoder->ambe_fr, 0);
+		        m_dsdDecoder->m_mbeDVReady2 = true; // Indicate that a DVSI frame is available FIXME: problem since the first frame cannot be returned
+		    }
+		}
+	}
 }
 
 bool DSDDMR::processCACH(unsigned char *dibit_p)
@@ -237,6 +411,11 @@ bool DSDDMR::processCACH(unsigned char *dibit_p)
         cachBits[m_cachInterleave[2*i+1]] = dibit_p[i] & 1;
     }
 
+    return decodeCACH(cachBits);
+}
+
+bool DSDDMR::decodeCACH(unsigned char *cachBits)
+{
     // Hamming (7,4) decode and store results if successful
     if (m_hamming_7_4.decode(cachBits))
     {
