@@ -88,6 +88,7 @@ DSDDMR::DSDDMR(DSDDecoder *dsdDecoder) :
         m_burstType(DSDDMRBurstNone),
         m_slot(DSDDMRSlotUndefined),
         m_prevSlot(DSDDMRSlotUndefined),
+        m_cachOK(false),
         m_lcss(0),
         m_colorCode(0),
         m_dataType(DSDDMRDataUnknown),
@@ -119,6 +120,14 @@ void DSDDMR::initVoice(DSDDMRBurstType burstType)
 
 void DSDDMR::processData()
 {
+    if (!m_cachOK)
+    {
+        m_slotText = m_dsdDecoder->m_state.slot0light;
+        memcpy(m_dsdDecoder->m_state.slot0light, "/-- UNK", 7);
+        m_dsdDecoder->resetFrameSync();
+        return; // abort
+    }
+
     int dibit = m_dsdDecoder->m_dsdSymbol.getDibit(); // get dibit from symbol
 
     if (m_symbolIndex < 90 + 5)
@@ -157,12 +166,13 @@ void DSDDMR::processVoice()
 void DSDDMR::processDataFirstHalf()
 {
     unsigned char *dibit_p = m_dsdDecoder->m_dsdSymbol.getDibitBack(90+1);
+    m_cachOK = true;
 
     if (m_burstType == DSDDMRBaseStation) // CACH is for base station only
     {
         if (!processCACH(dibit_p))
         {
-            return; // cannot determine slot => sync lost
+            m_cachOK = false; // cannot determine slot => sync lost
         }
     }
 
@@ -494,9 +504,6 @@ bool DSDDMR::decodeCACH(unsigned char *cachBits)
 
         if (m_prevSlot == DSDDMRSlotUndefined) // sync lost
         {
-            m_slotText = m_dsdDecoder->m_state.slot0light;
-            memcpy(m_dsdDecoder->m_state.slot0light, "/-- UNK", 7);
-            m_dsdDecoder->resetFrameSync(); // end
             return false;
         }
         else

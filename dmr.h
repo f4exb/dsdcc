@@ -84,6 +84,7 @@ private:
     DSDDMRBurstType m_burstType;
     DSDDMRSlot m_slot;
     DSDDMRSlot m_prevSlot;
+    bool m_cachOK;
     unsigned char m_lcss;
     unsigned char m_colorCode;
     DSDDMRDataTYpe m_dataType;
