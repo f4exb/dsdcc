@@ -60,6 +60,26 @@ int main(int argc, char *argv[])
     codeword[2] ^=  1;
     decode(hamming_7_4, codeword);
 
+    std::cout << std::endl << "Valid checksums" << std::endl;
+
+    for (int i = 0; i < 16; i++)
+    {
+    	msg[0] = (i>>3) & 1;
+    	msg[1] = (i>>2) & 1;
+    	msg[2] = (i>>1) & 1;
+    	msg[3] = i & 1;
+
+    	hamming_7_4.encode(msg, codeword);
+    	int codenumber = 0;
+
+    	for (int j = 0; j < 7; j++)
+    	{
+    		codenumber += codeword[j] * (1<<(6-j));
+    	}
+
+    	std::cout << codenumber << std::endl;
+    }
+
     return 0;
 }
 
