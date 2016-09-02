@@ -85,6 +85,7 @@ const int DSDDMR::rZ[36] = {
 DSDDMR::DSDDMR(DSDDecoder *dsdDecoder) :
         m_dsdDecoder(dsdDecoder),
         m_symbolIndex(0),
+		m_cachSymbolIndex(0),
         m_burstType(DSDDMRBurstNone),
         m_slot(DSDDMRSlotUndefined),
         m_prevSlot(DSDDMRSlotUndefined),
@@ -166,6 +167,8 @@ void DSDDMR::processData()
     {
         m_symbolIndex++;
     }
+
+    m_cachSymbolIndex++; // last dibit counts
 }
 
 void DSDDMR::processVoice()
@@ -220,6 +223,8 @@ void DSDDMR::processVoice()
 	{
 	    m_symbolIndex++;
 	}
+
+    m_cachSymbolIndex++; // last dibit counts
 }
 
 void DSDDMR::processDataFirstHalf()
@@ -227,10 +232,12 @@ void DSDDMR::processDataFirstHalf()
     unsigned char *dibit_p = m_dsdDecoder->m_dsdSymbol.getDibitBack(90+1);
     m_cachOK = true;
 
-    for (m_symbolIndex = 0; m_symbolIndex < 90; m_symbolIndex++)
+    for (m_symbolIndex = 0; m_symbolIndex < 90; m_symbolIndex++, m_cachSymbolIndex++)
     {
         processDataDibit(dibit_p[m_symbolIndex]);
     }
+
+    m_cachSymbolIndex = 78;
 }
 
 void DSDDMR::processVoiceFirstHalf()
@@ -238,7 +245,7 @@ void DSDDMR::processVoiceFirstHalf()
     unsigned char *dibit_p = m_dsdDecoder->m_dsdSymbol.getDibitBack(90+1);
     m_cachOK = true;
 
-    for (m_symbolIndex = 0; m_symbolIndex < 90; m_symbolIndex++)
+    for (m_symbolIndex = 0; m_symbolIndex < 90; m_symbolIndex++, m_cachSymbolIndex++)
     {
         processVoiceDibit(dibit_p[m_symbolIndex]);
     }
@@ -513,70 +520,66 @@ void DSDDMR::processVoiceDibit(unsigned char dibit)
 	}
 }
 
-bool DSDDMR::processCACH(unsigned char *dibit_p)
-{
-    unsigned char cachBits[24];
-
-    for (int i = 0; i < 12; i++)
-    {
-        cachBits[m_cachInterleave[2*i]]   = (dibit_p[i] >> 1) & 1;
-        cachBits[m_cachInterleave[2*i+1]] = dibit_p[i] & 1;
-    }
-
-    return decodeCACH(cachBits);
-}
+//bool DSDDMR::processCACH(unsigned char *dibit_p)
+//{
+//    unsigned char cachBits[24];
+//
+//    for (int i = 0; i < 12; i++)
+//    {
+//        cachBits[m_cachInterleave[2*i]]   = (dibit_p[i] >> 1) & 1;
+//        cachBits[m_cachInterleave[2*i+1]] = dibit_p[i] & 1;
+//    }
+//
+//    return decodeCACH(cachBits);
+//}
 
 bool DSDDMR::decodeCACH(unsigned char *cachBits)
 {
     // Hamming (7,4) decode and store results if successful
-    if (m_hamming_7_4.decode(cachBits))
+    if (m_hamming_7_4.decode(cachBits)) // positive CACH information
     {
         unsigned int slotIndex = cachBits[1] & 1;
         m_dsdDecoder->m_state.currentslot = slotIndex; // FIXME: remove this when done with new voice processing
 
         if (slotIndex)
         {
-            m_slotText = m_dsdDecoder->m_state.slot0light;
+            m_slotText = m_dsdDecoder->m_state.slot1light;
         }
         else
         {
-            m_slotText = m_dsdDecoder->m_state.slot1light;
+            m_slotText = m_dsdDecoder->m_state.slot0light;
         }
 
         m_slotText[0] = ((cachBits[0] & 1) ? '*' : '.');
-        m_slot = (DSDDMRSlot) ((slotIndex + 1) % 2);
+        m_slot = (DSDDMRSlot) slotIndex;
         m_lcss = 2*cachBits[2] + cachBits[3];
+        m_cachSymbolIndex = 0; // restart counting
 
-        if (m_prevSlot == m_slot) // conflict with previous slot
-        {
-            m_prevSlot = DSDDMRSlotUndefined; // break continuation
-        }
 //        std::cerr << "DSDDMR::processCACH: OK: Slot: " << (int) cachBits[1] << " LCSS: " << (int) m_lcss << std::endl;
     }
-    else
+    else // default TC information
     {
-        m_slot = DSDDMRSlotUndefined;
+    	if (m_cachSymbolIndex == 144) // must occur exactly one slot plus one CACH apart
+    	{
+    		m_slot = (DSDDMRSlot) (((int) m_prevSlot + 1) % 2);
 
-        if (m_prevSlot == DSDDMRSlotUndefined) // sync lost
-        {
-            return false;
-        }
-        else
-        {
-            unsigned int slotIndex = (((int) m_prevSlot + 1) % 2);
-
-            if (slotIndex)
-            {
+    		if (m_slot == DSDDMRSlot1)
+    		{
                 m_slotText = m_dsdDecoder->m_state.slot1light;
-            }
-            else
-            {
+    		}
+    		else
+    		{
                 m_slotText = m_dsdDecoder->m_state.slot0light;
-            }
+    		}
 
-            m_slot = (DSDDMRSlot) slotIndex;
-            m_slotText[0] = ':';
-        }
+    		m_slotText[0] = ':';
+    		m_cachSymbolIndex = 0; // restart counting
+    	}
+    	else // slot sync lost
+    	{
+    		m_slot = DSDDMRSlotUndefined;
+    		return false;
+    	}
 //        std::cerr << "DSDDMR::processCACH: KO" << std::endl;
     }
 

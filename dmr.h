@@ -39,9 +39,9 @@ public:
 
     typedef enum
     {
-        DSDDMRSlot1,
-        DSDDMRSlot2,
-        DSDDMRSlotUndefined
+        DSDDMRSlot1,             // 0
+        DSDDMRSlot2,             // 1
+        DSDDMRSlotUndefined      // 2
     } DSDDMRSlot;
 
     typedef enum
@@ -72,7 +72,7 @@ public:
 private:
     void processDataFirstHalf();  //!< Because sync is in the middle of a frame you need to process the first half first: CACH to end of SYNC
     void processVoiceFirstHalf(); //!< Because sync is in the middle of a frame you need to process the first half first: CACH to end of SYNC
-    bool processCACH(unsigned char *dibit_p);
+//    bool processCACH(unsigned char *dibit_p);
     bool decodeCACH(unsigned char *cachBits);
     void processSlotTypePDU();
     void processVoiceDibit(unsigned char dibit);
@@ -81,6 +81,7 @@ private:
 
     DSDDecoder *m_dsdDecoder;
     int  m_symbolIndex;                   //!< current symbol index in non HD sequence
+    int  m_cachSymbolIndex;               //!< count of symbols since last positive CACH identification
     DSDDMRBurstType m_burstType;
     DSDDMRSlot m_slot;
     DSDDMRSlot m_prevSlot;
