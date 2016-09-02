@@ -19,18 +19,20 @@
 
 void decode(DSDcc::Hamming_12_8& hamming_12_8, unsigned char *codeword)
 {
-    for (int i = 0; i < 7; i++)
+    unsigned char decoded[8];
+
+    for (int i = 0; i < 12; i++)
     {
         std::cout << (int) codeword[i] << " ";
     }
 
     std::cout << std::endl;
 
-    if (hamming_12_8.decode(codeword))
+    if (hamming_12_8.decode(codeword, decoded, 1))
     {
-        for (int i = 0; i < 4; i++)
+        for (int i = 0; i < 8; i++)
         {
-            std::cout << (int) codeword[i] << " ";
+            std::cout << (int) decoded[i] << " ";
         }
 
         std::cout << std::endl;
@@ -43,9 +45,9 @@ void decode(DSDcc::Hamming_12_8& hamming_12_8, unsigned char *codeword)
 
 int main(int argc, char *argv[])
 {
-    unsigned char msg[4]  = {1, 0, 0, 1};
-    unsigned char er0[7] = {0, 0, 1, 0, 0, 0, 0};
-    unsigned char codeword[7];
+    unsigned char msg[8]  = {1, 0, 0, 1, 1, 1, 0, 1};
+    unsigned char er0[12] = {0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    unsigned char codeword[12];
 
     DSDcc::Hamming_12_8 hamming_12_8;
     hamming_12_8.encode(msg, codeword);
