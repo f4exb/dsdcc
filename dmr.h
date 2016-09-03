@@ -72,8 +72,7 @@ public:
 private:
     void processDataFirstHalf();  //!< Because sync is in the middle of a frame you need to process the first half first: CACH to end of SYNC
     void processVoiceFirstHalf(); //!< Because sync is in the middle of a frame you need to process the first half first: CACH to end of SYNC
-//    bool processCACH(unsigned char *dibit_p);
-    bool decodeCACH(unsigned char *cachBits);
+    void decodeCACH(unsigned char *cachBits);
     void processSlotTypePDU();
     void processVoiceDibit(unsigned char dibit);
     void processDataDibit(unsigned char dibit);
@@ -91,6 +90,7 @@ private:
     DSDDMRDataTYpe m_dataType;
     char *m_slotText;
     unsigned char m_slotTypePDU_dibits[10];
+    unsigned char m_cachBits[24];
     unsigned int m_voice1FrameCount; //!< current frame count in voice superframe: [0..5] else no superframe on going
     unsigned int m_voice2FrameCount; //!< current frame count in voice superframe: [0..5] else no superframe on going
     unsigned char m_mbeDVFrame[9];
