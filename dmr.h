@@ -83,7 +83,7 @@ private:
     int  m_cachSymbolIndex;               //!< count of symbols since last positive CACH identification
     DSDDMRBurstType m_burstType;
     DSDDMRSlot m_slot;
-    DSDDMRSlot m_prevSlot;
+    bool m_continuation;
     bool m_cachOK;
     unsigned char m_lcss;
     unsigned char m_colorCode;

@@ -1135,7 +1135,7 @@ void DSDDecoder::resetFrameSync()
 {
     m_dsdLogger.log("DSDDecoder::resetFrameSync: symbol %d (%d)\n", m_state.symbolcnt, m_dsdSymbol.getSymbol());
 
-    m_dsdSymbol.resetFrameSync();
+//    m_dsdSymbol.resetFrameSync();
 
     // reset detect frame sync engine
     m_t = 0;
