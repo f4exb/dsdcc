@@ -470,23 +470,20 @@ void DSDDMR::processVoiceDibit(unsigned char dibit)
 
 	else if (m_symbolIndex < 12 + 36)
 	{
-		unsigned char *mbeFrame;
 		int mbeIndex = m_symbolIndex - 12;
 
 		if (mbeIndex == 0)
 		{
-		    if (m_slot == DSDDMRSlot1) {
-		        mbeFrame = m_dsdDecoder->m_mbeDVFrame1;
-		    } else { // it does not matter if CACH is undefined as it will be aborted later
-		        mbeFrame = m_dsdDecoder->m_mbeDVFrame2;
-		    }
-
 		    w = rW;
 		    x = rX;
 		    y = rY;
 		    z = rZ;
 
-		    memset((void *) mbeFrame, 0, 9); // initialize DVSI frame
+	        if (m_slot == DSDDMRSlot1) {
+	            memset((void *) m_dsdDecoder->m_mbeDVFrame1, 0, 9); // initialize DVSI frame 1
+	        } else {
+	            memset((void *) m_dsdDecoder->m_mbeDVFrame2, 0, 9); // initialize DVSI frame 2
+	        }
 		}
 
 		m_dsdDecoder->ambe_fr[*w][*x] = (1 & (dibit >> 1)); // bit 1
@@ -496,7 +493,11 @@ void DSDDMR::processVoiceDibit(unsigned char dibit)
 		y++;
 		z++;
 
-		storeSymbolDV(mbeFrame, mbeIndex, dibit); // store dibit for DVSI hardware decoder
+        if (m_slot == DSDDMRSlot1) {
+            storeSymbolDV(m_dsdDecoder->m_mbeDVFrame1, mbeIndex, dibit); // store dibit for DVSI hardware decoder
+        } else { // it does not matter if CACH is undefined as it will be aborted later
+            storeSymbolDV(m_dsdDecoder->m_mbeDVFrame2, mbeIndex, dibit); // store dibit for DVSI hardware decoder
+        }
 
 		if (mbeIndex == 36 - 1)
 		{
@@ -596,23 +597,20 @@ void DSDDMR::processVoiceDibit(unsigned char dibit)
 
 	else if (m_symbolIndex < 12 + 36 + 18 + 24 + 18 + 36)
 	{
-		unsigned char *mbeFrame;
 		int mbeIndex = m_symbolIndex - (12 + 36 + 18 + 24 + 18);
 
 		if (mbeIndex == 0)
 		{
-		    if (m_slot == DSDDMRSlot1) {
-		        mbeFrame = m_dsdDecoder->m_mbeDVFrame1;
-		    } else { // it does not matter if CACH is undefined as it will be aborted later
-		        mbeFrame = m_dsdDecoder->m_mbeDVFrame2;
-		    }
-
 		    w = rW;
 		    x = rX;
 		    y = rY;
 		    z = rZ;
 
-		    memset((void *) mbeFrame, 0, 9); // initialize DVSI frame
+            if (m_slot == DSDDMRSlot1) {
+                memset((void *) m_dsdDecoder->m_mbeDVFrame1, 0, 9); // initialize DVSI frame 1
+            } else {
+                memset((void *) m_dsdDecoder->m_mbeDVFrame2, 0, 9); // initialize DVSI frame 2
+            }
 		}
 
 		m_dsdDecoder->ambe_fr[*w][*x] = (1 & (dibit >> 1)); // bit 1
@@ -622,7 +620,11 @@ void DSDDMR::processVoiceDibit(unsigned char dibit)
 		y++;
 		z++;
 
-		storeSymbolDV(mbeFrame, mbeIndex, dibit); // store dibit for DVSI hardware decoder
+        if (m_slot == DSDDMRSlot1) {
+            storeSymbolDV(m_dsdDecoder->m_mbeDVFrame1, mbeIndex, dibit); // store dibit for DVSI hardware decoder
+        } else { // it does not matter if CACH is undefined as it will be aborted later
+            storeSymbolDV(m_dsdDecoder->m_mbeDVFrame2, mbeIndex, dibit); // store dibit for DVSI hardware decoder
+        }
 
 		if (mbeIndex == 36 - 1)
 		{
