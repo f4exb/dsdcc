@@ -269,6 +269,9 @@ public:
     int getSymbolSyncQuality() const { return m_dsdSymbol.getSymbolSyncQuality(); }
     int getSamplesPerSymbol() const { return m_dsdSymbol.getSamplesPerSymbol(); }
     DSDRate getDataRate() const { return m_dataRate; };
+    bool getVoice1On() const { return m_voice1On; }
+    bool getVoice2On() const { return m_voice2On; }
+
     const DSDDstar& getDStarDecoder() const { return m_dsdDstar; }
     const DSDdPMR& getDPMRDecoder() const { return m_dsdDPMR; }
     void enableMbelib(bool enable) { m_mbelibEnable = enable; }
@@ -347,6 +350,9 @@ private:
     bool m_mbeDVReady1;             //!< AMBE encoded frame ready status for TDMA unique or first slot
     unsigned char m_mbeDVFrame2[9]; //!< AMBE encoded frame for TDMA second slot
     bool m_mbeDVReady2;             //!< AMBE encoded frame ready status for TDMA second slot
+    // Voice announcements
+    bool m_voice1On;
+    bool m_voice2On;
     // Frame decoders
     DSDDMRVoice m_dsdDMRVoice;
     DSDDMRData m_dsdDMRData;

@@ -283,6 +283,8 @@ void DSDDMR::processVoice()
             }
             else
             {
+                m_dsdDecoder->m_voice1On = false;
+
                 if (m_voice2FrameCount < 6)
                 {
 //                    std::cerr << "DSDDMR::processVoice: slot: " << (int) m_slot+1 << " type: " << (int) m_dataType
@@ -328,6 +330,8 @@ void DSDDMR::processVoice()
             }
             else
             {
+                m_dsdDecoder->m_voice2On = false;
+
                 if (m_voice1FrameCount < 6)
                 {
 //                    std::cerr << "DSDDMR::processVoice: slot: "<< (int) m_slot+1 << " type: " << (int) m_dataType
@@ -376,12 +380,22 @@ void DSDDMR::processVoiceFirstHalf()
         processVoiceDibit(dibit_p[m_symbolIndex]);
     }
 
-    if (m_slot == DSDDMRSlot1) {
+    if (m_slot == DSDDMRSlot1)
+    {
         m_voice1FrameCount = 0;
-    } else if (m_slot == DSDDMRSlot2) {
+        m_dsdDecoder->m_voice1On = true;
+    }
+    else if (m_slot == DSDDMRSlot2)
+    {
         m_voice2FrameCount = 0;
-    } else {
-        m_voice2FrameCount = 6; // invalid
+        m_dsdDecoder->m_voice2On = true;
+    }
+    else // invalid
+    {
+        m_voice1FrameCount = 6;
+        m_voice2FrameCount = 6;
+        m_dsdDecoder->m_voice1On = false;
+        m_dsdDecoder->m_voice2On = false;
     }
 
 }

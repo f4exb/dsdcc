@@ -279,12 +279,14 @@ void DSDdPMR::processPostFrame()
                     || (memcmp((const void *) &m_syncDoubleBuffer[3], (const void *) m_preamble, 8) == 0))
             {
                 m_frameType = DPMRNoFrame;
+                m_dsdDecoder->m_voice1On = false;
                 m_dsdDecoder->resetFrameSync(); // trigger a full resync
             }
             else // look for sync extensively
             {
                 std::cerr << "DSDdPMR::processPostFrame: start extensive sync search" << std::endl;
                 m_frameType = DPMRExtSearchFrame;
+                m_dsdDecoder->m_voice1On = false;
                 m_state = DPMRExtSearch;
                 m_symbolIndex = 0;
                 m_syncCycle = 0;
@@ -449,6 +451,7 @@ void DSDdPMR::processEndFrame()
     else // terminated
     {
     	m_frameType = DPMRNoFrame;
+        m_dsdDecoder->m_voice1On = false;
         m_dsdDecoder->resetFrameSync(); // end
     }
 }
@@ -629,24 +632,31 @@ void DSDdPMR::processCCH(int symbolIndex, int dibit)
         {
         case DPMRVoiceMode:
             m_frameType = DPMRVoiceframe;
+            m_dsdDecoder->m_voice1On = true;
             break;
         case DPMRVoiceSLDMode:
             m_frameType = DPMRVoiceframe;
+            m_dsdDecoder->m_voice1On = true;
             break;
         case DPMRVoiceDataMode:
             m_frameType = DPMRDataVoiceframe;
+            m_dsdDecoder->m_voice1On = true;
             break;
         case DPMRData1Mode:
             m_frameType = DPMRData1frame;
+            m_dsdDecoder->m_voice1On = false;
             break;
         case DPMRData2Mode:
             m_frameType = DPMRData2frame;
+            m_dsdDecoder->m_voice1On = false;
             break;
         case DPMRData3Mode:
             m_frameType = DPMRPayloadFrame; // invalid if not packet mode
+            m_dsdDecoder->m_voice1On = false;
             break;
         default:
             m_frameType = DPMRPayloadFrame; // invalid
+            m_dsdDecoder->m_voice1On = false;
             break;
         }
 

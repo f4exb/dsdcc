@@ -1198,6 +1198,9 @@ void DSDDecoder::noCarrier()
     sprintf(m_state.keyid, "________________");
     m_mbeDecoder1.initMbeParms();
     m_mbeDecoder2.initMbeParms();
+
+    m_voice1On = false;
+    m_voice2On = false;
 }
 
 void DSDDecoder::printFrameInfo()

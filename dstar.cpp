@@ -164,6 +164,7 @@ void DSDDstar::init(bool header)
     bitbuffer = 0;
     m_symbolIndex = 0;
     m_symbolIndexHD = 0;
+    m_dsdDecoder->m_voice1On = true;
 }
 
 void DSDDstar::initVoiceFrame()
@@ -199,6 +200,7 @@ void DSDDstar::process()
     }
     else
     {
+        m_dsdDecoder->m_voice1On = false;
         m_dsdDecoder->resetFrameSync(); // end
     }
 
