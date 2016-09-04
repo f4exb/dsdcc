@@ -29,8 +29,6 @@ DSDDecoder::DSDDecoder() :
         m_dsdSymbol(this),
         m_mbeDecoder1(this),
         m_mbeDecoder2(this),
-        m_dsdDMRVoice(this),
-        m_dsdDMRData(this),
         m_dsdDMR(this),
         m_dsdDstar(this),
         m_dsdYSF(this),

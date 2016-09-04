@@ -83,8 +83,6 @@ class DSDDecoder
 {
     friend class DSDSymbol;
     friend class DSDMBEDecoder;
-    friend class DSDDMRVoice;
-    friend class DSDDMRData;
     friend class DSDDMR;
     friend class DSDDstar;
     friend class DSDYSF;
@@ -354,8 +352,6 @@ private:
     bool m_voice1On;
     bool m_voice2On;
     // Frame decoders
-    DSDDMRVoice m_dsdDMRVoice;
-    DSDDMRData m_dsdDMRData;
     DSDDMR m_dsdDMR;
     DSDDstar m_dsdDstar;
     DSDYSF m_dsdYSF;
