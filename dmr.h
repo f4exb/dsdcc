@@ -74,6 +74,8 @@ private:
     void processVoiceFirstHalf(); //!< Because sync is in the middle of a frame you need to process the first half first: CACH to end of SYNC
     void decodeCACH(unsigned char *cachBits);
     void processSlotTypePDU();
+    bool processEMB();
+    void processVoiceEmbeddedSignalling();
     void processVoiceDibit(unsigned char dibit);
     void processDataDibit(unsigned char dibit);
     void storeSymbolDV(unsigned char *mbeFrame, int dibitindex, unsigned char dibit, bool invertDibit = false);
@@ -91,6 +93,14 @@ private:
     char *m_slotText;
     unsigned char m_slotTypePDU_dibits[10];
     unsigned char m_cachBits[24];
+    unsigned char m_emb_dibits[8];
+    unsigned char m_voiceEmbSig_dibits[16];
+    unsigned char m_voice1EmbSigRawBits[16*8];
+    int           m_voice1EmbSig_dibitsIndex;
+    bool          m_voice1EmbSig_OK;
+    unsigned char m_voice2EmbSigRawBits[16*8];
+    int           m_voice2EmbSig_dibitsIndex;
+    bool          m_voice2EmbSig_OK;
     unsigned int m_voice1FrameCount; //!< current frame count in voice superframe: [0..5] else no superframe on going
     unsigned int m_voice2FrameCount; //!< current frame count in voice superframe: [0..5] else no superframe on going
     unsigned char m_mbeDVFrame[9];
@@ -102,6 +112,7 @@ private:
     const int *w, *x, *y, *z;
 
     static const int m_cachInterleave[24];
+    static const int m_embSigInterleave[128];
     static const char *m_slotTypeText[13];
 
     static const int rW[36];

@@ -23,6 +23,24 @@ namespace DSDcc
 {
 
 const int DSDDMR::m_cachInterleave[24] = {0, 4, 8, 12, 14, 18, 22, 1, 2, 3, 5, 6, 7, 9, 10, 11, 13, 15, 16, 17, 19, 20, 21, 23};
+const int m_embSigInterleave[128] = {
+        0,  16,  32,  48,  64,  80,  96, 112,
+        1,  17,  33,  49,  65,  81,  97, 113,
+        2,  18,  34,  50,  66,  82,  98, 114,
+        3,  19,  35,  51,  67,  83,  99, 115,
+        4,  20,  36,  52,  68,  84, 100, 116,
+        5,  21,  37,  53,  69,  85, 101, 117,
+        6,  22,  38,  54,  70,  86, 102, 118,
+        7,  23,  39,  55,  71,  87, 103, 119,
+        8,  24,  40,  56,  72,  88, 104, 120,
+        9,  25,  41,  57,  73,  89, 105, 121,
+       10,  26,  42,  58,  74,  90, 106, 122,
+       11,  27,  43,  59,  75,  91, 107, 123,
+       12,  28,  44,  60,  76,  92, 108, 124,
+       13,  29,  45,  61,  77,  93, 109, 125,
+       14,  30,  46,  62,  78,  94, 110, 126,
+       15,  31,  47,  63,  79,  95, 111, 127,
+};
 const char *DSDDMR::m_slotTypeText[13] = {
         "PIH",
         "VLC",
@@ -384,11 +402,15 @@ void DSDDMR::processVoiceFirstHalf()
     {
         m_voice1FrameCount = 0;
         m_dsdDecoder->m_voice1On = true;
+        m_voice1EmbSig_dibitsIndex = 0;
+        m_voice1EmbSig_OK = true;
     }
     else if (m_slot == DSDDMRSlot2)
     {
         m_voice2FrameCount = 0;
         m_dsdDecoder->m_voice2On = true;
+        m_voice2EmbSig_dibitsIndex = 0;
+        m_voice2EmbSig_OK = true;
     }
     else // invalid
     {
@@ -396,6 +418,8 @@ void DSDDMR::processVoiceFirstHalf()
         m_voice2FrameCount = 6;
         m_dsdDecoder->m_voice1On = false;
         m_dsdDecoder->m_voice2On = false;
+        m_voice1EmbSig_OK = false;
+        m_voice2EmbSig_OK = false;
     }
 
 }
@@ -558,21 +582,29 @@ void DSDDMR::processVoiceDibit(unsigned char dibit)
 
 	else if (m_symbolIndex < 12 + 36 + 18 + 4)
 	{
-		// TODO
+        m_emb_dibits[m_symbolIndex - (12 + 36 + 18)] = dibit;
 	}
 
 	// Embedded signaling
 
 	else if (m_symbolIndex < 12 + 36 + 18 + 4 + 16)
 	{
-
+	    m_voiceEmbSig_dibits[m_symbolIndex - (12 + 36 + 18 + 4)] = dibit;
 	}
 
 	// EMB second half
 
-	else if (m_symbolIndex < 12 + 36 + 18 + 4 + 16 + 4)
+	else if (m_symbolIndex < 12 + 36 + 18 + 4 + 16 + 4) // = 90
 	{
+        m_emb_dibits[m_symbolIndex - (12 + 36 + 18 + 4 + 16)] = dibit;
 
+        if (m_symbolIndex == 12 + 36 + 18 + 4 + 16 + 4 - 1)
+        {
+            if (processEMB())
+            {
+                processVoiceEmbeddedSignalling();
+            }
+        }
 	}
 
 	// voice frame 2 second half
@@ -735,6 +767,117 @@ void DSDDMR::processSlotTypePDU()
     {
         memcpy(&m_slotText[1], "-- UNK", 6);
 //        std::cerr << "DSDDMR::processSlotTypePDU KO" << std::endl;
+    }
+}
+
+bool DSDDMR::processEMB()
+{
+    unsigned char embBits[16];
+
+    for (int i = 0; i < 8; i++)
+    {
+        embBits[2*i]     = (m_emb_dibits[i] >> 1) & 1;
+        embBits[2*i + 1] = m_emb_dibits[i] & 1;
+    }
+
+    if (m_qr_16_7_6.decode(embBits))
+    {
+        m_colorCode = (embBits[0] << 3) + (embBits[1] << 2) + (embBits[2] << 1) + embBits[3];
+        sprintf(&m_slotText[1], "%02d ", m_colorCode);
+        m_lcss = (embBits[5] << 1) + embBits[6];
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+void DSDDMR::processVoiceEmbeddedSignalling()
+{
+    if (m_lcss != 0) // skip RC
+    {
+        unsigned char parityCheck;
+
+        if ((m_slot == DSDDMRSlot1) && (m_voice1EmbSig_OK))
+        {
+            for (int i = 0; i < 16; i++)
+            {
+                int bit1Index = m_embSigInterleave[2*m_voice1EmbSig_dibitsIndex];
+                int bit0Index = m_embSigInterleave[2*m_voice1EmbSig_dibitsIndex + 1];
+
+                if ((i%4) == 0)
+                {
+                    parityCheck = 0;
+                }
+
+                m_voice1EmbSigRawBits[bit1Index] = (1 & (m_voiceEmbSig_dibits[i] >> 1)); // bit 1
+                m_voice1EmbSigRawBits[bit0Index] = (1 & m_voiceEmbSig_dibits[i]);        // bit 0
+                parityCheck ^= m_voice1EmbSigRawBits[bit1Index];
+                parityCheck ^= m_voice1EmbSigRawBits[bit0Index];
+
+                if ((i%4) == 3)
+                {
+                    if (parityCheck != 0)
+                    {
+                        m_voice1EmbSig_OK = false;
+                        break;
+                    }
+                }
+
+                m_voice1EmbSig_dibitsIndex++;
+            }
+
+            if (m_voice1EmbSig_dibitsIndex == 16*4) // BPTC matrix collected
+            {
+
+            }
+        }
+        else if ((m_slot == DSDDMRSlot2) && (m_voice2EmbSig_OK))
+        {
+            for (int i = 0; i < 16; i++)
+            {
+                int bit1Index = m_embSigInterleave[2*m_voice2EmbSig_dibitsIndex];
+                int bit0Index = m_embSigInterleave[2*m_voice2EmbSig_dibitsIndex + 1];
+
+                if ((i%4) == 0)
+                {
+                    parityCheck = 0;
+                }
+
+                m_voice2EmbSigRawBits[bit1Index] = (1 & (m_voiceEmbSig_dibits[i] >> 1)); // bit 1
+                m_voice2EmbSigRawBits[bit0Index] = (1 & m_voiceEmbSig_dibits[i]);        // bit 0
+                parityCheck ^= m_voice1EmbSigRawBits[bit1Index];
+                parityCheck ^= m_voice1EmbSigRawBits[bit0Index];
+
+                if ((i%4) == 3)
+                {
+                    if (parityCheck != 0)
+                    {
+                        m_voice2EmbSig_OK = false;
+                        break;
+                    }
+                }
+
+                m_voice2EmbSig_dibitsIndex++;
+            }
+
+            if (m_voice2EmbSig_dibitsIndex == 16*4) // BPTC matrix collected
+            {
+
+            }
+        }
+    }
+
+    // complete embedded signaling test
+
+    if (m_slot == DSDDMRSlot1)
+    {
+
+    }
+    else if (m_slot == DSDDMRSlot2)
+    {
+
     }
 }
 
