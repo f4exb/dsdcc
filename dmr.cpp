@@ -57,6 +57,9 @@ const char *DSDDMR::m_slotTypeText[13] = {
         "UNK"
 };
 
+const unsigned char DSDDMR::m_syncDataBS[24]  = {3, 1, 3, 3, 3, 3, 1, 1, 1, 3, 3, 1, 1, 3, 1, 1, 3, 1, 3, 3, 1, 1, 3, 1}; // DF F5 7D 75 DF 5D
+const unsigned char DSDDMR::m_syncVoiceBS[24] = {1, 3, 1, 1, 1, 1, 3, 3, 3, 1, 1, 3, 3, 1, 3, 3, 1, 3, 1, 1, 3, 3, 1, 3}; // 75 5F D7 DF 75 F7
+
 /*
  * DMR AMBE interleave schedule
  */
@@ -129,14 +132,14 @@ void DSDDMR::initData(DSDDMRBurstType burstType)
 {
 //    std::cerr << "DSDDMR::initData" << std::endl;
     m_burstType = burstType;
-    processDataFirstHalf();
+    processDataFirstHalf(90+1);
 }
 
 void DSDDMR::initVoice(DSDDMRBurstType burstType)
 {
 //    std::cerr << "DSDDMR::initVoice" << std::endl;
     m_burstType = burstType;
-    processVoiceFirstHalf();
+    processVoiceFirstHalf(90+1);
 }
 
 void DSDDMR::processData()
@@ -157,7 +160,7 @@ void DSDDMR::processData()
     {
         if (m_slot == DSDDMRSlot1)
         {
-            if (m_voice1FrameCount < 6)
+            if (m_voice1FrameCount < 6) // continuation expected on slot + 2
             {
                 std::cerr << "DSDDMR::processData: error: remaining voice in slot1" << std::endl;
 
@@ -175,9 +178,9 @@ void DSDDMR::processData()
 //                    std::cerr << "DSDDMR::processData: slot: "<< (int) m_slot+1 << " type: " << (int) m_dataType
 //                            << " VF1: " << m_voice1FrameCount
 //                            << " VF2: " << m_voice2FrameCount
-//                            << " data continuation in slot 2" << std::endl;
-                    m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDMRdata; // data continuation in slot 2
-                    m_continuation = true;
+//                            << " sync lookup or skip in slot 2" << std::endl;
+                    m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDMRdata; // sync lookup or skip in slot 2
+                    m_continuation = true; // TODO: true or false?
                 }
             }
             else
@@ -204,7 +207,7 @@ void DSDDMR::processData()
         }
         else if (m_slot == DSDDMRSlot2)
         {
-            if (m_voice2FrameCount < 6)
+            if (m_voice2FrameCount < 6) // continuation expected on slot + 2
             {
                 std::cerr << "DSDDMR::processData: error: remaining voice in slot2" << std::endl;
 
@@ -222,9 +225,9 @@ void DSDDMR::processData()
 //                    std::cerr << "DSDDMR::processData: slot: "<< (int) m_slot+1 << " type: " << (int) m_dataType
 //                            << " VF1: " << m_voice1FrameCount
 //                            << " VF2: " << m_voice2FrameCount
-//                            << " data continuation in slot 1" << std::endl;
-                    m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDMRdata; // data continuation in slot 1
-                    m_continuation = true;
+//                            << " sync lookup or skip in slot 1" << std::endl;
+                    m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDMRdata; // sync lookup or skip in slot 1
+                    m_continuation = true; // TODO: true or false?
                 }
             }
             else
@@ -282,7 +285,7 @@ void DSDDMR::processVoice()
         {
             m_voice1FrameCount++;
 
-            if (m_voice1FrameCount < 6)
+            if (m_voice1FrameCount < 6) // continuation expected on slot + 2
             {
                 if (m_voice2FrameCount < 6)
                 {
@@ -298,12 +301,12 @@ void DSDDMR::processVoice()
 //                    std::cerr << "DSDDMR::processVoice: slot: " << (int) m_slot+1 << " type: " << (int) m_dataType
 //                            << " VF1: " << m_voice1FrameCount
 //                            << " VF2: " << m_voice2FrameCount
-//                            << " data continuation in slot 2" << std::endl;
-                    m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDMRdata; // data continuation in slot 2
-                    m_continuation = true;
+//                            << " sync lookup or skip in slot 2" << std::endl;
+                    m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDMRdata; // sync lookup or skip in slot 2
+                    m_continuation = true; // TODO: true or false ?
                 }
             }
-            else
+            else // no super frame on going on this slot
             {
                 m_dsdDecoder->m_voice1On = false;
 
@@ -331,7 +334,7 @@ void DSDDMR::processVoice()
         {
             m_voice2FrameCount++;
 
-            if (m_voice2FrameCount < 6)
+            if (m_voice2FrameCount < 6) // continuation expected on slot + 2
             {
                 if (m_voice1FrameCount < 6)
                 {
@@ -348,8 +351,8 @@ void DSDDMR::processVoice()
 //                            << " VF1: " << m_voice1FrameCount
 //                            << " VF2: " << m_voice2FrameCount
 //                            << " data continuation in slot 1" << std::endl;
-                    m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDMRdata; // data continuation in slot 1
-                    m_continuation = true;
+                    m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDMRdata; // sync lookup or skip in slot 1
+                    m_continuation = true; // TODO: true or false ?
                 }
             }
             else
@@ -387,9 +390,39 @@ void DSDDMR::processVoice()
     m_cachSymbolIndex++; // last dibit counts
 }
 
-void DSDDMR::processDataFirstHalf()
+void DSDDMR::processSyncOrSkip()
 {
-    unsigned char *dibit_p = m_dsdDecoder->m_dsdSymbol.getDibitBack(90+1);
+	if (m_symbolIndex > 24) // accumulate enough symbols to look for a sync
+	{
+		if (memcmp(m_dsdDecoder->m_dsdSymbol.getDibitBack(24), m_syncDataBS, 24) == 0)
+		{
+			processDataFirstHalf(90);
+			m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDMRdata;
+		}
+		else if (memcmp(m_dsdDecoder->m_dsdSymbol.getDibitBack(24), m_syncVoiceBS, 24) == 0)
+		{
+			processVoiceFirstHalf(90);
+			m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDMRvoice;
+		}
+	}
+
+	if (m_symbolIndex == 144 - 1) // last dibit
+	{
+		// return to voice super frame
+		m_slot = (DSDDMRSlot) (((int) m_slot + 1) % 2); // to keep the slot in the next slot period fake a slot reversal
+		m_continuation = true;
+		m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDMRvoice;
+		m_symbolIndex = 0;
+	}
+	else
+	{
+		m_symbolIndex++;
+	}
+}
+
+void DSDDMR::processDataFirstHalf(unsigned int shiftBack)
+{
+    unsigned char *dibit_p = m_dsdDecoder->m_dsdSymbol.getDibitBack(shiftBack);
 
     std::cerr << "DSDDMR::processDataFirstHalf" << std::endl;
 
@@ -399,9 +432,9 @@ void DSDDMR::processDataFirstHalf()
     }
 }
 
-void DSDDMR::processVoiceFirstHalf()
+void DSDDMR::processVoiceFirstHalf(unsigned int shiftBack)
 {
-    unsigned char *dibit_p = m_dsdDecoder->m_dsdSymbol.getDibitBack(90+1);
+    unsigned char *dibit_p = m_dsdDecoder->m_dsdSymbol.getDibitBack(shiftBack);
 
     std::cerr << "DSDDMR::processVoiceFirstHalf" << std::endl;
 

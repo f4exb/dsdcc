@@ -422,6 +422,10 @@ void DSDDecoder::run(short sample)
             m_dsdDMR.processData();
 //            m_dsdDMRData.process();
             break;
+        case DSDprocessDMRsyncOrSkip:
+            m_dsdDMR.processSyncOrSkip();
+//            m_dsdDMRData.process();
+            break;
         case DSDprocessDSTAR:
             m_dsdDstar.process();
             break;

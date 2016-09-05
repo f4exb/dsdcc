@@ -68,6 +68,7 @@ public:
     void initVoice(DSDDMRBurstType burstType);
     void processData();
     void processVoice();
+    void processSyncOrSkip();
 
 private:
     struct DMRAddresses
@@ -77,8 +78,8 @@ private:
         unsigned int m_source;
     };
 
-    void processDataFirstHalf();  //!< Because sync is in the middle of a frame you need to process the first half first: CACH to end of SYNC
-    void processVoiceFirstHalf(); //!< Because sync is in the middle of a frame you need to process the first half first: CACH to end of SYNC
+    void processDataFirstHalf(unsigned int shiftBack);  //!< Because sync is in the middle of a frame you need to process the first half first: CACH to end of SYNC
+    void processVoiceFirstHalf(unsigned int shiftBack); //!< Because sync is in the middle of a frame you need to process the first half first: CACH to end of SYNC
     void decodeCACH(unsigned char *cachBits);
     void processSlotTypePDU();
     bool processEMB();
@@ -110,6 +111,7 @@ private:
     int           m_voice2EmbSig_dibitsIndex;
     bool          m_voice2EmbSig_OK;
     DMRAddresses  m_slot2Addresses;
+    unsigned char m_syncDibits[24];
     unsigned int m_voice1FrameCount; //!< current frame count in voice superframe: [0..5] else no superframe on going
     unsigned int m_voice2FrameCount; //!< current frame count in voice superframe: [0..5] else no superframe on going
     unsigned char m_mbeDVFrame[9];
@@ -124,6 +126,8 @@ private:
     static const int m_cachInterleave[24];
     static const int m_embSigInterleave[128];
     static const char *m_slotTypeText[13];
+    static const unsigned char m_syncDataBS[24];
+    static const unsigned char m_syncVoiceBS[24];
 
     static const int rW[36];
     static const int rX[36];

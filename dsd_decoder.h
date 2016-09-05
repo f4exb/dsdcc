@@ -132,6 +132,7 @@ public:
         DSDprocessDMRdataBS,
         DSDprocessDMRvoice,
         DSDprocessDMRdata,
+		DSDprocessDMRsyncOrSkip,
         DSDprocessX2TDMAvoice,
         DSDprocessX2TDMAdata,
         DSDprocessProVoice,
