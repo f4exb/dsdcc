@@ -70,12 +70,19 @@ public:
     void processVoice();
 
 private:
+    struct DMRAddresses
+    {
+        bool         m_group;
+        unsigned int m_target;
+        unsigned int m_source;
+    };
+
     void processDataFirstHalf();  //!< Because sync is in the middle of a frame you need to process the first half first: CACH to end of SYNC
     void processVoiceFirstHalf(); //!< Because sync is in the middle of a frame you need to process the first half first: CACH to end of SYNC
     void decodeCACH(unsigned char *cachBits);
     void processSlotTypePDU();
     bool processEMB();
-    void processVoiceEmbeddedSignalling();
+    bool processVoiceEmbeddedSignalling(int& voiceEmbSig_dibitsIndex, unsigned char *voiceEmbSigRawBits, bool& voiceEmbSig_OK, DMRAddresses& addresses);
     void processVoiceDibit(unsigned char dibit);
     void processDataDibit(unsigned char dibit);
     void storeSymbolDV(unsigned char *mbeFrame, int dibitindex, unsigned char dibit, bool invertDibit = false);
@@ -98,9 +105,11 @@ private:
     unsigned char m_voice1EmbSigRawBits[16*8];
     int           m_voice1EmbSig_dibitsIndex;
     bool          m_voice1EmbSig_OK;
+    DMRAddresses  m_slot1Addresses;
     unsigned char m_voice2EmbSigRawBits[16*8];
     int           m_voice2EmbSig_dibitsIndex;
     bool          m_voice2EmbSig_OK;
+    DMRAddresses  m_slot2Addresses;
     unsigned int m_voice1FrameCount; //!< current frame count in voice superframe: [0..5] else no superframe on going
     unsigned int m_voice2FrameCount; //!< current frame count in voice superframe: [0..5] else no superframe on going
     unsigned char m_mbeDVFrame[9];
@@ -108,6 +117,7 @@ private:
     Hamming_7_4 m_hamming_7_4;
     Golay_20_8 m_golay_20_8;
     QR_16_7_6 m_qr_16_7_6;
+    Hamming_16_11_4 m_hamming_16_11_4;
 
     const int *w, *x, *y, *z;
 

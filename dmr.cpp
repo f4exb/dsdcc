@@ -23,7 +23,7 @@ namespace DSDcc
 {
 
 const int DSDDMR::m_cachInterleave[24] = {0, 4, 8, 12, 14, 18, 22, 1, 2, 3, 5, 6, 7, 9, 10, 11, 13, 15, 16, 17, 19, 20, 21, 23};
-const int m_embSigInterleave[128] = {
+const int DSDDMR::m_embSigInterleave[128] = {
         0,  16,  32,  48,  64,  80,  96, 112,
         1,  17,  33,  49,  65,  81,  97, 113,
         2,  18,  34,  50,  66,  82,  98, 114,
@@ -159,6 +159,8 @@ void DSDDMR::processData()
         {
             if (m_voice1FrameCount < 6)
             {
+                std::cerr << "DSDDMR::processData: error: remaining voice in slot1" << std::endl;
+
                 if (m_voice2FrameCount < 6)
                 {
 //                    std::cerr << "DSDDMR::processData: slot: "<< (int) m_slot+1 << " type: " << (int) m_dataType
@@ -204,6 +206,8 @@ void DSDDMR::processData()
         {
             if (m_voice2FrameCount < 6)
             {
+                std::cerr << "DSDDMR::processData: error: remaining voice in slot2" << std::endl;
+
                 if (m_voice1FrameCount < 6)
                 {
 //                    std::cerr << "DSDDMR::processData: slot: "<< (int) m_slot+1 << " type: " << (int) m_dataType
@@ -270,7 +274,7 @@ void DSDDMR::processVoice()
 
 	int dibit = m_dsdDecoder->m_dsdSymbol.getDibit(); // get dibit from symbol
 
-	processVoiceDibit(dibit);
+    processVoiceDibit(dibit);
 
 	if (m_symbolIndex == 144 - 1) // last dibit
 	{
@@ -336,6 +340,7 @@ void DSDDMR::processVoice()
 //                            << " VF2: " << m_voice2FrameCount
 //                            << " voice continuation in slot 1" << std::endl;
                     m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDMRvoice; // voice continuation in slot 1
+                    m_continuation = true;
                 }
                 else
                 {
@@ -344,6 +349,7 @@ void DSDDMR::processVoice()
 //                            << " VF2: " << m_voice2FrameCount
 //                            << " data continuation in slot 1" << std::endl;
                     m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDMRdata; // data continuation in slot 1
+                    m_continuation = true;
                 }
             }
             else
@@ -357,6 +363,7 @@ void DSDDMR::processVoice()
 //                            << " VF2: " << m_voice2FrameCount
 //                            << " voice continuation in slot 1" << std::endl;
                     m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDMRvoice; // voice continuation in slot 1
+                    m_continuation = true;
                 }
                 else
                 {
@@ -365,6 +372,7 @@ void DSDDMR::processVoice()
 //                            << " VF2: " << m_voice2FrameCount
 //                            << " back to search after slot 2" << std::endl;
                     m_dsdDecoder->resetFrameSync(); // back to sync
+                    m_continuation = false;
                 }
             }
         }
@@ -383,6 +391,8 @@ void DSDDMR::processDataFirstHalf()
 {
     unsigned char *dibit_p = m_dsdDecoder->m_dsdSymbol.getDibitBack(90+1);
 
+    std::cerr << "DSDDMR::processDataFirstHalf" << std::endl;
+
     for (m_symbolIndex = 0; m_symbolIndex < 90; m_symbolIndex++, m_cachSymbolIndex++)
     {
         processDataDibit(dibit_p[m_symbolIndex]);
@@ -392,6 +402,8 @@ void DSDDMR::processDataFirstHalf()
 void DSDDMR::processVoiceFirstHalf()
 {
     unsigned char *dibit_p = m_dsdDecoder->m_dsdSymbol.getDibitBack(90+1);
+
+    std::cerr << "DSDDMR::processVoiceFirstHalf" << std::endl;
 
     for (m_symbolIndex = 0; m_symbolIndex < 90; m_symbolIndex++, m_cachSymbolIndex++)
     {
@@ -426,6 +438,13 @@ void DSDDMR::processVoiceFirstHalf()
 
 void DSDDMR::processDataDibit(unsigned char dibit)
 {
+    if (m_symbolIndex == 0)
+    {
+        std::cerr << "DSDDMR::processDataDibit: start frame:"
+                << " VC1: " << m_voice1FrameCount
+                << " VC2: " << m_voice2FrameCount << std::endl;
+    }
+
 	// CACH
 
 	if (m_symbolIndex < 12)
@@ -482,9 +501,16 @@ void DSDDMR::processDataDibit(unsigned char dibit)
 
 void DSDDMR::processVoiceDibit(unsigned char dibit)
 {
+    if (m_symbolIndex == 0)
+    {
+        std::cerr << "DSDDMR::processVoiceDibit: start frame:"
+                << " VC1: " << m_voice1FrameCount
+                << " VC2: " << m_voice2FrameCount << std::endl;
+    }
+
 	// CACH
 
-	if (m_symbolIndex < 12)
+    if (m_symbolIndex < 12)
 	{
         m_cachBits[m_cachInterleave[2*m_symbolIndex]]   = (dibit >> 1) & 1;
         m_cachBits[m_cachInterleave[2*m_symbolIndex+1]] = dibit & 1;
@@ -598,12 +624,32 @@ void DSDDMR::processVoiceDibit(unsigned char dibit)
 	{
         m_emb_dibits[m_symbolIndex - (12 + 36 + 18 + 4 + 16)] = dibit;
 
+// FIXME:
         if (m_symbolIndex == 12 + 36 + 18 + 4 + 16 + 4 - 1)
         {
-            if (processEMB())
-            {
-                processVoiceEmbeddedSignalling();
-            }
+//            if (processEMB())
+//            {
+//                if ((m_slot == DSDDMRSlot1) && (m_voice1FrameCount > 0))
+//                {
+//                    if (processVoiceEmbeddedSignalling(m_voice1EmbSig_dibitsIndex, m_voice1EmbSigRawBits, m_voice1EmbSig_OK, m_slot1Addresses))
+//                    {
+//                        std::cerr << "DSDDMR::processVoiceDibit: "
+//                                << " source: " << m_slot1Addresses.m_source
+//                                << " target: " << m_slot1Addresses.m_target
+//                                << " group: " << m_slot1Addresses.m_group << std::endl;
+//                    }
+//                }
+//                else if ((m_slot == DSDDMRSlot2) && (m_voice2FrameCount > 0))
+//                {
+//                    if (processVoiceEmbeddedSignalling(m_voice2EmbSig_dibitsIndex, m_voice2EmbSigRawBits, m_voice2EmbSig_OK, m_slot2Addresses))
+//                    {
+//                        std::cerr << "DSDDMR::processVoiceDibit: "
+//                                << " source: " << m_slot2Addresses.m_source
+//                                << " target: " << m_slot2Addresses.m_target
+//                                << " group: " << m_slot2Addresses.m_group << std::endl;
+//                    }
+//                }
+//            }
         }
 	}
 
@@ -692,10 +738,18 @@ void DSDDMR::decodeCACH(unsigned char *cachBits)
 {
     m_cachOK = true;
 
+    unsigned int cach = (m_cachBits[0] << 6)
+            + (m_cachBits[1] << 5)
+            + (m_cachBits[2] << 4)
+            + (m_cachBits[3] << 3)
+            + (m_cachBits[4] << 2)
+            + (m_cachBits[5] << 1)
+            + (m_cachBits[6]);
+
     if (m_continuation)
     {
         m_slot = (DSDDMRSlot) (((int) m_slot + 1) % 2);
-//        std::cerr << "DSDDMR::decodeCACH: CC: at: " << m_cachSymbolIndex << std::endl;
+        std::cerr << "DSDDMR::decodeCACH: cach: " << cach << " CC:" << " at: " << m_cachSymbolIndex << std::endl;
         m_continuation = false;
         m_cachSymbolIndex = 0; // restart counting
     }
@@ -720,7 +774,7 @@ void DSDDMR::decodeCACH(unsigned char *cachBits)
             m_slot = (DSDDMRSlot) slotIndex;
             m_lcss = 2*cachBits[2] + cachBits[3];
 
-//            std::cerr << "DSDDMR::decodeCACH: OK: at: " << m_cachSymbolIndex << " Slot: " << (int) cachBits[1] << " LCSS: " << (int) m_lcss << std::endl;
+            std::cerr << "DSDDMR::decodeCACH: cach: " << cach << " OK: at: " << m_cachSymbolIndex << " Slot: " << (int) cachBits[1] << " LCSS: " << (int) m_lcss << std::endl;
 
             m_cachSymbolIndex = 0; // restart counting
         }
@@ -728,7 +782,7 @@ void DSDDMR::decodeCACH(unsigned char *cachBits)
         {
             m_slot = DSDDMRSlotUndefined;
             m_cachOK = false;
-//            std::cerr << "DSDDMR::decodeCACH: KO: at: " << m_cachSymbolIndex << std::endl;
+            std::cerr << "DSDDMR::decodeCACH: cach: " << cach << " KO: at: " << m_cachSymbolIndex << std::endl;
         }
     }
 }
@@ -785,100 +839,131 @@ bool DSDDMR::processEMB()
         m_colorCode = (embBits[0] << 3) + (embBits[1] << 2) + (embBits[2] << 1) + embBits[3];
         sprintf(&m_slotText[1], "%02d ", m_colorCode);
         m_lcss = (embBits[5] << 1) + embBits[6];
+        std::cerr << "DSDDMR::processEMB: decode OK" << std::endl;
         return true;
     }
     else
     {
+        std::cerr << "DSDDMR::processEMB: decode error:"
+                << " " << (int) embBits[0]
+                << " " << (int) embBits[1]
+                << " " << (int) embBits[2]
+                << " " << (int) embBits[3]
+                << " " << (int) embBits[4]
+                << " " << (int) embBits[5]
+                << " " << (int) embBits[6]
+                << std::endl;
         return false;
     }
 }
 
-void DSDDMR::processVoiceEmbeddedSignalling()
+bool DSDDMR::processVoiceEmbeddedSignalling(int& voiceEmbSig_dibitsIndex,
+        unsigned char *voiceEmbSigRawBits,
+        bool& voiceEmbSig_OK,
+        DMRAddresses& addresses)
 {
     if (m_lcss != 0) // skip RC
     {
         unsigned char parityCheck;
 
-        if ((m_slot == DSDDMRSlot1) && (m_voice1EmbSig_OK))
+        for (int i = 0; i < 16; i++)
         {
-            for (int i = 0; i < 16; i++)
+            int bit1Index = m_embSigInterleave[2*voiceEmbSig_dibitsIndex];
+            int bit0Index = m_embSigInterleave[2*voiceEmbSig_dibitsIndex + 1];
+
+            if ((i%4) == 0)
             {
-                int bit1Index = m_embSigInterleave[2*m_voice1EmbSig_dibitsIndex];
-                int bit0Index = m_embSigInterleave[2*m_voice1EmbSig_dibitsIndex + 1];
-
-                if ((i%4) == 0)
-                {
-                    parityCheck = 0;
-                }
-
-                m_voice1EmbSigRawBits[bit1Index] = (1 & (m_voiceEmbSig_dibits[i] >> 1)); // bit 1
-                m_voice1EmbSigRawBits[bit0Index] = (1 & m_voiceEmbSig_dibits[i]);        // bit 0
-                parityCheck ^= m_voice1EmbSigRawBits[bit1Index];
-                parityCheck ^= m_voice1EmbSigRawBits[bit0Index];
-
-                if ((i%4) == 3)
-                {
-                    if (parityCheck != 0)
-                    {
-                        m_voice1EmbSig_OK = false;
-                        break;
-                    }
-                }
-
-                m_voice1EmbSig_dibitsIndex++;
+                parityCheck = 0;
             }
 
-            if (m_voice1EmbSig_dibitsIndex == 16*4) // BPTC matrix collected
-            {
+            voiceEmbSigRawBits[bit1Index] = (1 & (m_voiceEmbSig_dibits[i] >> 1)); // bit 1
+            voiceEmbSigRawBits[bit0Index] = (1 & m_voiceEmbSig_dibits[i]);        // bit 0
+            parityCheck ^= voiceEmbSigRawBits[bit1Index];
+            parityCheck ^= voiceEmbSigRawBits[bit0Index];
 
+            if ((i%4) == 3)
+            {
+                if (parityCheck != 0)
+                {
+                    voiceEmbSig_OK = false;
+                    break;
+                }
+            }
+
+            voiceEmbSig_dibitsIndex++;
+        }
+
+        if (voiceEmbSig_dibitsIndex == 16*4) // BPTC matrix collected
+        {
+            if (m_hamming_16_11_4.decode(voiceEmbSigRawBits, 0, 7)) // TODO: 5 bit checksum
+            {
+                unsigned char flco = (voiceEmbSigRawBits[2] << 5)
+                        + (voiceEmbSigRawBits[3] << 4)
+                        + (voiceEmbSigRawBits[4] << 3)
+                        + (voiceEmbSigRawBits[5] << 2)
+                        + (voiceEmbSigRawBits[6] << 1)
+                        + (voiceEmbSigRawBits[7]);
+                addresses.m_group = (flco == 0);
+                addresses.m_target = (voiceEmbSigRawBits[16*2 + 2] << 23) // (LC47)
+                        + (voiceEmbSigRawBits[16*2 + 3] << 22)
+                        + (voiceEmbSigRawBits[16*2 + 4] << 21)
+                        + (voiceEmbSigRawBits[16*2 + 5] << 20)
+                        + (voiceEmbSigRawBits[16*2 + 6] << 19)
+                        + (voiceEmbSigRawBits[16*2 + 7] << 18)
+                        + (voiceEmbSigRawBits[16*2 + 8] << 17)
+                        + (voiceEmbSigRawBits[16*2 + 9] << 16) // 2:7
+                        + (voiceEmbSigRawBits[16*3 + 0] << 15) // (LC39)
+                        + (voiceEmbSigRawBits[16*3 + 1] << 14)
+                        + (voiceEmbSigRawBits[16*3 + 2] << 13)
+                        + (voiceEmbSigRawBits[16*3 + 3] << 12)
+                        + (voiceEmbSigRawBits[16*3 + 4] << 11)
+                        + (voiceEmbSigRawBits[16*3 + 5] << 10)
+                        + (voiceEmbSigRawBits[16*3 + 6] << 9)
+                        + (voiceEmbSigRawBits[16*3 + 7] << 8)  // 1:7
+                        + (voiceEmbSigRawBits[16*3 + 8] << 7)  // (LC31)
+                        + (voiceEmbSigRawBits[16*3 + 9] << 6)
+                        + (voiceEmbSigRawBits[16*4 + 0] << 5)  // (LC29)
+                        + (voiceEmbSigRawBits[16*4 + 1] << 4)
+                        + (voiceEmbSigRawBits[16*4 + 2] << 3)
+                        + (voiceEmbSigRawBits[16*4 + 3] << 2)
+                        + (voiceEmbSigRawBits[16*4 + 4] << 1)
+                        + (voiceEmbSigRawBits[16*4 + 5]);      // (LC24)
+                addresses.m_source = (voiceEmbSigRawBits[16*4 + 6] << 23) // (LC23)
+                        + (voiceEmbSigRawBits[16*4 + 7] << 22)
+                        + (voiceEmbSigRawBits[16*4 + 8] << 21)
+                        + (voiceEmbSigRawBits[16*4 + 9] << 20)
+                        + (voiceEmbSigRawBits[16*5 + 0] << 19)
+                        + (voiceEmbSigRawBits[16*5 + 1] << 18)
+                        + (voiceEmbSigRawBits[16*5 + 2] << 17)
+                        + (voiceEmbSigRawBits[16*5 + 3] << 16) // 2:7
+                        + (voiceEmbSigRawBits[16*5 + 4] << 15) // (LC15)
+                        + (voiceEmbSigRawBits[16*5 + 5] << 14)
+                        + (voiceEmbSigRawBits[16*5 + 6] << 13)
+                        + (voiceEmbSigRawBits[16*5 + 7] << 12)
+                        + (voiceEmbSigRawBits[16*5 + 8] << 11)
+                        + (voiceEmbSigRawBits[16*5 + 9] << 10)
+                        + (voiceEmbSigRawBits[16*6 + 0] << 9)
+                        + (voiceEmbSigRawBits[16*6 + 1] << 8)  // 1:7
+                        + (voiceEmbSigRawBits[16*6 + 2] << 7)  // (LC7)
+                        + (voiceEmbSigRawBits[16*6 + 3] << 6)
+                        + (voiceEmbSigRawBits[16*6 + 4] << 5)
+                        + (voiceEmbSigRawBits[16*6 + 5] << 4)
+                        + (voiceEmbSigRawBits[16*6 + 6] << 3)
+                        + (voiceEmbSigRawBits[16*6 + 7] << 2)
+                        + (voiceEmbSigRawBits[16*6 + 8] << 1)
+                        + (voiceEmbSigRawBits[16*6 + 9]);      // (LC0)
+
+                return true; // we have a result
+            }
+            else
+            {
+                std::cerr << "DSDDMR::processVoiceEmbeddedSignalling: decode error" << std::endl;
+                voiceEmbSig_OK = false;
             }
         }
-        else if ((m_slot == DSDDMRSlot2) && (m_voice2EmbSig_OK))
-        {
-            for (int i = 0; i < 16; i++)
-            {
-                int bit1Index = m_embSigInterleave[2*m_voice2EmbSig_dibitsIndex];
-                int bit0Index = m_embSigInterleave[2*m_voice2EmbSig_dibitsIndex + 1];
-
-                if ((i%4) == 0)
-                {
-                    parityCheck = 0;
-                }
-
-                m_voice2EmbSigRawBits[bit1Index] = (1 & (m_voiceEmbSig_dibits[i] >> 1)); // bit 1
-                m_voice2EmbSigRawBits[bit0Index] = (1 & m_voiceEmbSig_dibits[i]);        // bit 0
-                parityCheck ^= m_voice1EmbSigRawBits[bit1Index];
-                parityCheck ^= m_voice1EmbSigRawBits[bit0Index];
-
-                if ((i%4) == 3)
-                {
-                    if (parityCheck != 0)
-                    {
-                        m_voice2EmbSig_OK = false;
-                        break;
-                    }
-                }
-
-                m_voice2EmbSig_dibitsIndex++;
-            }
-
-            if (m_voice2EmbSig_dibitsIndex == 16*4) // BPTC matrix collected
-            {
-
-            }
-        }
     }
 
-    // complete embedded signaling test
-
-    if (m_slot == DSDDMRSlot1)
-    {
-
-    }
-    else if (m_slot == DSDDMRSlot2)
-    {
-
-    }
+    return false; // no result yet or KO
 }
 
 void DSDDMR::storeSymbolDV(unsigned char *mbeFrame, int dibitindex, unsigned char dibit, bool invertDibit)

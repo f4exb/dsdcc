@@ -377,6 +377,7 @@ bool Hamming_16_11_4::decode(unsigned char *rxBits, unsigned char *decodedBits, 
             if (m_corr[syndromeI] == 0xFF) // uncorrectable error
             {
                 correctable = false;
+                break;
             }
             else
             {
@@ -385,7 +386,10 @@ bool Hamming_16_11_4::decode(unsigned char *rxBits, unsigned char *decodedBits, 
         }
 
         // move information bits
-        memcpy(&decodedBits[11*ic], &rxBits[16*ic], 11);
+        if (decodedBits)
+        {
+            memcpy(&decodedBits[11*ic], &rxBits[16*ic], 11);
+        }
     }
 
     return correctable;

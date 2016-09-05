@@ -62,6 +62,11 @@ int main(int argc, char *argv[])
     codeword[2] ^=  1;
     decode(hamming_16_11_4, codeword);
 
+    std::cout << std::endl << "Flip two bits (2,5)" << std::endl;
+    codeword[2] ^=  1;
+    codeword[5] ^=  1;
+    decode(hamming_16_11_4, codeword);
+
     return 0;
 }
 
