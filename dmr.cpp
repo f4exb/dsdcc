@@ -22,7 +22,7 @@
 namespace DSDcc
 {
 
-const int DSDDMR::m_cachInterleave[24] = {0, 4, 8, 12, 14, 18, 22, 1, 2, 3, 5, 6, 7, 9, 10, 11, 13, 15, 16, 17, 19, 20, 21, 23};
+const int DSDDMR::m_cachInterleave[24]   = {0, 7, 8, 9, 1, 10, 11, 12, 2, 13, 14, 15, 3, 16, 4, 17, 18, 19, 5, 20, 21, 22, 6, 23};
 const int DSDDMR::m_embSigInterleave[128] = {
         0,  16,  32,  48,  64,  80,  96, 112,
         1,  17,  33,  49,  65,  81,  97, 113,
@@ -396,11 +396,13 @@ void DSDDMR::processSyncOrSkip()
 	{
 		if (memcmp(m_dsdDecoder->m_dsdSymbol.getDibitBack(24), m_syncDataBS, 24) == 0)
 		{
+		    std::cerr << "DSDDMR::processSyncOrSkip: data sync" << std::endl;
 			processDataFirstHalf(90);
 			m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDMRdata;
 		}
 		else if (memcmp(m_dsdDecoder->m_dsdSymbol.getDibitBack(24), m_syncVoiceBS, 24) == 0)
 		{
+		    std::cerr << "DSDDMR::processSyncOrSkip: voice sync" << std::endl;
 			processVoiceFirstHalf(90);
 			m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDMRvoice;
 		}
@@ -771,18 +773,12 @@ void DSDDMR::decodeCACH(unsigned char *cachBits)
 {
     m_cachOK = true;
 
-    unsigned int cach = (m_cachBits[0] << 6)
-            + (m_cachBits[1] << 5)
-            + (m_cachBits[2] << 4)
-            + (m_cachBits[3] << 3)
-            + (m_cachBits[4] << 2)
-            + (m_cachBits[5] << 1)
-            + (m_cachBits[6]);
+//    printCACH(cachBits);
 
     if (m_continuation)
     {
         m_slot = (DSDDMRSlot) (((int) m_slot + 1) % 2);
-        std::cerr << "DSDDMR::decodeCACH: cach: " << cach << " CC:" << " at: " << m_cachSymbolIndex << std::endl;
+//        std::cerr << "DSDDMR::decodeCACH: cach: " << " CC:" << " at: " << m_cachSymbolIndex << std::endl;
         m_continuation = false;
         m_cachSymbolIndex = 0; // restart counting
     }
@@ -807,7 +803,7 @@ void DSDDMR::decodeCACH(unsigned char *cachBits)
             m_slot = (DSDDMRSlot) slotIndex;
             m_lcss = 2*cachBits[2] + cachBits[3];
 
-            std::cerr << "DSDDMR::decodeCACH: cach: " << cach << " OK: at: " << m_cachSymbolIndex << " Slot: " << (int) cachBits[1] << " LCSS: " << (int) m_lcss << std::endl;
+//            std::cerr << "DSDDMR::decodeCACH: cach: " << " OK: at: " << m_cachSymbolIndex << " Slot: " << (int) cachBits[1] << " LCSS: " << (int) m_lcss << std::endl;
 
             m_cachSymbolIndex = 0; // restart counting
         }
@@ -815,7 +811,7 @@ void DSDDMR::decodeCACH(unsigned char *cachBits)
         {
             m_slot = DSDDMRSlotUndefined;
             m_cachOK = false;
-            std::cerr << "DSDDMR::decodeCACH: cach: " << cach << " KO: at: " << m_cachSymbolIndex << std::endl;
+//            std::cerr << "DSDDMR::decodeCACH: cach: " << " KO: at: " << m_cachSymbolIndex << std::endl;
         }
     }
 }
@@ -1012,6 +1008,19 @@ void DSDDMR::storeSymbolDV(unsigned char *mbeFrame, int dibitindex, unsigned cha
     }
 
     mbeFrame[dibitindex/4] |= (dibit << (6 - 2*(dibitindex % 4)));
+}
+
+void DSDDMR::printCACH(unsigned char *cachBits)
+{
+    std::cerr << "DSDDMR::printCACH:"
+            << " " << ((int) cachBits[0])
+            << " " << ((int) cachBits[1])
+            << " " << ((int) cachBits[2])
+            << " " << ((int) cachBits[3])
+            << "  " << ((int) cachBits[4])
+            << " " << ((int) cachBits[5])
+            << " " << ((int) cachBits[6])
+            << std::endl;
 }
 
 

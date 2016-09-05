@@ -88,6 +88,8 @@ private:
     void processDataDibit(unsigned char dibit);
     void storeSymbolDV(unsigned char *mbeFrame, int dibitindex, unsigned char dibit, bool invertDibit = false);
 
+    void printCACH(unsigned char *cach);
+
     DSDDecoder *m_dsdDecoder;
     int  m_symbolIndex;                   //!< current symbol index in non HD sequence
     int  m_cachSymbolIndex;               //!< count of symbols since last positive CACH identification
