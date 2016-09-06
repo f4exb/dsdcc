@@ -665,7 +665,7 @@ void DSDDMR::processVoiceDibit(unsigned char dibit)
 
 	else if (m_symbolIndex < 12 + 36 + 18 + 4 + 16 + 4) // = 90
 	{
-        m_emb_dibits[m_symbolIndex - (12 + 36 + 18 + 4 + 16)] = dibit;
+        m_emb_dibits[m_symbolIndex + 4 - (12 + 36 + 18 + 4 + 16)] = dibit;
 
 // FIXME:
         if (m_symbolIndex == 12 + 36 + 18 + 4 + 16 + 4 - 1)
