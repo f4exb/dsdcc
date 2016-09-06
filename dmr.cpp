@@ -828,6 +828,10 @@ bool DSDDMR::processVoiceEmbeddedSignalling(int& voiceEmbSig_dibitsIndex,
 
         for (int i = 0; i < 16; i++)
         {
+            if (voiceEmbSig_dibitsIndex > 63) { // prevent segfault
+                break;
+            }
+
             int bit1Index = m_embSigInterleave[2*voiceEmbSig_dibitsIndex];
             int bit0Index = m_embSigInterleave[2*voiceEmbSig_dibitsIndex + 1];
 
