@@ -47,6 +47,7 @@ DSDMBEDecoder::DSDMBEDecoder(DSDDecoder *dsdDecoder) :
     m_aout_gain = 25;
     m_auto_gain = true;
     m_stereo = false;
+    m_channels = 3; // both channels by default if stereo is set
     m_upsample = 0;
 
 	initMbeParms();
@@ -245,10 +246,26 @@ void DSDMBEDecoder::processAudio()
                 *m_audio_out_float_buf_p = (float) -32760;
             }
 
-            *m_audio_out_buf_p = (short) *m_audio_out_float_buf_p;
-            m_audio_out_buf_p++;
 
-            if (m_stereo) // produce second channel
+            if (m_stereo) // produce two channels
+            {
+            	if (m_channels & 1) { // left channel
+                    *m_audio_out_buf_p = (short) *m_audio_out_float_buf_p;
+            	} else {
+            		*m_audio_out_buf_p = 0;
+            	}
+
+                m_audio_out_buf_p++;
+
+                if ((m_channels>>1) & 1) { // right channel
+                    *m_audio_out_buf_p = (short) *m_audio_out_float_buf_p;
+            	} else {
+            		*m_audio_out_buf_p = 0;
+            	}
+
+                m_audio_out_buf_p++;
+            }
+            else // single (mono) channel
             {
                 *m_audio_out_buf_p = (short) *m_audio_out_float_buf_p;
                 m_audio_out_buf_p++;
