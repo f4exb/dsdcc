@@ -179,10 +179,10 @@ void DSDDMR::processData()
 //                            << " VF1: " << m_voice1FrameCount
 //                            << " VF2: " << m_voice2FrameCount
 //                            << " sync lookup or skip in slot 2" << std::endl;
-//                    m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDMRsyncOrSkip; // sync lookup or skip in slot 2
-//                    m_continuation = false; // TODO: true or false?
-                    m_dsdDecoder->resetFrameSync(); // back to sync
-                    m_continuation = false;
+                    m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDMRsyncOrSkip; // sync lookup or skip in slot 2
+                    m_continuation = false; // TODO: true or false?
+//                    m_dsdDecoder->resetFrameSync(); // back to sync
+//                    m_continuation = false;
                 }
             }
             else
@@ -228,10 +228,10 @@ void DSDDMR::processData()
 //                            << " VF1: " << m_voice1FrameCount
 //                            << " VF2: " << m_voice2FrameCount
 //                            << " sync lookup or skip in slot 1" << std::endl;
-//                    m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDMRsyncOrSkip; // sync lookup or skip in slot 1
-//                    m_continuation = false; // TODO: true or false?
-                    m_dsdDecoder->resetFrameSync(); // back to sync
-                    m_continuation = false;
+                    m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDMRsyncOrSkip; // sync lookup or skip in slot 1
+                    m_continuation = false; // TODO: true or false?
+//                    m_dsdDecoder->resetFrameSync(); // back to sync
+//                    m_continuation = false;
                 }
             }
             else
@@ -306,10 +306,10 @@ void DSDDMR::processVoice()
 //                            << " VF1: " << m_voice1FrameCount
 //                            << " VF2: " << m_voice2FrameCount
 //                            << " sync lookup or skip in slot 2" << std::endl;
-//                    m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDMRsyncOrSkip; // sync lookup or skip in slot 2
-//                    m_continuation = false; // TODO: true or false ?
-                    m_dsdDecoder->resetFrameSync(); // back to sync
-                    m_continuation = false;
+                    m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDMRsyncOrSkip; // sync lookup or skip in slot 2
+                    m_continuation = false; // TODO: true or false ?
+//                    m_dsdDecoder->resetFrameSync(); // back to sync
+//                    m_continuation = false;
                 }
             }
             else // no super frame on going on this slot
@@ -357,10 +357,10 @@ void DSDDMR::processVoice()
 //                            << " VF1: " << m_voice1FrameCount
 //                            << " VF2: " << m_voice2FrameCount
 //                            << " data continuation in slot 1" << std::endl;
-//                    m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDMRsyncOrSkip; // sync lookup or skip in slot 1
-//                    m_continuation = false; // TODO: true or false ?
-                    m_dsdDecoder->resetFrameSync(); // back to sync
-                    m_continuation = false;
+                    m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDMRsyncOrSkip; // sync lookup or skip in slot 1
+                    m_continuation = false; // TODO: true or false ?
+//                    m_dsdDecoder->resetFrameSync(); // back to sync
+//                    m_continuation = false;
                 }
             }
             else
@@ -407,12 +407,14 @@ void DSDDMR::processSyncOrSkip()
 		    std::cerr << "DSDDMR::processSyncOrSkip: data sync" << std::endl;
 			processDataFirstHalf(90);
 			m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDMRdata;
+			return;
 		}
 		else if (memcmp(m_dsdDecoder->m_dsdSymbol.getDibitBack(24), m_syncVoiceBS, 24) == 0)
 		{
 		    std::cerr << "DSDDMR::processSyncOrSkip: voice sync" << std::endl;
 			processVoiceFirstHalf(90);
 			m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDMRvoice;
+			return;
 		}
 	}
 
@@ -428,6 +430,8 @@ void DSDDMR::processSyncOrSkip()
 	{
 		m_symbolIndex++;
 	}
+
+	m_cachSymbolIndex++; // last dibit counts
 }
 
 void DSDDMR::processDataFirstHalf(unsigned int shiftBack)
