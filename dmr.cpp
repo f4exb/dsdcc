@@ -166,42 +166,24 @@ void DSDDMR::processData()
 
                 if (m_voice2FrameCount < 6)
                 {
-//                    std::cerr << "DSDDMR::processData: slot: "<< (int) m_slot+1 << " type: " << (int) m_dataType
-//                            << " VF1: " << m_voice1FrameCount
-//                            << " VF2: " << m_voice2FrameCount
-//                            << " voice continuation in slot 2" << std::endl;
                     m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDMRvoice; // voice continuation in slot 2
                     m_continuation = true;
                 }
                 else
                 {
-//                    std::cerr << "DSDDMR::processData: slot: "<< (int) m_slot+1 << " type: " << (int) m_dataType
-//                            << " VF1: " << m_voice1FrameCount
-//                            << " VF2: " << m_voice2FrameCount
-//                            << " sync lookup or skip in slot 2" << std::endl;
                     m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDMRsyncOrSkip; // sync lookup or skip in slot 2
                     m_continuation = false; // TODO: true or false?
-//                    m_dsdDecoder->resetFrameSync(); // back to sync
-//                    m_continuation = false;
                 }
             }
             else
             {
                 if (m_voice2FrameCount < 6)
                 {
-//                    std::cerr << "DSDDMR::processData: slot: "<< (int) m_slot+1 << " type: " << (int) m_dataType
-//                            << " VF1: " << m_voice1FrameCount
-//                            << " VF2: " << m_voice2FrameCount
-//                            << " voice continuation in slot 2" << std::endl;
                     m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDMRvoice; // voice continuation in slot 2
                     m_continuation = true;
                 }
                 else
                 {
-//                    std::cerr << "DSDDMR::processData: slot: "<< (int) m_slot+1 << " type: " << (int) m_dataType
-//                            << " VF1: " << m_voice1FrameCount
-//                            << " VF2: " << m_voice2FrameCount
-//                            << " back to search after slot 1" << std::endl;
                     m_dsdDecoder->resetFrameSync(); // back to sync
                     m_continuation = false;
                 }
@@ -215,42 +197,24 @@ void DSDDMR::processData()
 
                 if (m_voice1FrameCount < 6)
                 {
-//                    std::cerr << "DSDDMR::processData: slot: "<< (int) m_slot+1 << " type: " << (int) m_dataType
-//                            << " VF1: " << m_voice1FrameCount
-//                            << " VF2: " << m_voice2FrameCount
-//                            << " voice continuation in slot 1" << std::endl;
                     m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDMRvoice; // voice continuation in slot 1
                     m_continuation = true;
                 }
                 else
                 {
-//                    std::cerr << "DSDDMR::processData: slot: "<< (int) m_slot+1 << " type: " << (int) m_dataType
-//                            << " VF1: " << m_voice1FrameCount
-//                            << " VF2: " << m_voice2FrameCount
-//                            << " sync lookup or skip in slot 1" << std::endl;
                     m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDMRsyncOrSkip; // sync lookup or skip in slot 1
                     m_continuation = false; // TODO: true or false?
-//                    m_dsdDecoder->resetFrameSync(); // back to sync
-//                    m_continuation = false;
                 }
             }
             else
             {
                 if (m_voice1FrameCount < 6)
                 {
-//                    std::cerr << "DSDDMR::processData: slot: "<< (int) m_slot+1 << " type: " << (int) m_dataType
-//                            << " VF1: " << m_voice1FrameCount
-//                            << " VF2: " << m_voice2FrameCount
-//                            << " voice continuation in slot 1" << std::endl;
                     m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDMRvoice; // voice continuation in slot 1
                     m_continuation = true;
                 }
                 else
                 {
-//                    std::cerr << "DSDDMR::processData: slot: "<< (int) m_slot+1 << " type: " << (int) m_dataType
-//                            << " VF1: " << m_voice1FrameCount
-//                            << " VF2: " << m_voice2FrameCount
-//                            << " back to search after slot 2" << std::endl;
                     m_dsdDecoder->resetFrameSync(); // back to sync
                     m_continuation = false;
                 }
@@ -293,23 +257,13 @@ void DSDDMR::processVoice()
             {
                 if (m_voice2FrameCount < 6)
                 {
-//                    std::cerr << "DSDDMR::processVoice: slot: " << (int) m_slot+1 << " type: " << (int) m_dataType
-//                            << " VF1: " << m_voice1FrameCount
-//                            << " VF2: " << m_voice2FrameCount
-//                            << " voice continuation in slot 2" << std::endl;
                     m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDMRvoice; // voice continuation in slot 2
                     m_continuation = true;
                 }
                 else
                 {
-//                    std::cerr << "DSDDMR::processVoice: slot: " << (int) m_slot+1 << " type: " << (int) m_dataType
-//                            << " VF1: " << m_voice1FrameCount
-//                            << " VF2: " << m_voice2FrameCount
-//                            << " sync lookup or skip in slot 2" << std::endl;
                     m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDMRsyncOrSkip; // sync lookup or skip in slot 2
                     m_continuation = false; // TODO: true or false ?
-//                    m_dsdDecoder->resetFrameSync(); // back to sync
-//                    m_continuation = false;
                 }
             }
             else // no super frame on going on this slot
@@ -318,19 +272,11 @@ void DSDDMR::processVoice()
 
                 if (m_voice2FrameCount < 6)
                 {
-//                    std::cerr << "DSDDMR::processVoice: slot: " << (int) m_slot+1 << " type: " << (int) m_dataType
-//                            << " VF1: " << m_voice1FrameCount
-//                            << " VF2: " << m_voice2FrameCount
-//                            << " voice continuation in slot 2" << std::endl;
                     m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDMRvoice; // voice continuation in slot 2
                     m_continuation = true;
                 }
                 else
                 {
-//                    std::cerr << "DSDDMR::processVoice: slot: " << (int) m_slot+1 << " type: " << (int) m_dataType
-//                            << " VF1: " << m_voice1FrameCount
-//                            << " VF2: " << m_voice2FrameCount
-//                            << " back to search after slot 1" << std::endl;
                     m_dsdDecoder->resetFrameSync(); // back to sync
                     m_continuation = false;
                 }
@@ -344,23 +290,13 @@ void DSDDMR::processVoice()
             {
                 if (m_voice1FrameCount < 6)
                 {
-//                    std::cerr << "DSDDMR::processVoice: slot: "<< (int) m_slot+1 << " type: " << (int) m_dataType
-//                            << " VF1: " << m_voice1FrameCount
-//                            << " VF2: " << m_voice2FrameCount
-//                            << " voice continuation in slot 1" << std::endl;
                     m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDMRvoice; // voice continuation in slot 1
                     m_continuation = true;
                 }
                 else
                 {
-//                    std::cerr << "DSDDMR::processVoice: slot: "<< (int) m_slot+1 << " type: " << (int) m_dataType
-//                            << " VF1: " << m_voice1FrameCount
-//                            << " VF2: " << m_voice2FrameCount
-//                            << " data continuation in slot 1" << std::endl;
                     m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDMRsyncOrSkip; // sync lookup or skip in slot 1
                     m_continuation = false; // TODO: true or false ?
-//                    m_dsdDecoder->resetFrameSync(); // back to sync
-//                    m_continuation = false;
                 }
             }
             else
@@ -369,19 +305,11 @@ void DSDDMR::processVoice()
 
                 if (m_voice1FrameCount < 6)
                 {
-//                    std::cerr << "DSDDMR::processVoice: slot: "<< (int) m_slot+1 << " type: " << (int) m_dataType
-//                            << " VF1: " << m_voice1FrameCount
-//                            << " VF2: " << m_voice2FrameCount
-//                            << " voice continuation in slot 1" << std::endl;
                     m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDMRvoice; // voice continuation in slot 1
                     m_continuation = true;
                 }
                 else
                 {
-//                    std::cerr << "DSDDMR::processVoice: slot: "<< (int) m_slot+1 << " type: " << (int) m_dataType
-//                            << " VF1: " << m_voice1FrameCount
-//                            << " VF2: " << m_voice2FrameCount
-//                            << " back to search after slot 2" << std::endl;
                     m_dsdDecoder->resetFrameSync(); // back to sync
                     m_continuation = false;
                 }
@@ -404,14 +332,14 @@ void DSDDMR::processSyncOrSkip()
 	{
 		if (memcmp(m_dsdDecoder->m_dsdSymbol.getDibitBack(24), m_syncDataBS, 24) == 0)
 		{
-		    std::cerr << "DSDDMR::processSyncOrSkip: data sync" << std::endl;
+//		    std::cerr << "DSDDMR::processSyncOrSkip: data sync" << std::endl;
 			processDataFirstHalf(90);
 			m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDMRdata;
 			return;
 		}
 		else if (memcmp(m_dsdDecoder->m_dsdSymbol.getDibitBack(24), m_syncVoiceBS, 24) == 0)
 		{
-		    std::cerr << "DSDDMR::processSyncOrSkip: voice sync" << std::endl;
+//		    std::cerr << "DSDDMR::processSyncOrSkip: voice sync" << std::endl;
 			processVoiceFirstHalf(90);
 			m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDMRvoice;
 			return;
@@ -438,7 +366,7 @@ void DSDDMR::processDataFirstHalf(unsigned int shiftBack)
 {
     unsigned char *dibit_p = m_dsdDecoder->m_dsdSymbol.getDibitBack(shiftBack);
 
-    std::cerr << "DSDDMR::processDataFirstHalf" << std::endl;
+//    std::cerr << "DSDDMR::processDataFirstHalf" << std::endl;
 
     for (m_symbolIndex = 0; m_symbolIndex < 90; m_symbolIndex++, m_cachSymbolIndex++)
     {
@@ -450,7 +378,7 @@ void DSDDMR::processVoiceFirstHalf(unsigned int shiftBack)
 {
     unsigned char *dibit_p = m_dsdDecoder->m_dsdSymbol.getDibitBack(shiftBack);
 
-    std::cerr << "DSDDMR::processVoiceFirstHalf" << std::endl;
+//    std::cerr << "DSDDMR::processVoiceFirstHalf" << std::endl;
 
     for (m_symbolIndex = 0; m_symbolIndex < 90; m_symbolIndex++, m_cachSymbolIndex++)
     {
@@ -496,10 +424,10 @@ void DSDDMR::processDataDibit(unsigned char dibit)
         {
             decodeCACH(m_cachBits);
 
-            std::cerr << "DSDDMR::processDataDibit: start frame:"
-                    << " slot: " << (int) m_slot
-                    << " VC1: " << m_voice1FrameCount
-                    << " VC2: " << m_voice2FrameCount << std::endl;
+//            std::cerr << "DSDDMR::processDataDibit: start frame:"
+//                    << " slot: " << (int) m_slot
+//                    << " VC1: " << m_voice1FrameCount
+//                    << " VC2: " << m_voice2FrameCount << std::endl;
         }
 	}
 
@@ -566,10 +494,10 @@ void DSDDMR::processVoiceDibit(unsigned char dibit)
                 }
             }
 
-            std::cerr << "DSDDMR::processVoiceDibit: start frame:"
-                    << " slot: " << (int) m_slot
-                    << " VC1: " << m_voice1FrameCount
-                    << " VC2: " << m_voice2FrameCount << std::endl;
+//            std::cerr << "DSDDMR::processVoiceDibit: start frame:"
+//                    << " slot: " << (int) m_slot
+//                    << " VC1: " << m_voice1FrameCount
+//                    << " VC2: " << m_voice2FrameCount << std::endl;
         }
 	}
 
@@ -667,7 +595,6 @@ void DSDDMR::processVoiceDibit(unsigned char dibit)
 	{
         m_emb_dibits[m_symbolIndex + 4 - (12 + 36 + 18 + 4 + 16)] = dibit;
 
-// FIXME:
         if (m_symbolIndex == 12 + 36 + 18 + 4 + 16 + 4 - 1)
         {
             if ((m_slot == DSDDMRSlot1) && (m_voice1FrameCount > 0) && (m_voice1FrameCount < 6))
@@ -676,10 +603,11 @@ void DSDDMR::processVoiceDibit(unsigned char dibit)
                 {
                     if (processVoiceEmbeddedSignalling(m_voice1EmbSig_dibitsIndex, m_voice1EmbSigRawBits, m_voice1EmbSig_OK, m_slot1Addresses))
                     {
-                        std::cerr << "DSDDMR::processVoiceDibit: "
-                                << " source: " << m_slot1Addresses.m_source
-                                << " target: " << m_slot1Addresses.m_target
-                                << " group: " << m_slot1Addresses.m_group << std::endl;
+                        textVoiceEmbeddedSignalling(m_slot1Addresses, m_dsdDecoder->m_state.slot0light);
+//                        std::cerr << "DSDDMR::processVoiceDibit: "
+//                                << " source: " << m_slot1Addresses.m_source
+//                                << " target: " << m_slot1Addresses.m_target
+//                                << " group: " << m_slot1Addresses.m_group << std::endl;
                     }
                 }
             }
@@ -689,10 +617,11 @@ void DSDDMR::processVoiceDibit(unsigned char dibit)
                 {
                     if (processVoiceEmbeddedSignalling(m_voice2EmbSig_dibitsIndex, m_voice2EmbSigRawBits, m_voice2EmbSig_OK, m_slot2Addresses))
                     {
-                        std::cerr << "DSDDMR::processVoiceDibit: "
-                                << " source: " << m_slot2Addresses.m_source
-                                << " target: " << m_slot2Addresses.m_target
-                                << " group: " << m_slot2Addresses.m_group << std::endl;
+                        textVoiceEmbeddedSignalling(m_slot2Addresses, m_dsdDecoder->m_state.slot1light);
+//                        std::cerr << "DSDDMR::processVoiceDibit: "
+//                                << " source: " << m_slot2Addresses.m_source
+//                                << " target: " << m_slot2Addresses.m_target
+//                                << " group: " << m_slot2Addresses.m_group << std::endl;
                     }
                 }
             }
@@ -783,8 +712,6 @@ void DSDDMR::processVoiceDibit(unsigned char dibit)
 void DSDDMR::decodeCACH(unsigned char *cachBits)
 {
     m_cachOK = true;
-
-//    printCACH(cachBits);
 
     if (m_continuation)
     {
@@ -879,22 +806,13 @@ bool DSDDMR::processEMB()
     if (m_qr_16_7_6.decode(embBits))
     {
         m_colorCode = (embBits[0] << 3) + (embBits[1] << 2) + (embBits[2] << 1) + embBits[3];
-        sprintf(&m_slotText[1], "%02d ", m_colorCode);
+        sprintf(&m_slotText[1], "%02d", m_colorCode);
+        m_slotText[3] = ' ';
         m_lcss = (embBits[5] << 1) + embBits[6];
-        std::cerr << "DSDDMR::processEMB: decode OK" << std::endl;
         return true;
     }
     else
     {
-        std::cerr << "DSDDMR::processEMB: decode error:"
-                << " " << (int) embBits[0]
-                << " " << (int) embBits[1]
-                << " " << (int) embBits[2]
-                << " " << (int) embBits[3]
-                << " " << (int) embBits[4]
-                << " " << (int) embBits[5]
-                << " " << (int) embBits[6]
-                << std::endl;
         return false;
     }
 }
@@ -1023,19 +941,18 @@ void DSDDMR::storeSymbolDV(unsigned char *mbeFrame, int dibitindex, unsigned cha
     mbeFrame[dibitindex/4] |= (dibit << (6 - 2*(dibitindex % 4)));
 }
 
-void DSDDMR::printCACH(unsigned char *cachBits)
+void DSDDMR::textVoiceEmbeddedSignalling(DMRAddresses& addresses, char *slotText)
 {
-    std::cerr << "DSDDMR::printCACH:"
-            << " " << ((int) cachBits[0])
-            << " " << ((int) cachBits[1])
-            << " " << ((int) cachBits[2])
-            << " " << ((int) cachBits[3])
-            << "  " << ((int) cachBits[4])
-            << " " << ((int) cachBits[5])
-            << " " << ((int) cachBits[6])
-            << std::endl;
-}
+    sprintf(&slotText[8],  "%08d", addresses.m_source);
+    sprintf(&slotText[18], "%08d", addresses.m_target);
+    slotText[16] = '>';
 
+    if (addresses.m_group) {
+        slotText[17] = 'G';
+    } else {
+        slotText[17] = 'U';
+    }
+}
 
 } // namespace DSDcc
 

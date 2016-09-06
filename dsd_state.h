@@ -53,8 +53,8 @@ public:
     int optind;
     int numtdulc;
     int firstframe;
-    char slot0light[8];
-    char slot1light[8];
+    char slot0light[27];
+    char slot1light[27];
     unsigned char ccnum;
     char algid[9];
     char keyid[17];

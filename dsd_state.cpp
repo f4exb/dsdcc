@@ -63,8 +63,8 @@ DSDState::DSDState()
     optind = 0;
     numtdulc = 0;
     firstframe = 0;
-    sprintf(slot0light, "        ");
-    sprintf(slot1light, "        ");
+    sprintf(slot0light, "                          ");
+    sprintf(slot1light, "                          ");
 //    samplesPerSymbol = 10;
     sprintf(algid, "________");
     sprintf(keyid, "________________");
