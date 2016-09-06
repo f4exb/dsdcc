@@ -485,13 +485,6 @@ void DSDDMR::processVoiceFirstHalf(unsigned int shiftBack)
 
 void DSDDMR::processDataDibit(unsigned char dibit)
 {
-    if (m_symbolIndex == 0)
-    {
-        std::cerr << "DSDDMR::processDataDibit: start frame:"
-                << " VC1: " << m_voice1FrameCount
-                << " VC2: " << m_voice2FrameCount << std::endl;
-    }
-
 	// CACH
 
 	if (m_symbolIndex < 12)
@@ -502,6 +495,11 @@ void DSDDMR::processDataDibit(unsigned char dibit)
         if(m_symbolIndex == 12-1)
         {
             decodeCACH(m_cachBits);
+
+            std::cerr << "DSDDMR::processDataDibit: start frame:"
+                    << " slot: " << (int) m_slot
+                    << " VC1: " << m_voice1FrameCount
+                    << " VC2: " << m_voice2FrameCount << std::endl;
         }
 	}
 
@@ -548,13 +546,6 @@ void DSDDMR::processDataDibit(unsigned char dibit)
 
 void DSDDMR::processVoiceDibit(unsigned char dibit)
 {
-    if (m_symbolIndex == 0)
-    {
-        std::cerr << "DSDDMR::processVoiceDibit: start frame:"
-                << " VC1: " << m_voice1FrameCount
-                << " VC2: " << m_voice2FrameCount << std::endl;
-    }
-
 	// CACH
 
     if (m_symbolIndex < 12)
@@ -574,6 +565,11 @@ void DSDDMR::processVoiceDibit(unsigned char dibit)
                     memcpy(&m_dsdDecoder->m_state.slot1light[4], "VOX", 3);
                 }
             }
+
+            std::cerr << "DSDDMR::processVoiceDibit: start frame:"
+                    << " slot: " << (int) m_slot
+                    << " VC1: " << m_voice1FrameCount
+                    << " VC2: " << m_voice2FrameCount << std::endl;
         }
 	}
 
@@ -674,29 +670,32 @@ void DSDDMR::processVoiceDibit(unsigned char dibit)
 // FIXME:
         if (m_symbolIndex == 12 + 36 + 18 + 4 + 16 + 4 - 1)
         {
-//            if (processEMB())
-//            {
-//                if ((m_slot == DSDDMRSlot1) && (m_voice1FrameCount > 0))
-//                {
-//                    if (processVoiceEmbeddedSignalling(m_voice1EmbSig_dibitsIndex, m_voice1EmbSigRawBits, m_voice1EmbSig_OK, m_slot1Addresses))
-//                    {
-//                        std::cerr << "DSDDMR::processVoiceDibit: "
-//                                << " source: " << m_slot1Addresses.m_source
-//                                << " target: " << m_slot1Addresses.m_target
-//                                << " group: " << m_slot1Addresses.m_group << std::endl;
-//                    }
-//                }
-//                else if ((m_slot == DSDDMRSlot2) && (m_voice2FrameCount > 0))
-//                {
-//                    if (processVoiceEmbeddedSignalling(m_voice2EmbSig_dibitsIndex, m_voice2EmbSigRawBits, m_voice2EmbSig_OK, m_slot2Addresses))
-//                    {
-//                        std::cerr << "DSDDMR::processVoiceDibit: "
-//                                << " source: " << m_slot2Addresses.m_source
-//                                << " target: " << m_slot2Addresses.m_target
-//                                << " group: " << m_slot2Addresses.m_group << std::endl;
-//                    }
-//                }
-//            }
+            if ((m_slot == DSDDMRSlot1) && (m_voice1FrameCount > 0) && (m_voice1FrameCount < 6))
+            {
+                if (processEMB())
+                {
+                    if (processVoiceEmbeddedSignalling(m_voice1EmbSig_dibitsIndex, m_voice1EmbSigRawBits, m_voice1EmbSig_OK, m_slot1Addresses))
+                    {
+                        std::cerr << "DSDDMR::processVoiceDibit: "
+                                << " source: " << m_slot1Addresses.m_source
+                                << " target: " << m_slot1Addresses.m_target
+                                << " group: " << m_slot1Addresses.m_group << std::endl;
+                    }
+                }
+            }
+            else if ((m_slot == DSDDMRSlot2) && (m_voice2FrameCount > 0) && (m_voice2FrameCount < 6))
+            {
+                if (processEMB())
+                {
+                    if (processVoiceEmbeddedSignalling(m_voice2EmbSig_dibitsIndex, m_voice2EmbSigRawBits, m_voice2EmbSig_OK, m_slot2Addresses))
+                    {
+                        std::cerr << "DSDDMR::processVoiceDibit: "
+                                << " source: " << m_slot2Addresses.m_source
+                                << " target: " << m_slot2Addresses.m_target
+                                << " group: " << m_slot2Addresses.m_group << std::endl;
+                    }
+                }
+            }
         }
 	}
 
@@ -785,14 +784,14 @@ void DSDDMR::decodeCACH(unsigned char *cachBits)
 {
     m_cachOK = true;
 
-    printCACH(cachBits);
+//    printCACH(cachBits);
 
     if (m_continuation)
     {
         m_slot = (DSDDMRSlot) (((int) m_slot + 1) % 2);
-        std::cerr << "DSDDMR::decodeCACH: cach: " << " CC:"
-                << " at: " << m_cachSymbolIndex
-                << " slot: " << ((int) m_slot) << std::endl;
+//        std::cerr << "DSDDMR::decodeCACH: cach: " << " CC:"
+//                << " at: " << m_cachSymbolIndex
+//                << " slot: " << ((int) m_slot) << std::endl;
         m_continuation = false;
         m_cachSymbolIndex = 0; // restart counting
     }
@@ -817,7 +816,7 @@ void DSDDMR::decodeCACH(unsigned char *cachBits)
             m_slot = (DSDDMRSlot) slotIndex;
             m_lcss = 2*cachBits[2] + cachBits[3];
 
-            std::cerr << "DSDDMR::decodeCACH: cach: " << " OK: at: " << m_cachSymbolIndex << " Slot: " << (int) cachBits[1] << " LCSS: " << (int) m_lcss << std::endl;
+//            std::cerr << "DSDDMR::decodeCACH: cach: " << " OK: at: " << m_cachSymbolIndex << " Slot: " << (int) cachBits[1] << " LCSS: " << (int) m_lcss << std::endl;
 
             m_cachSymbolIndex = 0; // restart counting
         }
@@ -825,7 +824,7 @@ void DSDDMR::decodeCACH(unsigned char *cachBits)
         {
             m_slot = DSDDMRSlotUndefined;
             m_cachOK = false;
-            std::cerr << "DSDDMR::decodeCACH: cach: " << " KO: at: " << m_cachSymbolIndex << std::endl;
+//            std::cerr << "DSDDMR::decodeCACH: cach: " << " KO: at: " << m_cachSymbolIndex << std::endl;
         }
     }
 }
