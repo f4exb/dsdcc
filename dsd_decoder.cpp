@@ -1207,6 +1207,20 @@ void DSDDecoder::noCarrier()
     m_voice2On = false;
 }
 
+void DSDDecoder::setTDMAStereo(bool tdmaStereo)
+{
+    if (tdmaStereo)
+    {
+        m_mbeDecoder1.setChannels(1);
+        m_mbeDecoder2.setChannels(2);
+    }
+    else
+    {
+        m_mbeDecoder1.setChannels(3);
+        m_mbeDecoder2.setChannels(3);
+    }
+}
+
 void DSDDecoder::printFrameInfo()
 {
 

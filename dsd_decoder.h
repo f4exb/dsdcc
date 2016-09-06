@@ -270,6 +270,7 @@ public:
     DSDRate getDataRate() const { return m_dataRate; };
     bool getVoice1On() const { return m_voice1On; }
     bool getVoice2On() const { return m_voice2On; }
+    void setTDMAStereo(bool tdmaStereo);
 
     const DSDDstar& getDStarDecoder() const { return m_dsdDstar; }
     const DSDdPMR& getDPMRDecoder() const { return m_dsdDPMR; }
