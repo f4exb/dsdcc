@@ -179,8 +179,8 @@ void DSDDMR::processData()
 //                            << " VF1: " << m_voice1FrameCount
 //                            << " VF2: " << m_voice2FrameCount
 //                            << " sync lookup or skip in slot 2" << std::endl;
-                    m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDMRdata; // sync lookup or skip in slot 2
-                    m_continuation = true; // TODO: true or false?
+                    m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDMRsyncOrSkip; // sync lookup or skip in slot 2
+                    m_continuation = false; // TODO: true or false?
                 }
             }
             else
@@ -226,8 +226,8 @@ void DSDDMR::processData()
 //                            << " VF1: " << m_voice1FrameCount
 //                            << " VF2: " << m_voice2FrameCount
 //                            << " sync lookup or skip in slot 1" << std::endl;
-                    m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDMRdata; // sync lookup or skip in slot 1
-                    m_continuation = true; // TODO: true or false?
+                    m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDMRsyncOrSkip; // sync lookup or skip in slot 1
+                    m_continuation = false; // TODO: true or false?
                 }
             }
             else
@@ -302,8 +302,8 @@ void DSDDMR::processVoice()
 //                            << " VF1: " << m_voice1FrameCount
 //                            << " VF2: " << m_voice2FrameCount
 //                            << " sync lookup or skip in slot 2" << std::endl;
-                    m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDMRdata; // sync lookup or skip in slot 2
-                    m_continuation = true; // TODO: true or false ?
+                    m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDMRsyncOrSkip; // sync lookup or skip in slot 2
+                    m_continuation = false; // TODO: true or false ?
                 }
             }
             else // no super frame on going on this slot
@@ -351,8 +351,8 @@ void DSDDMR::processVoice()
 //                            << " VF1: " << m_voice1FrameCount
 //                            << " VF2: " << m_voice2FrameCount
 //                            << " data continuation in slot 1" << std::endl;
-                    m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDMRdata; // sync lookup or skip in slot 1
-                    m_continuation = true; // TODO: true or false ?
+                    m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDMRsyncOrSkip; // sync lookup or skip in slot 1
+                    m_continuation = false; // TODO: true or false ?
                 }
             }
             else
@@ -773,12 +773,12 @@ void DSDDMR::decodeCACH(unsigned char *cachBits)
 {
     m_cachOK = true;
 
-//    printCACH(cachBits);
+    printCACH(cachBits);
 
     if (m_continuation)
     {
         m_slot = (DSDDMRSlot) (((int) m_slot + 1) % 2);
-//        std::cerr << "DSDDMR::decodeCACH: cach: " << " CC:" << " at: " << m_cachSymbolIndex << std::endl;
+        std::cerr << "DSDDMR::decodeCACH: cach: " << " CC:" << " at: " << m_cachSymbolIndex << std::endl;
         m_continuation = false;
         m_cachSymbolIndex = 0; // restart counting
     }
@@ -803,7 +803,7 @@ void DSDDMR::decodeCACH(unsigned char *cachBits)
             m_slot = (DSDDMRSlot) slotIndex;
             m_lcss = 2*cachBits[2] + cachBits[3];
 
-//            std::cerr << "DSDDMR::decodeCACH: cach: " << " OK: at: " << m_cachSymbolIndex << " Slot: " << (int) cachBits[1] << " LCSS: " << (int) m_lcss << std::endl;
+            std::cerr << "DSDDMR::decodeCACH: cach: " << " OK: at: " << m_cachSymbolIndex << " Slot: " << (int) cachBits[1] << " LCSS: " << (int) m_lcss << std::endl;
 
             m_cachSymbolIndex = 0; // restart counting
         }
@@ -811,7 +811,7 @@ void DSDDMR::decodeCACH(unsigned char *cachBits)
         {
             m_slot = DSDDMRSlotUndefined;
             m_cachOK = false;
-//            std::cerr << "DSDDMR::decodeCACH: cach: " << " KO: at: " << m_cachSymbolIndex << std::endl;
+            std::cerr << "DSDDMR::decodeCACH: cach: " << " KO: at: " << m_cachSymbolIndex << std::endl;
         }
     }
 }
