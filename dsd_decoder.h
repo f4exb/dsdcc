@@ -74,7 +74,7 @@
 //#define DPMR_PREAMBLE "113311331133" // 5F 5F 5F ...                  - preamble sequence
 //#define DPMR_FS4_SYNC "333111113311313313333131"// FD 55 F5 DF 7F DD  - packet data header
 
-#define YSF_SYNC "31111311313113131131" // D4 71 C9 63 4D => D5 75 DD 77 5D
+//#define YSF_SYNC "31111311313113131131" // D4 71 C9 63 4D => D5 75 DD 77 5D
 
 namespace DSDcc
 {
@@ -314,6 +314,7 @@ public:
     static const unsigned char m_syncDStarHeaderInv[24];
     static const unsigned char m_syncDStar[24];
     static const unsigned char m_syncDStarInv[24];
+    static const unsigned char m_syncYSF[20];
 
 private:
     int getFrameSync();

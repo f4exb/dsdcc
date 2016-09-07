@@ -29,6 +29,7 @@ const unsigned char DSDDecoder::m_syncDStarHeader[24]    = {1, 3, 1, 3, 1, 3, 1,
 const unsigned char DSDDecoder::m_syncDStarHeaderInv[24] = {3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 1, 1, 3, 1, 1, 3, 3, 1, 3, 1, 3, 3, 3, 3};
 const unsigned char DSDDecoder::m_syncDStar[24]          = {3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 3, 1, 3, 1, 1, 1, 3, 3, 1, 3, 1, 1, 1};
 const unsigned char DSDDecoder::m_syncDStarInv[24]       = {1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 1, 3, 1, 3, 3, 3, 1, 1, 3, 1, 3, 3, 3};
+const unsigned char DSDDecoder::m_syncYSF[20]            = {3, 1, 1, 1, 1, 3, 1, 1, 3, 1, 3, 1, 1, 3, 1, 3, 1, 1, 3, 1}; // D4 71 C9 63 4D => D5 75 DD 77 5D
 
 
 DSDDecoder::DSDDecoder() :
@@ -809,10 +810,9 @@ int DSDDecoder::getFrameSync()
         {
             strncpy(m_synctest20, (m_synctest_p - 19), 20);
 
-            if (strcmp(m_synctest20, YSF_SYNC) == 0)
+            if (memcmp(m_dsdSymbol.getSyncDibitBack(20), m_syncYSF, 20) == 0)
             {
                 m_state.carrier = 1;
-                m_state.offset = m_synctest_pos;
                 m_dsdSymbol.setFSK(4);
 
                 sprintf(m_state.ftype, "+YSF         ");
@@ -1000,7 +1000,6 @@ int DSDDecoder::getFrameSync()
             if (memcmp(m_dsdSymbol.getSyncDibitBack(24), m_syncDStar, 24) == 0)
             {
                 m_state.carrier = 1;
-//                m_state.offset = m_synctest_pos;
                 m_dsdSymbol.setFSK(2);
 
                 sprintf(m_state.ftype, "+D-STAR      ");
@@ -1017,7 +1016,6 @@ int DSDDecoder::getFrameSync()
             if (memcmp(m_dsdSymbol.getSyncDibitBack(24), m_syncDStarInv, 24) == 0)
             {
                 m_state.carrier = 1;
-//                m_state.offset = m_synctest_pos;
                 m_dsdSymbol.setFSK(2, true);
 
                 sprintf(m_state.ftype, "-D-STAR      ");
@@ -1034,7 +1032,6 @@ int DSDDecoder::getFrameSync()
             if (memcmp(m_dsdSymbol.getSyncDibitBack(24), m_syncDStarHeader, 24) == 0)
             {
                 m_state.carrier = 1;
-//                m_state.offset = m_synctest_pos;
                 m_dsdSymbol.setFSK(2);
 
                 sprintf(m_state.ftype, "+D-STAR_HD   ");
@@ -1051,7 +1048,6 @@ int DSDDecoder::getFrameSync()
             if (memcmp(m_dsdSymbol.getSyncDibitBack(24), m_syncDStarHeaderInv, 24) == 0)
             {
                 m_state.carrier = 1;
-//                m_state.offset = m_synctest_pos;
                 m_dsdSymbol.setFSK(2, true);
 
                 sprintf(m_state.ftype, "-D-STAR_HD   ");
