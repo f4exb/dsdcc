@@ -22,9 +22,14 @@ namespace DSDcc
 {
 
 // Symbol mapping: 01(1):+3, 00(0):+1, 10(2):-1, 11(3):-3
-const unsigned char DSDDecoder::m_syncDMRDataBS[24]  = {3, 1, 3, 3, 3, 3, 1, 1, 1, 3, 3, 1, 1, 3, 1, 1, 3, 1, 3, 3, 1, 1, 3, 1}; // DF F5 7D 75 DF 5D
-const unsigned char DSDDecoder::m_syncDMRVoiceBS[24] = {1, 3, 1, 1, 1, 1, 3, 3, 3, 1, 1, 3, 3, 1, 3, 3, 1, 3, 1, 1, 3, 3, 1, 3}; // 75 5F D7 DF 75 F7
-const unsigned char DSDDecoder::m_syncDPMRFS1[24]    = {1, 1, 1, 3, 3, 3, 3, 3, 1, 1, 3, 3, 1, 3, 1, 1, 3, 1, 1, 1, 1, 3, 1, 3}; // 57 FF 5F 75 D5 77 - non packet data header
+const unsigned char DSDDecoder::m_syncDMRDataBS[24]      = {3, 1, 3, 3, 3, 3, 1, 1, 1, 3, 3, 1, 1, 3, 1, 1, 3, 1, 3, 3, 1, 1, 3, 1}; // DF F5 7D 75 DF 5D
+const unsigned char DSDDecoder::m_syncDMRVoiceBS[24]     = {1, 3, 1, 1, 1, 1, 3, 3, 3, 1, 1, 3, 3, 1, 3, 3, 1, 3, 1, 1, 3, 3, 1, 3}; // 75 5F D7 DF 75 F7
+const unsigned char DSDDecoder::m_syncDPMRFS1[24]        = {1, 1, 1, 3, 3, 3, 3, 3, 1, 1, 3, 3, 1, 3, 1, 1, 3, 1, 1, 1, 1, 3, 1, 3}; // 57 FF 5F 75 D5 77 - non packet data header
+const unsigned char DSDDecoder::m_syncDStarHeader[24]    = {1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 3, 3, 1, 3, 3, 1, 1, 3, 1, 3, 1, 1, 1, 1};
+const unsigned char DSDDecoder::m_syncDStarHeaderInv[24] = {3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 1, 1, 3, 1, 1, 3, 3, 1, 3, 1, 3, 3, 3, 3};
+const unsigned char DSDDecoder::m_syncDStar[24]          = {3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 3, 1, 3, 1, 1, 1, 3, 3, 1, 3, 1, 1, 1};
+const unsigned char DSDDecoder::m_syncDStarInv[24]       = {1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 1, 3, 1, 3, 3, 3, 1, 1, 3, 1, 3, 3, 3};
+
 
 DSDDecoder::DSDDecoder() :
         m_fsmState(DSDLookForSync),
@@ -992,10 +997,10 @@ int DSDDecoder::getFrameSync()
         }
         if (m_opts.frame_dstar == 1)
         {
-            if (strcmp(m_synctest, DSTAR_SYNC) == 0)
+            if (memcmp(m_dsdSymbol.getSyncDibitBack(24), m_syncDStar, 24) == 0)
             {
                 m_state.carrier = 1;
-                m_state.offset = m_synctest_pos;
+//                m_state.offset = m_synctest_pos;
                 m_dsdSymbol.setFSK(2);
 
                 sprintf(m_state.ftype, "+D-STAR      ");
@@ -1009,10 +1014,10 @@ int DSDDecoder::getFrameSync()
                 m_mbeRate = DSDMBERate3600x2400;
                 return (int) DSDSyncDStarP;
             }
-            if (strcmp(m_synctest, INV_DSTAR_SYNC) == 0)
+            if (memcmp(m_dsdSymbol.getSyncDibitBack(24), m_syncDStarInv, 24) == 0)
             {
                 m_state.carrier = 1;
-                m_state.offset = m_synctest_pos;
+//                m_state.offset = m_synctest_pos;
                 m_dsdSymbol.setFSK(2, true);
 
                 sprintf(m_state.ftype, "-D-STAR      ");
@@ -1026,10 +1031,10 @@ int DSDDecoder::getFrameSync()
                 m_mbeRate = DSDMBERate3600x2400;
                 return (int) DSDSyncDStarN; // done
             }
-            if (strcmp(m_synctest, DSTAR_HD) == 0)
+            if (memcmp(m_dsdSymbol.getSyncDibitBack(24), m_syncDStarHeader, 24) == 0)
             {
                 m_state.carrier = 1;
-                m_state.offset = m_synctest_pos;
+//                m_state.offset = m_synctest_pos;
                 m_dsdSymbol.setFSK(2);
 
                 sprintf(m_state.ftype, "+D-STAR_HD   ");
@@ -1043,10 +1048,10 @@ int DSDDecoder::getFrameSync()
                 m_mbeRate = DSDMBERate3600x2400;
                 return (int) DSDSyncDStarHeaderP; // done
             }
-            if (strcmp(m_synctest, INV_DSTAR_HD) == 0)
+            if (memcmp(m_dsdSymbol.getSyncDibitBack(24), m_syncDStarHeaderInv, 24) == 0)
             {
                 m_state.carrier = 1;
-                m_state.offset = m_synctest_pos;
+//                m_state.offset = m_synctest_pos;
                 m_dsdSymbol.setFSK(2, true);
 
                 sprintf(m_state.ftype, "-D-STAR_HD   ");

@@ -43,10 +43,10 @@
 #define X2TDMA_MS_DATA_SYNC  "313113333111111133333313"
 #define X2TDMA_MS_VOICE_SYNC "131331111333333311111131"
 
-#define DSTAR_HD       "131313131333133113131111"
-#define INV_DSTAR_HD   "313131313111311331313333"
-#define DSTAR_SYNC     "313131313133131113313111"
-#define INV_DSTAR_SYNC "131313131311313331131333"
+//#define DSTAR_HD       "131313131333133113131111"
+//#define INV_DSTAR_HD   "313131313111311331313333"
+//#define DSTAR_SYNC     "313131313133131113313111"
+//#define INV_DSTAR_SYNC "131313131311313331131333"
 
 // NXDN symbol mapping: 01(1):+3, 00(0):+1, 10(2):-1, 11(3):-3
 // Preamble and FSW only for RDCH (conventional) type
@@ -69,10 +69,10 @@
 
 // dPMR symbol mapping: 01(1):+3, 00(0):+1, 10(2):-1, 11(3):-3
 //#define DPMR_FS1_SYNC "111333331133131131111313" // 57 FF 5F 75 D5 77 - non packet data header
-#define DPMR_FS2_SYNC "113333131331" // 5F F7 7D                      - superframe sync (each 2 384 bit frames)
-#define DPMR_FS3_SYNC "133131333311" // 7D DF F5                      - end frame sync
-#define DPMR_PREAMBLE "113311331133" // 5F 5F 5F ...                  - preamble sequence
-#define DPMR_FS4_SYNC "333111113311313313333131"// FD 55 F5 DF 7F DD  - packet data header
+//#define DPMR_FS2_SYNC "113333131331" // 5F F7 7D                      - superframe sync (each 2 384 bit frames)
+//#define DPMR_FS3_SYNC "133131333311" // 7D DF F5                      - end frame sync
+//#define DPMR_PREAMBLE "113311331133" // 5F 5F 5F ...                  - preamble sequence
+//#define DPMR_FS4_SYNC "333111113311313313333131"// FD 55 F5 DF 7F DD  - packet data header
 
 #define YSF_SYNC "31111311313113131131" // D4 71 C9 63 4D => D5 75 DD 77 5D
 
@@ -310,6 +310,10 @@ public:
     static const unsigned char m_syncDMRDataBS[24];
     static const unsigned char m_syncDMRVoiceBS[24];
     static const unsigned char m_syncDPMRFS1[24];
+    static const unsigned char m_syncDStarHeader[24];
+    static const unsigned char m_syncDStarHeaderInv[24];
+    static const unsigned char m_syncDStar[24];
+    static const unsigned char m_syncDStarInv[24];
 
 private:
     int getFrameSync();
