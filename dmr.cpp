@@ -57,9 +57,6 @@ const char *DSDDMR::m_slotTypeText[13] = {
         "UNK"
 };
 
-const unsigned char DSDDMR::m_syncDataBS[24]  = {3, 1, 3, 3, 3, 3, 1, 1, 1, 3, 3, 1, 1, 3, 1, 1, 3, 1, 3, 3, 1, 1, 3, 1}; // DF F5 7D 75 DF 5D
-const unsigned char DSDDMR::m_syncVoiceBS[24] = {1, 3, 1, 1, 1, 1, 3, 3, 3, 1, 1, 3, 3, 1, 3, 3, 1, 3, 1, 1, 3, 3, 1, 3}; // 75 5F D7 DF 75 F7
-
 /*
  * DMR AMBE interleave schedule
  */
@@ -330,14 +327,14 @@ void DSDDMR::processSyncOrSkip()
 {
 	if (m_symbolIndex > 24) // accumulate enough symbols to look for a sync
 	{
-		if (memcmp(m_dsdDecoder->m_dsdSymbol.getDibitBack(24), m_syncDataBS, 24) == 0)
+		if (memcmp(m_dsdDecoder->m_dsdSymbol.getSyncDibitBack(24), DSDDecoder::m_syncDMRDataBS, 24) == 0)
 		{
 //		    std::cerr << "DSDDMR::processSyncOrSkip: data sync" << std::endl;
 			processDataFirstHalf(90);
 			m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDMRdata;
 			return;
 		}
-		else if (memcmp(m_dsdDecoder->m_dsdSymbol.getDibitBack(24), m_syncVoiceBS, 24) == 0)
+		else if (memcmp(m_dsdDecoder->m_dsdSymbol.getSyncDibitBack(24), DSDDecoder::m_syncDMRVoiceBS, 24) == 0)
 		{
 //		    std::cerr << "DSDDMR::processSyncOrSkip: voice sync" << std::endl;
 			processVoiceFirstHalf(90);

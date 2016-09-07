@@ -127,8 +127,6 @@ private:
     static const int m_cachInterleave[24];
     static const int m_embSigInterleave[128];
     static const char *m_slotTypeText[13];
-    static const unsigned char m_syncDataBS[24];
-    static const unsigned char m_syncVoiceBS[24];
 
     static const int rW[36];
     static const int rX[36];
