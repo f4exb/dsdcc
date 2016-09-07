@@ -825,19 +825,10 @@ int DSDDecoder::getFrameSync()
         	if (memcmp(m_dsdSymbol.getSyncDibitBack(24), m_syncDMRDataBS, 24) == 0)
         	{
                 m_state.carrier = 1;
-                m_state.offset = m_synctest_pos;
                 m_dsdSymbol.setFSK(4);
 
-                if (strcmp(m_synctest, DMR_BS_DATA_SYNC) == 0)
-                {
-                    m_stationType = DSDBaseStation;
-                    m_dmrBurstType = DSDDMR::DSDDMRBaseStation;
-                }
-                else
-                {
-                    m_stationType = DSDMobileStation;
-                    m_dmrBurstType = DSDDMR::DSDDMRMobileStation;
-                }
+                m_stationType = DSDBaseStation;
+                m_dmrBurstType = DSDDMR::DSDDMRBaseStation;
 
 				// data frame
 				sprintf(m_state.ftype, "+DMRd        ");
@@ -855,19 +846,10 @@ int DSDDecoder::getFrameSync()
         	if (memcmp(m_dsdSymbol.getSyncDibitBack(24), m_syncDMRVoiceBS, 24) == 0)
         	{
                 m_state.carrier = 1;
-                m_state.offset = m_synctest_pos;
                 m_dsdSymbol.setFSK(4);
 
-                if (strcmp(m_synctest, DMR_BS_VOICE_SYNC) == 0)
-                {
-                    m_stationType = DSDBaseStation;
-                    m_dmrBurstType = DSDDMR::DSDDMRBaseStation;
-                }
-                else
-                {
-                    m_stationType = DSDMobileStation;
-                    m_dmrBurstType = DSDDMR::DSDDMRMobileStation;
-                }
+                m_stationType = DSDBaseStation;
+                m_dmrBurstType = DSDDMR::DSDDMRBaseStation;
 
 				// voice frame
 				sprintf(m_state.ftype, "+DMRv        ");
@@ -877,81 +859,10 @@ int DSDDecoder::getFrameSync()
 					printFrameSync(" +DMRv     ", m_synctest_pos + 1);
 				}
 
-				if (m_lastSyncType != DSDSyncDMRVoiceP)
-				{
-					m_state.firstframe = 1;
-				}
-
 				m_lastSyncType = DSDSyncDMRVoiceP;
 				m_mbeRate = DSDMBERate3600x2450;
 				return (int) DSDSyncDMRVoiceP; // done
         	}
-
-//            if ((strcmp(m_synctest, DMR_MS_DATA_SYNC) == 0)
-//             || (strcmp(m_synctest, DMR_BS_DATA_SYNC) == 0))
-//            {
-//                m_state.carrier = 1;
-//                m_state.offset = m_synctest_pos;
-//                m_dsdSymbol.setFSK(4);
-//
-//                if (strcmp(m_synctest, DMR_BS_DATA_SYNC) == 0)
-//                {
-//                    m_stationType = DSDBaseStation;
-//                    m_dmrBurstType = DSDDMR::DSDDMRBaseStation;
-//                }
-//                else
-//                {
-//                    m_stationType = DSDMobileStation;
-//                    m_dmrBurstType = DSDDMR::DSDDMRMobileStation;
-//                }
-//
-//				// data frame
-//				sprintf(m_state.ftype, "+DMRd        ");
-//
-//				if (m_opts.errorbars == 1)
-//				{
-//					printFrameSync(" +DMRd     ",  m_synctest_pos + 1);
-//				}
-//
-//				m_lastSyncType = DSDSyncDMRDataP;
-//				m_mbeRate = DSDMBERate3600x2450;
-//				return (int) DSDSyncDMRDataP; // done
-//            }
-//            if ((strcmp(m_synctest, DMR_MS_VOICE_SYNC) == 0)
-//             || (strcmp(m_synctest, DMR_BS_VOICE_SYNC) == 0))
-//            {
-//                m_state.carrier = 1;
-//                m_state.offset = m_synctest_pos;
-//                m_dsdSymbol.setFSK(4);
-//
-//                if (strcmp(m_synctest, DMR_BS_VOICE_SYNC) == 0)
-//                {
-//                    m_stationType = DSDBaseStation;
-//                    m_dmrBurstType = DSDDMR::DSDDMRBaseStation;
-//                }
-//                else
-//                {
-//                    m_stationType = DSDMobileStation;
-//                    m_dmrBurstType = DSDDMR::DSDDMRMobileStation;
-//                }
-//
-//				// voice frame
-//				sprintf(m_state.ftype, "+DMRv        ");
-//
-//				if (m_opts.errorbars == 1)
-//				{
-//					printFrameSync(" +DMRv     ", m_synctest_pos + 1);
-//				}
-//
-//				if (m_lastSyncType != DSDSyncDMRVoiceP)
-//				{
-//					m_state.firstframe = 1;
-//				}
-//
-//				m_lastSyncType = DSDSyncDMRVoiceP;
-//				m_mbeRate = DSDMBERate3600x2450;
-//				return (int) DSDSyncDMRVoiceP; // done
-//            }
         }
         if (m_opts.frame_provoice == 1)
         {
