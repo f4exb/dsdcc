@@ -307,6 +307,9 @@ public:
         return m_mbeRate;
     }
 
+    static const unsigned char m_syncDMRDataBS[24];
+    static const unsigned char m_syncDMRVoiceBS[24];
+
 private:
     int getFrameSync();
     void resetFrameSync();

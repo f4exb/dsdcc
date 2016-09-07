@@ -35,7 +35,8 @@ DSDSymbol::DSDSymbol(DSDDecoder *dsdDecoder) :
         m_zeroCrossingSlopeDivisor(232), // for 10 samples per symbol
         m_lmmSamples(10*24),
 		m_ringingFilter(48000.0, 4800.0, 0.99),
-		m_binSymbolBuffer(512)
+		m_binSymbolBuffer(512),
+		m_syncSymbolBuffer(64)
 {
     resetSymbol();
     resetZeroCrossing();
@@ -385,6 +386,7 @@ void DSDSymbol::digitizeIntoBinaryBuffer()
     // determine dibit state
     unsigned char binSymbol = digitize(m_symbol);
     m_binSymbolBuffer.push(binSymbol);
+    m_syncSymbolBuffer.push(m_symbol > 0 ? 1 : 3);
 
     *m_dsdDecoder->m_state.dibit_buf_p = binSymbol;
     m_dsdDecoder->m_state.dibit_buf_p++;
