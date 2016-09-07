@@ -21,15 +21,34 @@
 namespace DSDcc
 {
 
-// Symbol mapping: 01(1):+3, 00(0):+1, 10(2):-1, 11(3):-3
-const unsigned char DSDDecoder::m_syncDMRDataBS[24]      = {3, 1, 3, 3, 3, 3, 1, 1, 1, 3, 3, 1, 1, 3, 1, 1, 3, 1, 3, 3, 1, 1, 3, 1}; // DF F5 7D 75 DF 5D
-const unsigned char DSDDecoder::m_syncDMRVoiceBS[24]     = {1, 3, 1, 1, 1, 1, 3, 3, 3, 1, 1, 3, 3, 1, 3, 3, 1, 3, 1, 1, 3, 3, 1, 3}; // 75 5F D7 DF 75 F7
-const unsigned char DSDDecoder::m_syncDPMRFS1[24]        = {1, 1, 1, 3, 3, 3, 3, 3, 1, 1, 3, 3, 1, 3, 1, 1, 3, 1, 1, 1, 1, 3, 1, 3}; // 57 FF 5F 75 D5 77 - non packet data header
-const unsigned char DSDDecoder::m_syncDStarHeader[24]    = {1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 3, 3, 1, 3, 3, 1, 1, 3, 1, 3, 1, 1, 1, 1};
-const unsigned char DSDDecoder::m_syncDStarHeaderInv[24] = {3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 1, 1, 3, 1, 1, 3, 3, 1, 3, 1, 3, 3, 3, 3};
-const unsigned char DSDDecoder::m_syncDStar[24]          = {3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 3, 1, 3, 1, 1, 1, 3, 3, 1, 3, 1, 1, 1};
-const unsigned char DSDDecoder::m_syncDStarInv[24]       = {1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 1, 3, 1, 3, 3, 3, 1, 1, 3, 1, 3, 3, 3};
-const unsigned char DSDDecoder::m_syncYSF[20]            = {3, 1, 1, 1, 1, 3, 1, 1, 3, 1, 3, 1, 1, 3, 1, 3, 1, 1, 3, 1}; // D4 71 C9 63 4D => D5 75 DD 77 5D
+// Sync wods - Symbol mapping: 01(1):+3, 00(0):+1, 10(2):-1, 11(3):-3
+const unsigned char DSDDecoder::m_syncDMRDataBS[24]       = {3, 1, 3, 3, 3, 3, 1, 1, 1, 3, 3, 1, 1, 3, 1, 1, 3, 1, 3, 3, 1, 1, 3, 1}; // DF F5 7D 75 DF 5D
+const unsigned char DSDDecoder::m_syncDMRVoiceBS[24]      = {1, 3, 1, 1, 1, 1, 3, 3, 3, 1, 1, 3, 3, 1, 3, 3, 1, 3, 1, 1, 3, 3, 1, 3}; // 75 5F D7 DF 75 F7
+const unsigned char DSDDecoder::m_syncDMRDataMS[24]       = {3, 1, 1, 1, 3, 1, 1, 3, 3, 3, 1, 3, 1, 3, 3, 3, 3, 1, 1, 3, 1, 1, 1, 3}; // D5 D7 F7 7F D7 57
+const unsigned char DSDDecoder::m_syncDMRVoiceMS[24]      = {1, 3, 3, 3, 1, 3, 3, 1, 1, 1, 3, 1, 3, 1, 1, 1, 1, 3, 3, 1, 3, 3, 3, 1}; // 7F 7D 5D D5 7D FD
+const unsigned char DSDDecoder::m_syncDPMRFS1[24]         = {1, 1, 1, 3, 3, 3, 3, 3, 1, 1, 3, 3, 1, 3, 1, 1, 3, 1, 1, 1, 1, 3, 1, 3}; // 57 FF 5F 75 D5 77 - non packet data header
+const unsigned char DSDDecoder::m_syncDPMRFS4[24]         = {3, 3, 3, 1, 1, 1, 1, 1, 3, 3, 1, 1, 3, 1, 3, 3, 1, 3, 3, 3, 3, 1, 3, 1}; // FD 55 F5 DF 7F DD - packet data header
+const unsigned char DSDDecoder::m_syncDPMRFS2[12]         = {1, 1, 3, 3, 3, 3, 1, 3, 1, 3, 3, 1};                                     // 5F F7 7D          - superframe sync (each 2 384 bit frames)
+const unsigned char DSDDecoder::m_syncDPMRFS3[12]         = {1, 3, 3, 1, 3, 1, 3, 3, 3, 3, 1, 1};                                     // 7D DF F5           end frame sync
+const unsigned char DSDDecoder::m_syncNXDNRDCHFull[20]    = {1, 1, 1, 3, 1, 1, 3, 3, 3, 1, 3, 1, 3, 1, 3, 3, 1, 1, 3, 1};
+const unsigned char DSDDecoder::m_syncNXDNRDCHFullInv[20] = {3, 3, 3, 1, 3, 3, 1, 1, 1, 3, 1, 3, 1, 3, 1, 1, 3, 3, 1, 3};
+const unsigned char DSDDecoder::m_syncNXDNRDCHFSW[10]     = {3, 1, 3, 1, 3, 3, 1, 1, 3, 1};
+const unsigned char DSDDecoder::m_syncNXDNRDCHFSWInv[10]  = {1, 3, 1, 3, 1, 1, 3, 3, 1, 3};
+const unsigned char DSDDecoder::m_syncDStarHeader[24]     = {1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 3, 3, 1, 3, 3, 1, 1, 3, 1, 3, 1, 1, 1, 1};
+const unsigned char DSDDecoder::m_syncDStarHeaderInv[24]  = {3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 1, 1, 3, 1, 1, 3, 3, 1, 3, 1, 3, 3, 3, 3};
+const unsigned char DSDDecoder::m_syncDStar[24]           = {3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 3, 1, 3, 1, 1, 1, 3, 3, 1, 3, 1, 1, 1};
+const unsigned char DSDDecoder::m_syncDStarInv[24]        = {1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 1, 3, 1, 3, 3, 3, 1, 1, 3, 1, 3, 3, 3};
+const unsigned char DSDDecoder::m_syncYSF[20]             = {3, 1, 1, 1, 1, 3, 1, 1, 3, 1, 3, 1, 1, 3, 1, 3, 1, 1, 3, 1}; // D4 71 C9 63 4D => D5 75 DD 77 5D
+const unsigned char DSDDecoder::m_syncP25P1[24]           = {1, 1, 1, 1, 1, 3, 1, 1, 3, 3, 1, 1, 3, 3, 3, 3, 1, 3, 1, 3, 3, 3, 3, 3};
+const unsigned char DSDDecoder::m_syncP25P1Inv[24]        = {3, 3, 3, 3, 3, 1, 3, 3, 1, 1, 3, 3, 1, 1, 1, 1, 3, 1, 3, 1, 1, 1, 1, 1};
+const unsigned char DSDDecoder::m_syncX2TDMADataBS[24]    = {3, 3, 1, 3, 1, 3, 1, 1, 1, 1, 1, 3, 1, 3, 1, 1, 1, 3, 3, 3, 1, 1, 3, 3};
+const unsigned char DSDDecoder::m_syncX2TDMAVoiceBS[24]   = {1, 1, 3, 1, 3, 1, 3, 3, 3, 3, 3, 1, 3, 1, 3, 3, 3, 1, 1, 1, 3, 3, 1, 1};
+const unsigned char DSDDecoder::m_syncX2TDMADataMS[24]    = {3, 1, 3, 1, 1, 3, 3, 3, 3, 1, 1, 1, 1, 1, 1, 1, 3, 3, 3, 3 ,3 ,3 ,1 ,3};
+const unsigned char DSDDecoder::m_syncX2TDMAVoiceMS[24]   = {1, 3, 1, 3, 3, 1, 1, 1, 1, 3 ,3, 3, 3, 3, 3, 3, 1, 1, 1, 1 ,1 ,1 ,3 ,1};
+const unsigned char DSDDecoder::m_syncProVoice[32]        = {1, 3, 1, 3, 1, 3, 3, 3, 1, 1, 1, 3, 1, 1, 3, 1, 1, 1, 3, 3, 1, 1, 3, 3, 1, 1, 3, 3, 1, 1, 3, 3};
+const unsigned char DSDDecoder::m_syncProVoiceInv[32]     = {3, 1, 3, 1, 3, 1, 1, 1, 3, 3, 3, 1, 3, 3, 1, 3, 3, 3, 1, 1, 3, 3, 1, 1, 3, 3, 1, 1, 3, 3, 1, 1};
+const unsigned char DSDDecoder::m_syncProVoiceEA[32]      = {3, 1, 1, 3, 1, 3, 1, 1, 3, 3, 1, 3, 3, 1, 1, 1, 1, 1, 3, 3, 1, 3, 1, 3, 1, 1, 3 ,1 ,1 ,1, 3 ,3};
+const unsigned char DSDDecoder::m_syncProVoiceEAInv[32]   = {1, 3, 3, 1, 3, 1, 3, 3, 1, 1, 3, 1, 1 ,3 ,3, 3, 3 ,3, 1, 1 ,3, 1, 3, 1, 3, 3, 1, 3, 3, 3, 1, 1};
 
 
 DSDDecoder::DSDDecoder() :
@@ -674,10 +693,9 @@ int DSDDecoder::getFrameSync()
 
         if (m_opts.frame_p25p1 == 1)
         {
-            if (strcmp(m_synctest, P25P1_SYNC) == 0)
+            if (memcmp(m_dsdSymbol.getSyncDibitBack(24), m_syncP25P1, 24) == 0)
             {
                 m_state.carrier = 1;
-                m_state.offset = m_synctest_pos;
                 m_dsdSymbol.setFSK(4);
 
                 sprintf(m_state.ftype, "+P25 Phase 1 ");
@@ -691,10 +709,9 @@ int DSDDecoder::getFrameSync()
                 m_mbeRate = DSDMBERate3600x2450;
                 return (int) DSDSyncP25p1P;
             }
-            if (strcmp(m_synctest, INV_P25P1_SYNC) == 0)
+            if (memcmp(m_dsdSymbol.getSyncDibitBack(24), m_syncP25P1Inv, 24) == 0)
             {
                 m_state.carrier = 1;
-                m_state.offset = m_synctest_pos;
                 m_dsdSymbol.setFSK(4, true);
 
                 sprintf(m_state.ftype, "-P25 Phase 1 ");
@@ -711,105 +728,80 @@ int DSDDecoder::getFrameSync()
         }
         if (m_opts.frame_x2tdma == 1)
         {
-            if ((strcmp(m_synctest, X2TDMA_BS_DATA_SYNC) == 0)
-             || (strcmp(m_synctest, X2TDMA_MS_DATA_SYNC) == 0))
+            if (memcmp(m_dsdSymbol.getSyncDibitBack(24), m_syncX2TDMADataBS, 24) == 0)
             {
                 m_state.carrier = 1;
-                m_state.offset = m_synctest_pos;
                 m_dsdSymbol.setFSK(4);
+                m_stationType = DSDBaseStation;
 
-                if (strcmp(m_synctest, X2TDMA_BS_DATA_SYNC) == 0) {
-                    m_stationType = DSDBaseStation;
-                } else {
-                    m_stationType = DSDMobileStation;
-                }
+                sprintf(m_state.ftype, "+X2-TDMAd    ");
 
-                if (m_opts.inverted_x2tdma == 0)
+                if (m_opts.errorbars == 1)
                 {
-                    // data frame
-                    sprintf(m_state.ftype, "+X2-TDMAd    ");
-
-                    if (m_opts.errorbars == 1)
-                    {
-                        printFrameSync(" +X2-TDMA  ", m_synctest_pos + 1);
-                    }
-
-                    m_lastSyncType = DSDSyncX2TDMADataP;
-                    m_mbeRate = DSDMBERate3600x2450;
-                    return (int) DSDSyncX2TDMADataP; // done
+                    printFrameSync(" +X2-TDMA  ", m_synctest_pos + 1);
                 }
-                else
-                {
-                    // inverted voice frame
-                    sprintf(m_state.ftype, "-X2-TDMAv    ");
 
-                    if (m_opts.errorbars == 1)
-                    {
-                        printFrameSync(" -X2-TDMA  ", m_synctest_pos + 1);
-                    }
-
-                    if (m_lastSyncType != DSDSyncX2TDMAVoiceN)
-                    {
-                        m_state.firstframe = 1;
-                    }
-
-                    m_lastSyncType = DSDSyncX2TDMAVoiceN;
-                    m_mbeRate = DSDMBERate3600x2450;
-                    return (int) DSDSyncX2TDMAVoiceN; // done
-                }
+                m_lastSyncType = DSDSyncX2TDMADataP;
+                m_mbeRate = DSDMBERate3600x2450;
+                return (int) DSDSyncX2TDMADataP; // done
             }
-            if ((strcmp(m_synctest, X2TDMA_BS_VOICE_SYNC) == 0)
-             || (strcmp(m_synctest, X2TDMA_MS_VOICE_SYNC) == 0))
+
+            if (memcmp(m_dsdSymbol.getSyncDibitBack(24), m_syncX2TDMADataMS, 24) == 0)
             {
                 m_state.carrier = 1;
-                m_state.offset = m_synctest_pos;
                 m_dsdSymbol.setFSK(4);
+                m_stationType = DSDMobileStation;
 
-                if (strcmp(m_synctest, X2TDMA_BS_VOICE_SYNC) == 0) {
-                    m_stationType = DSDBaseStation;
-                } else {
-                    m_stationType = DSDMobileStation;
-                }
+                sprintf(m_state.ftype, "+X2-TDMAd    ");
 
-                if (m_opts.inverted_x2tdma == 0)
+                if (m_opts.errorbars == 1)
                 {
-                    // voice frame
-                    sprintf(m_state.ftype, "+X2-TDMAv    ");
-
-                    if (m_opts.errorbars == 1)
-                    {
-                        printFrameSync(" +X2-TDMA  ", m_synctest_pos + 1);
-                    }
-
-                    if (m_lastSyncType != DSDSyncX2TDMAVoiceP)
-                    {
-                        m_state.firstframe = 1;
-                    }
-
-                    m_lastSyncType = DSDSyncX2TDMAVoiceP;
-                    m_mbeRate = DSDMBERate3600x2450;
-                    return (int) DSDSyncX2TDMAVoiceP; // done
+                    printFrameSync(" +X2-TDMA  ", m_synctest_pos + 1);
                 }
-                else
+
+                m_lastSyncType = DSDSyncX2TDMADataP;
+                m_mbeRate = DSDMBERate3600x2450;
+                return (int) DSDSyncX2TDMADataP; // done
+            }
+
+            if (memcmp(m_dsdSymbol.getSyncDibitBack(24), m_syncX2TDMAVoiceBS, 24) == 0)
+            {
+                m_state.carrier = 1;
+                m_dsdSymbol.setFSK(4);
+                m_stationType = DSDBaseStation;
+
+                sprintf(m_state.ftype, "+X2-TDMAv    ");
+
+                if (m_opts.errorbars == 1)
                 {
-                    // inverted data frame
-                    sprintf(m_state.ftype, "-X2-TDMAd    ");
-
-                    if (m_opts.errorbars == 1)
-                    {
-                        printFrameSync(" -X2-TDMA  ", m_synctest_pos + 1);
-                    }
-
-                    m_lastSyncType = DSDSyncX2TDMADataN;
-                    m_mbeRate = DSDMBERate3600x2450;
-                    return (int) DSDSyncX2TDMADataN; // done
+                    printFrameSync(" +X2-TDMA  ", m_synctest_pos + 1);
                 }
+
+                m_lastSyncType = DSDSyncX2TDMAVoiceP;
+                m_mbeRate = DSDMBERate3600x2450;
+                return (int) DSDSyncX2TDMAVoiceP; // done
+            }
+
+            if (memcmp(m_dsdSymbol.getSyncDibitBack(24), m_syncX2TDMAVoiceMS, 24) == 0)
+            {
+                m_state.carrier = 1;
+                m_dsdSymbol.setFSK(4);
+                m_stationType = DSDMobileStation;
+
+                sprintf(m_state.ftype, "+X2-TDMAv    ");
+
+                if (m_opts.errorbars == 1)
+                {
+                    printFrameSync(" +X2-TDMA  ", m_synctest_pos + 1);
+                }
+
+                m_lastSyncType = DSDSyncX2TDMAVoiceP;
+                m_mbeRate = DSDMBERate3600x2450;
+                return (int) DSDSyncX2TDMAVoiceP; // done
             }
         }
         if (m_opts.frame_ysf == 1)
         {
-            strncpy(m_synctest20, (m_synctest_p - 19), 20);
-
             if (memcmp(m_dsdSymbol.getSyncDibitBack(20), m_syncYSF, 20) == 0)
             {
                 m_state.carrier = 1;
@@ -873,13 +865,10 @@ int DSDDecoder::getFrameSync()
         }
         if (m_opts.frame_provoice == 1)
         {
-            strncpy(m_synctest32, (m_synctest_p - 31), 32);
-
-            if ((strcmp(m_synctest32, PROVOICE_SYNC) == 0)
-             || (strcmp(m_synctest32, PROVOICE_EA_SYNC) == 0))
+            if ((memcmp(m_dsdSymbol.getSyncDibitBack(32), m_syncProVoice, 32) == 0)
+             || (memcmp(m_dsdSymbol.getSyncDibitBack(32), m_syncProVoiceEA, 32) == 0))
             {
                 m_state.carrier = 1;
-                m_state.offset = m_synctest_pos;
                 m_dsdSymbol.setFSK(4);
 
                 sprintf(m_state.ftype, "+ProVoice    ");
@@ -893,8 +882,8 @@ int DSDDecoder::getFrameSync()
                 m_mbeRate = DSDMBERate3600x2450;
                 return (int) DSDSyncProVoiceP; // done
             }
-            else if ((strcmp(m_synctest32, INV_PROVOICE_SYNC) == 0)
-                  || (strcmp(m_synctest32, INV_PROVOICE_EA_SYNC) == 0))
+            else if ((memcmp(m_dsdSymbol.getSyncDibitBack(32), m_syncProVoiceInv, 32) == 0)
+                || (memcmp(m_dsdSymbol.getSyncDibitBack(32), m_syncProVoiceEAInv, 32) == 0))
             {
                 m_state.carrier = 1;
                 m_state.offset = m_synctest_pos;
@@ -915,12 +904,9 @@ int DSDDecoder::getFrameSync()
         }
         if ((m_opts.frame_nxdn96 == 1) || (m_opts.frame_nxdn48 == 1))
         {
-        	strncpy(m_synctest20, (m_synctest_p - 19), 20);
-
-            if (strcmp(m_synctest20, NXDN_RDCH_FULL_SYNC) == 0)
+            if (memcmp(m_dsdSymbol.getSyncDibitBack(20), m_syncNXDNRDCHFull, 20) == 0)
             {
 				m_state.carrier = 1;
-				m_state.offset = m_synctest_pos;
                 m_dsdSymbol.setFSK(4);
 
                 if (m_dataRate == DSDRate2400)
@@ -946,10 +932,9 @@ int DSDDecoder::getFrameSync()
 				m_mbeRate = DSDMBERate3600x2450;
 				return (int) DSDSyncNXDNP; // done
             }
-            else if (strcmp(m_synctest20, INV_NXDN_RDCH_FULL_SYNC) == 0)
+            else if (memcmp(m_dsdSymbol.getSyncDibitBack(20), m_syncNXDNRDCHFullInv, 20) == 0)
             {
 				m_state.carrier = 1;
-				m_state.offset = m_synctest_pos;
                 m_dsdSymbol.setFSK(4, true);
 
                 if (m_dataRate == DSDRate2400)

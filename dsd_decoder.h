@@ -32,50 +32,6 @@
 
 #define DSD_SQUELCH_TIMEOUT_SAMPLES 960 // 200ms timeout after return to sync search
 
-/*
- * Frame sync patterns
- */
-#define INV_P25P1_SYNC "333331331133111131311111"
-#define P25P1_SYNC     "111113113311333313133333"
-
-#define X2TDMA_BS_VOICE_SYNC "113131333331313331113311"
-#define X2TDMA_BS_DATA_SYNC  "331313111113131113331133"
-#define X2TDMA_MS_DATA_SYNC  "313113333111111133333313"
-#define X2TDMA_MS_VOICE_SYNC "131331111333333311111131"
-
-//#define DSTAR_HD       "131313131333133113131111"
-//#define INV_DSTAR_HD   "313131313111311331313333"
-//#define DSTAR_SYNC     "313131313133131113313111"
-//#define INV_DSTAR_SYNC "131313131311313331131333"
-
-// NXDN symbol mapping: 01(1):+3, 00(0):+1, 10(2):-1, 11(3):-3
-// Preamble and FSW only for RDCH (conventional) type
-//                           PREAMBLE  FSW
-#define NXDN_RDCH_FULL_SYNC "11131133313131331131" // Full sync lookup in auto mode
-#define NXDN_RDCH_FSW_SYNC            "3131331131" // FSW sync lookup (follow up or sync lookup in NXDN mode)
-// inverted versions
-#define INV_NXDN_RDCH_FULL_SYNC "33313311131313113313"
-#define INV_NXDN_RDCH_FSW_SYNC            "1313113313"
-
-//#define DMR_BS_DATA_SYNC  "313333111331131131331131" // DF F5 7D 75 DF 5D
-//#define DMR_BS_VOICE_SYNC "131111333113313313113313" // 75 5F D7 DF 75 F7
-#define DMR_MS_DATA_SYNC  "311131133313133331131113" // D5 D7 F7 7F D7 57
-#define DMR_MS_VOICE_SYNC "133313311131311113313331" // 7F 7D 5D D5 7D FD
-
-#define INV_PROVOICE_SYNC    "31313111333133133311331133113311"
-#define PROVOICE_SYNC        "13131333111311311133113311331133"
-#define INV_PROVOICE_EA_SYNC "13313133113113333311313133133311"
-#define PROVOICE_EA_SYNC     "31131311331331111133131311311133"
-
-// dPMR symbol mapping: 01(1):+3, 00(0):+1, 10(2):-1, 11(3):-3
-//#define DPMR_FS1_SYNC "111333331133131131111313" // 57 FF 5F 75 D5 77 - non packet data header
-//#define DPMR_FS2_SYNC "113333131331" // 5F F7 7D                      - superframe sync (each 2 384 bit frames)
-//#define DPMR_FS3_SYNC "133131333311" // 7D DF F5                      - end frame sync
-//#define DPMR_PREAMBLE "113311331133" // 5F 5F 5F ...                  - preamble sequence
-//#define DPMR_FS4_SYNC "333111113311313313333131"// FD 55 F5 DF 7F DD  - packet data header
-
-//#define YSF_SYNC "31111311313113131131" // D4 71 C9 63 4D => D5 75 DD 77 5D
-
 namespace DSDcc
 {
 
@@ -307,14 +263,36 @@ public:
         return m_mbeRate;
     }
 
+    /*
+     * Frame sync patterns
+     */
     static const unsigned char m_syncDMRDataBS[24];
     static const unsigned char m_syncDMRVoiceBS[24];
+    static const unsigned char m_syncDMRDataMS[24];
+    static const unsigned char m_syncDMRVoiceMS[24];
     static const unsigned char m_syncDPMRFS1[24];
+    static const unsigned char m_syncDPMRFS4[24];
+    static const unsigned char m_syncDPMRFS2[12];
+    static const unsigned char m_syncDPMRFS3[12];
+    static const unsigned char m_syncNXDNRDCHFull[20];
+    static const unsigned char m_syncNXDNRDCHFullInv[20];
+    static const unsigned char m_syncNXDNRDCHFSW[10];
+    static const unsigned char m_syncNXDNRDCHFSWInv[10];
     static const unsigned char m_syncDStarHeader[24];
     static const unsigned char m_syncDStarHeaderInv[24];
     static const unsigned char m_syncDStar[24];
     static const unsigned char m_syncDStarInv[24];
     static const unsigned char m_syncYSF[20];
+    static const unsigned char m_syncP25P1[24];
+    static const unsigned char m_syncP25P1Inv[24];
+    static const unsigned char m_syncX2TDMADataBS[24];
+    static const unsigned char m_syncX2TDMAVoiceBS[24];
+    static const unsigned char m_syncX2TDMADataMS[24];
+    static const unsigned char m_syncX2TDMAVoiceMS[24];
+    static const unsigned char m_syncProVoice[32];
+    static const unsigned char m_syncProVoiceInv[32];
+    static const unsigned char m_syncProVoiceEA[32];
+    static const unsigned char m_syncProVoiceEAInv[32];
 
 private:
     int getFrameSync();

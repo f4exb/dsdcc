@@ -91,19 +91,8 @@ void DSDNXDN::processRDCHFrame()
 
 void DSDNXDN::processRDCHPostFrame()
 {
-	int dibit = m_dsdDecoder->m_dsdSymbol.getDibit(); // get dibit from symbol
-
 	if (m_symbolIndex < 10)
 	{
-        if ((dibit == 0) || (dibit == 1)) // positives (+1 or +3) => store 1 which maps to +3
-        {
-            m_syncBuffer[m_symbolIndex] = '1';
-        }
-        else // negatives (-1 or -3) => store 3 which maps to -3
-        {
-            m_syncBuffer[m_symbolIndex] = '3';
-        }
-
 		m_symbolIndex++;
 
 		if (m_symbolIndex == 10)
@@ -112,7 +101,7 @@ void DSDNXDN::processRDCHPostFrame()
 
 			if (m_dsdDecoder->getSyncType() == DSDDecoder::DSDSyncNXDNP)
 			{
-				 if (strcmp(m_syncBuffer, NXDN_RDCH_FSW_SYNC) == 0) {
+				 if (memcmp(m_dsdDecoder->m_dsdSymbol.getSyncDibitBack(10), DSDDecoder::m_syncNXDNRDCHFSW, 10) == 0) {
 					 init();
 				 } else {
 					 m_dsdDecoder->resetFrameSync(); // end
@@ -120,7 +109,7 @@ void DSDNXDN::processRDCHPostFrame()
 			}
 			else if (m_dsdDecoder->getSyncType() == DSDDecoder::DSDSyncNXDNN)
 			{
-				 if (strcmp(m_syncBuffer, INV_NXDN_RDCH_FSW_SYNC) == 0) {
+				 if (memcmp(m_dsdDecoder->m_dsdSymbol.getSyncDibitBack(10), DSDDecoder::m_syncNXDNRDCHFSW, 10) == 0) {
 					 init();
 				 } else {
 					 m_dsdDecoder->resetFrameSync(); // end
