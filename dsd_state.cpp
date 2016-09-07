@@ -25,10 +25,6 @@ DSDState::DSDState()
 
     repeat = 0;
 
-    dibit_buf = (int *) malloc(sizeof(int) * 1000000);
-    memset(dibit_buf, 0, sizeof(int) * 200);
-    dibit_buf_p = dibit_buf + 200;
-
     for (i = 0; i < 1024; i++)
     {
         maxbuf[i] = 15000;
@@ -77,12 +73,12 @@ DSDState::DSDState()
     output_samples = 0;
     output_length = 0;
     output_buffer = 0;
+
+    ccnum = 0;
 }
 
 DSDState::~DSDState()
 {
-//    free(audio_out_buf);
-    free(dibit_buf);
 }
 
 } // namespace dsdcc

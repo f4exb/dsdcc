@@ -314,21 +314,9 @@ int DSDSymbol::get_dibit()
     int dibit;
 
     symbol = m_symbol;
-
-    use_symbol(symbol);
-
-//    dibit = digitize(symbol);
     dibit = m_binSymbolBuffer.getLatest(); // buffer head
 
     return dibit;
-}
-
-void DSDSymbol::use_symbol(int symbol)
-{
-    if (m_dsdDecoder->m_state.dibit_buf_p > m_dsdDecoder->m_state.dibit_buf + 900000)
-    {
-        m_dsdDecoder->m_state.dibit_buf_p = m_dsdDecoder->m_state.dibit_buf + 200;
-    }
 }
 
 unsigned char DSDSymbol::digitize(int symbol)
@@ -387,9 +375,6 @@ void DSDSymbol::digitizeIntoBinaryBuffer()
     unsigned char binSymbol = digitize(m_symbol);
     m_binSymbolBuffer.push(binSymbol);
     m_syncSymbolBuffer.push(m_symbol > 0 ? 1 : 3);
-
-    *m_dsdDecoder->m_state.dibit_buf_p = binSymbol;
-    m_dsdDecoder->m_state.dibit_buf_p++;
 }
 
 int DSDSymbol::invert_dibit(int dibit)

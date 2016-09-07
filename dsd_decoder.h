@@ -312,14 +312,6 @@ private:
     // sync engine:
     int m_sync; //!< The current internal sync type
     int m_dibit, m_synctest_pos;
-    char m_synctest[25];   //!< for default 24 dibits sync word
-    char m_synctest18[19]; //!< for 18 dibits sync word
-    char m_synctest32[33]; //!< for 32 dibits sync word
-    char m_synctest12[13]; //!< for 12 dibits sync word
-    char m_synctest20[21]; //!< for 20 dibits sync word
-//    char m_modulation[8];
-    char *m_synctest_p;
-    char m_synctest_buf[10240];
     int m_lsum;
     char m_spectrum[64];
     int m_t;

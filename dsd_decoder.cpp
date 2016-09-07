@@ -502,16 +502,12 @@ void DSDDecoder::processFrameInit()
             sprintf(m_state.fsubtype, " VOICE        ");
             m_dsdDMR.initVoice(m_dmrBurstType);    // initializations not consuming a live symbol
             m_dsdDMR.processVoice(); // process current symbol first
-//            m_dsdDMRVoice.init();    // initializations not consuming a live symbol
-//            m_dsdDMRVoice.process(); // process current symbol first
             m_fsmState = DSDprocessDMRvoice;
         }
         else
         {
             m_dsdDMR.initData(m_dmrBurstType);    // initializations not consuming a live symbol
             m_dsdDMR.processData(); // process current symbol first
-//            m_dsdDMRData.init();    // initializations not consuming a live symbol
-//            m_dsdDMRData.process(); // process current symbol first
             m_fsmState = DSDprocessDMRdata;
         }
     }
@@ -660,34 +656,12 @@ int DSDDecoder::getFrameSync()
      * 24 = +YSF (just sync detection - not implemented yet)
      */
 
-    // smelly while was starting here
-
-    if (m_state.dibit_buf_p > m_state.dibit_buf + 900000)
-    {
-        m_state.dibit_buf_p = m_state.dibit_buf + 200;
-    }
-
-    //determine dibit state
-    if (m_dsdSymbol.getSymbol() > 0)
-    {
-        m_dibit = 49; // ASCII character '1'
-    }
-    else
-    {
-        m_dibit = 51; // ASCII character '3'
-    }
-
-    *m_synctest_p = m_dibit;
-
     if (m_t < 18)
     {
         m_t++;
     }
-    else
+    else // Sync identification starts here
     {
-        // Sync identification starts here
-
-        strncpy(m_synctest, (m_synctest_p - 23), 24);
         m_stationType = DSDStationTypeNotApplicable;
         m_dmrBurstType = DSDDMR::DSDDMRBurstNone;
 
@@ -1049,21 +1023,7 @@ int DSDDecoder::getFrameSync()
         }
     }
 
-    if (m_synctest_pos < 10200)
-    {
-        m_synctest_pos++;
-        m_synctest_p++;
-    }
-    else
-    {
-        // buffer reset
-        m_synctest_pos = 0;
-        m_synctest_p = m_synctest_buf;
-        noCarrier();
-    }
-
-    // if (m_state.lastsynctype != 1) ... test removed
-    // {
+    m_synctest_pos++;
 
     if (m_synctest_pos >= 1800)
     {
@@ -1078,8 +1038,6 @@ int DSDDecoder::getFrameSync()
         return -1; // done
     }
 
-    // }
-
     return -2; // still searching
 }
 
@@ -1087,15 +1045,9 @@ void DSDDecoder::resetFrameSync()
 {
     m_dsdLogger.log("DSDDecoder::resetFrameSync: symbol %d (%d)\n", m_state.symbolcnt, m_dsdSymbol.getSymbol());
 
-//    m_dsdSymbol.resetFrameSync();
-
     // reset detect frame sync engine
     m_t = 0;
-    m_synctest[24] = 0;
-    m_synctest18[18] = 0;
-    m_synctest32[32] = 0;
     m_synctest_pos = 0;
-    m_synctest_p = m_synctest_buf + 10;
 
     m_sync = -2;   // mark in progress
 
@@ -1121,9 +1073,6 @@ void DSDDecoder::printFrameSync(const char *frametype, int offset)
 
 void DSDDecoder::noCarrier()
 {
-    m_state.dibit_buf_p = m_state.dibit_buf + 200;
-    memset(m_state.dibit_buf, 0, sizeof(int) * 200);
-
     m_dsdSymbol.noCarrier();
 
     m_lastSyncType = DSDSyncNone;
@@ -1142,9 +1091,6 @@ void DSDDecoder::noCarrier()
     m_state.repeat = 0;
     m_state.nac = 0;
     m_state.numtdulc = 0;
-
-//    sprintf(m_state.slot0light, " slot0 ");
-//    sprintf(m_state.slot1light, " slot1 ");
 
     m_state.firstframe = 0;
 

@@ -72,7 +72,7 @@ private:
     void resetSymbol();
     void resetZeroCrossing();
     int get_dibit();
-    void use_symbol(int symbol);
+//    void use_symbol(int symbol);
     unsigned char digitize(int symbol);
     void digitizeIntoBinaryBuffer();
     void snapMinMax();

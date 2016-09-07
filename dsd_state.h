@@ -32,8 +32,6 @@ public:
     DSDState();
     ~DSDState();
 
-    int *dibit_buf;
-    int *dibit_buf_p;
     int repeat;
     int maxbuf[1024];
     int minbuf[1024];
@@ -60,7 +58,6 @@ public:
     char keyid[17];
     int currentslot;
     int p25kid;
-    int last_dibit;                                     //!< Last dibit read
     DSDP25Heuristics::P25Heuristics p25_heuristics;     //!< Heuristics state data for +P5 signals
     DSDP25Heuristics::P25Heuristics inv_p25_heuristics; //!< Heuristics state data for -P5 signals
 
