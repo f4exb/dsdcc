@@ -63,8 +63,6 @@ const int DSDdPMR::rZ[36] = {
   13, 2, 12, 1, 11, 0
 };
 
-const unsigned char DSDdPMR::m_fs2[12]      = {1, 1, 3, 3, 3, 3, 1, 3, 1, 3, 3, 1};
-const unsigned char DSDdPMR::m_fs3[12]      = {1, 3, 3, 1, 3, 1, 3, 3, 3, 3, 1, 1};
 const unsigned char DSDdPMR::m_preamble[12] = {1, 1, 3, 3, 1, 1, 3, 3, 1, 1, 3, 3};
 
 DSDdPMR::DSDdPMR(DSDDecoder *dsdDecoder) :
@@ -262,12 +260,12 @@ void DSDdPMR::processPostFrame()
         {
             m_dsdDecoder->getLogger().log("DSDdPMR::processPostFrame\n"); // DEBUG
 
-            if (memcmp((const void *) m_syncDoubleBuffer, (const void *) m_fs2, 12) == 0) // start of superframes
+            if (memcmp((const void *) m_syncDoubleBuffer, (const void *) DSDDecoder::m_syncDPMRFS2, 12) == 0) // start of superframes
             {
                 m_state = DPMRSuperFrame;
                 m_symbolIndex = 0;
             }
-            else if (memcmp((const void *) m_syncDoubleBuffer, (const void *) m_fs3, 12) == 0) // end frame
+            else if (memcmp((const void *) m_syncDoubleBuffer, (const void *) DSDDecoder::m_syncDPMRFS3, 12) == 0) // end frame
             {
                 m_state = DPMREnd;
                 m_symbolIndex = 0;
@@ -284,7 +282,7 @@ void DSDdPMR::processPostFrame()
             }
             else // look for sync extensively
             {
-                std::cerr << "DSDdPMR::processPostFrame: start extensive sync search" << std::endl;
+//                std::cerr << "DSDdPMR::processPostFrame: start extensive sync search" << std::endl;
                 m_frameType = DPMRExtSearchFrame;
                 m_dsdDecoder->m_voice1On = false;
                 m_state = DPMRExtSearch;
@@ -326,7 +324,7 @@ void DSDdPMR::processExtSearch()
 	// compare around expected spot
     if ((m_syncCycle < 1) || (m_syncCycle > 14))
     {
-        if (memcmp((const void *) &m_syncDoubleBuffer[m_symbolIndex], (const void *) m_fs2, 12) == 0)
+        if (memcmp((const void *) &m_syncDoubleBuffer[m_symbolIndex], (const void *) DSDDecoder::m_syncDPMRFS2, 12) == 0)
         {
             m_dsdDecoder->getLogger().log("DSDdPMR::processExtSearch: stop extensive sync search (sync found)\n"); // DEBUG
             m_state = DPMRSuperFrame;
@@ -489,12 +487,12 @@ void DSDdPMR::processFS2(int symbolIndex, int dibit)
 
     if (symbolIndex == 11) // last symbol
     {
-        if (memcmp((const void *) m_syncDoubleBuffer, (const void *) m_fs2, 12) == 0) // start of superframes
+        if (memcmp((const void *) m_syncDoubleBuffer, (const void *) DSDDecoder::m_syncDPMRFS2, 12) == 0) // start of superframes
         {
             // nothing
             m_frameType = DPMRPayloadFrame;
         }
-        else if (memcmp((const void *) m_syncDoubleBuffer, (const void *) m_fs3, 12) == 0) // end frame
+        else if (memcmp((const void *) m_syncDoubleBuffer, (const void *) DSDDecoder::m_syncDPMRFS3, 12) == 0) // end frame
         {
             m_state = DPMREnd;
             m_symbolIndex = 0;
@@ -521,7 +519,7 @@ void DSDdPMR::processCCH(int symbolIndex, int dibit)
 
         if (checkCRC7(m_bitBuffer, 41)) // CRC7 check OK
         {
-            std::cerr << "DSDdPMR::processCCH: success" << std::endl;
+//            std::cerr << "DSDdPMR::processCCH: success" << std::endl;
 
             m_frameNumber = (m_bitBuffer[0]<<1) + m_bitBuffer[1];
             int mode   = (m_bitBuffer[14]<<2) + (m_bitBuffer[15]<<1) + m_bitBuffer[16];
@@ -624,7 +622,7 @@ void DSDdPMR::processCCH(int symbolIndex, int dibit)
         }
         else
         {
-            std::cerr << "DSDdPMR::processCCH: invalid CRC7 - Hamming: " << hammingStatus << std::endl;
+//            std::cerr << "DSDdPMR::processCCH: invalid CRC7 - Hamming: " << hammingStatus << std::endl;
             m_frameNumber = 0xFF; // invalid
         }
 

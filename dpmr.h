@@ -158,8 +158,6 @@ private:
     static const int rX[36];
     static const int rY[36];
     static const int rZ[36];
-    static const unsigned char m_fs2[12];
-    static const unsigned char m_fs3[12];
     static const unsigned char m_preamble[12];
     const int *w, *x, *y, *z;
 };
