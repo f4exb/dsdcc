@@ -21,8 +21,10 @@
 namespace DSDcc
 {
 
+// Symbol mapping: 01(1):+3, 00(0):+1, 10(2):-1, 11(3):-3
 const unsigned char DSDDecoder::m_syncDMRDataBS[24]  = {3, 1, 3, 3, 3, 3, 1, 1, 1, 3, 3, 1, 1, 3, 1, 1, 3, 1, 3, 3, 1, 1, 3, 1}; // DF F5 7D 75 DF 5D
 const unsigned char DSDDecoder::m_syncDMRVoiceBS[24] = {1, 3, 1, 1, 1, 1, 3, 3, 3, 1, 1, 3, 3, 1, 3, 3, 1, 3, 1, 1, 3, 3, 1, 3}; // 75 5F D7 DF 75 F7
+const unsigned char DSDDecoder::m_syncDPMRFS1[24]    = {1, 1, 1, 3, 3, 3, 3, 3, 1, 1, 3, 3, 1, 3, 1, 1, 3, 1, 1, 1, 1, 3, 1, 3}; // 57 FF 5F 75 D5 77 - non packet data header
 
 DSDDecoder::DSDDecoder() :
         m_fsmState(DSDLookForSync),
@@ -971,10 +973,9 @@ int DSDDecoder::getFrameSync()
         }
         if (m_opts.frame_dpmr == 1)
         {
-            if (strcmp(m_synctest, DPMR_FS1_SYNC) == 0) // dPMR classic (not packet)
+            if(memcmp(m_dsdSymbol.getSyncDibitBack(24), m_syncDPMRFS1, 24) == 0) // dPMR classic (not packet)
             {
                 m_state.carrier = 1;
-                m_state.offset = m_synctest_pos;
                 m_dsdSymbol.setFSK(4);
 
                 sprintf(m_state.ftype, "+dPMR        ");
@@ -987,22 +988,6 @@ int DSDDecoder::getFrameSync()
                 m_lastSyncType = DSDSyncDPMR;
                 m_mbeRate = DSDMBERate3600x2450;
                 return (int) DSDSyncDPMR;
-            }
-            else if (strcmp(m_synctest, DPMR_FS4_SYNC) == 0) // dPMR packet mode
-            {
-                m_state.carrier = 1;
-                m_state.offset = m_synctest_pos;
-                m_dsdSymbol.setFSK(4);
-
-                sprintf(m_state.ftype, "+dPMRpkt     ");
-
-                if (m_opts.errorbars == 1)
-                {
-                    printFrameSync("+dPMRpkt   ", m_synctest_pos + 1);
-                }
-
-                m_lastSyncType = DSDSyncDPMRPacket;
-                return (int) DSDSyncDPMRPacket;
             }
         }
         if (m_opts.frame_dstar == 1)

@@ -57,8 +57,8 @@
 #define INV_NXDN_RDCH_FULL_SYNC "33313311131313113313"
 #define INV_NXDN_RDCH_FSW_SYNC            "1313113313"
 
-#define DMR_BS_DATA_SYNC  "313333111331131131331131" // DF F5 7D 75 DF 5D
-#define DMR_BS_VOICE_SYNC "131111333113313313113313" // 75 5F D7 DF 75 F7
+//#define DMR_BS_DATA_SYNC  "313333111331131131331131" // DF F5 7D 75 DF 5D
+//#define DMR_BS_VOICE_SYNC "131111333113313313113313" // 75 5F D7 DF 75 F7
 #define DMR_MS_DATA_SYNC  "311131133313133331131113" // D5 D7 F7 7F D7 57
 #define DMR_MS_VOICE_SYNC "133313311131311113313331" // 7F 7D 5D D5 7D FD
 
@@ -68,7 +68,7 @@
 #define PROVOICE_EA_SYNC     "31131311331331111133131311311133"
 
 // dPMR symbol mapping: 01(1):+3, 00(0):+1, 10(2):-1, 11(3):-3
-#define DPMR_FS1_SYNC "111333331133131131111313" // 57 FF 5F 75 D5 77 - non packet data header
+//#define DPMR_FS1_SYNC "111333331133131131111313" // 57 FF 5F 75 D5 77 - non packet data header
 #define DPMR_FS2_SYNC "113333131331" // 5F F7 7D                      - superframe sync (each 2 384 bit frames)
 #define DPMR_FS3_SYNC "133131333311" // 7D DF F5                      - end frame sync
 #define DPMR_PREAMBLE "113311331133" // 5F 5F 5F ...                  - preamble sequence
@@ -309,6 +309,7 @@ public:
 
     static const unsigned char m_syncDMRDataBS[24];
     static const unsigned char m_syncDMRVoiceBS[24];
+    static const unsigned char m_syncDPMRFS1[24];
 
 private:
     int getFrameSync();
