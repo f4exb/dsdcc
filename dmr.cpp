@@ -730,13 +730,14 @@ void DSDDMR::decodeCACH(unsigned char *cachBits)
             if (slotIndex)
             {
                 m_slotText = m_dsdDecoder->m_state.slot1light;
+                m_dsdDecoder->m_state.slot0light[0] = ((cachBits[0] & 1) ? '*' : '.'); // the activity indicator is shifted by one slot
             }
             else
             {
                 m_slotText = m_dsdDecoder->m_state.slot0light;
+                m_dsdDecoder->m_state.slot1light[0] = ((cachBits[0] & 1) ? '*' : '.'); // the activity indicator is shifted by one slot
             }
 
-            m_slotText[0] = ((cachBits[0] & 1) ? '*' : '.');
             m_slot = (DSDDMRSlot) slotIndex;
             m_lcss = 2*cachBits[2] + cachBits[3];
 
