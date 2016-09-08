@@ -64,11 +64,15 @@ public:
     DSDDMR(DSDDecoder *dsdDecoder);
     ~DSDDMR();
 
-    void initData(DSDDMRBurstType burstType);
-    void initVoice(DSDDMRBurstType burstType);
+    void initData();
+    void initVoice();
     void processData();
     void processVoice();
     void processSyncOrSkip();
+
+    void initVoiceMS();
+    void processVoiceMS();
+    void processSkipMS();
 
 private:
     struct DMRAddresses
@@ -88,6 +92,8 @@ private:
     void processDataDibit(unsigned char dibit);
     void storeSymbolDV(unsigned char *mbeFrame, int dibitindex, unsigned char dibit, bool invertDibit = false);
     static void textVoiceEmbeddedSignalling(DMRAddresses& addresses, char *slotText);
+
+    void processVoiceFirstHalfMS();
 
     DSDDecoder *m_dsdDecoder;
     int  m_symbolIndex;                   //!< current symbol index in non HD sequence

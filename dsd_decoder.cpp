@@ -414,6 +414,10 @@ void DSDDecoder::run(short sample)
                 m_squelchTimeoutCount = 0;
             }
         }
+        else
+        {
+            m_squelchTimeoutCount = 0;
+        }
     }
 
     if (m_dsdSymbol.pushSample(sample)) // a symbol is retrieved
@@ -446,15 +450,18 @@ void DSDDecoder::run(short sample)
             break;
         case DSDprocessDMRvoice:
             m_dsdDMR.processVoice();
-//            m_dsdDMRVoice.process();
+            break;
+        case DSDprocessDMRvoiceMS:
+            m_dsdDMR.processVoiceMS();
             break;
         case DSDprocessDMRdata:
             m_dsdDMR.processData();
-//            m_dsdDMRData.process();
             break;
         case DSDprocessDMRsyncOrSkip:
             m_dsdDMR.processSyncOrSkip();
-//            m_dsdDMRData.process();
+            break;
+        case DSDprocessDMRSkipMS:
+            m_dsdDMR.processSkipMS();
             break;
         case DSDprocessDSTAR:
             m_dsdDstar.process();
@@ -498,16 +505,36 @@ void DSDDecoder::processFrameInit()
         if (m_syncType == DSDSyncDMRVoiceP)
         {
             sprintf(m_state.fsubtype, " VOICE        ");
-            m_dsdDMR.initVoice(m_dmrBurstType);    // initializations not consuming a live symbol
+            m_dsdDMR.initVoice();    // initializations not consuming a live symbol
             m_dsdDMR.processVoice(); // process current symbol first
             m_fsmState = DSDprocessDMRvoice;
         }
         else
         {
-            m_dsdDMR.initData(m_dmrBurstType);    // initializations not consuming a live symbol
+            m_dsdDMR.initData();    // initializations not consuming a live symbol
             m_dsdDMR.processData(); // process current symbol first
             m_fsmState = DSDprocessDMRdata;
         }
+    }
+    else if (m_syncType == DSDSyncDMRVoiceMS)
+    {
+        m_state.nac = 0;
+        m_state.lastsrc = 0;
+        m_state.lasttg = 0;
+
+        if (m_opts.errorbars == 1)
+        {
+            if (m_opts.verbose > 0)
+            {
+                int level = m_dsdSymbol.getLevel();
+                m_dsdLogger.log("inlvl: %2i%% ", level);
+            }
+        }
+
+        sprintf(m_state.fsubtype, " VOICE        ");
+        m_dsdDMR.initVoiceMS();    // initializations not consuming a live symbol
+        m_dsdDMR.processVoiceMS(); // process current symbol first
+        m_fsmState = DSDprocessDMRvoiceMS;
     }
     else if ((m_syncType == DSDSyncDStarP) || (m_syncType == DSDSyncDStarN)) // D-Star voice
     {
@@ -637,10 +664,10 @@ int DSDDecoder::getFrameSync()
      * 7  = -D-STAR
      * 8  = +NXDN (non inverted RDCH first frame)
      * 9  = -NXDN (inverted RDCH first frame)
-     * 10 = +DMR (non inverted singlan data frame)
-     * 11 = -DMR (inverted signal voice frame)
+     * 10 = +DMR (non inverted signal data frame)
+     * 11 = +DMR (non inverted signal data frame for mobile station)
      * 12 = +DMR (non inverted signal voice frame)
-     * 13 = -DMR (inverted signal data frame)
+     * 13 = +DMR (non inverted signal voice frame for mobile station)
      * 14 = +ProVoice
      * 15 = -ProVoice
      * 16 = +NXDN (non inverted data frame - not used)
@@ -833,6 +860,27 @@ int DSDDecoder::getFrameSync()
 				m_mbeRate = DSDMBERate3600x2450;
 				return (int) DSDSyncDMRVoiceP; // done
         	}
+
+            if (memcmp(m_dsdSymbol.getSyncDibitBack(24), m_syncDMRVoiceMS, 24) == 0)
+            {
+                m_state.carrier = 1;
+                m_dsdSymbol.setFSK(4);
+
+                m_stationType = DSDMobileStation;
+                m_dmrBurstType = DSDDMR::DSDDMRMobileStation;
+
+                // voice frame
+                sprintf(m_state.ftype, "+DMRv        ");
+
+                if (m_opts.errorbars == 1)
+                {
+                    printFrameSync(" +DMRv     ", m_synctest_pos + 1);
+                }
+
+                m_lastSyncType = DSDSyncDMRVoiceMS;
+                m_mbeRate = DSDMBERate3600x2450;
+                return (int) DSDSyncDMRVoiceMS; // done
+            }
         }
         if (m_opts.frame_provoice == 1)
         {

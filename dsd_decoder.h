@@ -84,11 +84,12 @@ public:
         DSDprocessNXDNData,
         DSDprocessDSTAR,
         DSDprocessDSTAR_HD,
-        DSDprocessDMRvoiceBS,
-        DSDprocessDMRdataBS,
         DSDprocessDMRvoice,
         DSDprocessDMRdata,
+        DSDprocessDMRvoiceMS,
+        DSDprocessDMRdataMS,
 		DSDprocessDMRsyncOrSkip,
+        DSDprocessDMRSkipMS,
         DSDprocessX2TDMAvoice,
         DSDprocessX2TDMAdata,
         DSDprocessProVoice,
@@ -111,9 +112,9 @@ public:
         DSDSyncNXDNP,          // 8
         DSDSyncNXDNN,          // 9
         DSDSyncDMRDataP,       // 10
-        DSDSyncDMRVoiceN,      // 11
+        DSDSyncDMRDataMS,      // 11
         DSDSyncDMRVoiceP,      // 12
-        DSDSyncDMRDataN,       // 13
+        DSDSyncDMRVoiceMS,     // 13
         DSDSyncProVoiceP,      // 14
         DSDSyncProVoiceN,      // 15
         DSDSyncNXDNDataP,      // 16

@@ -125,18 +125,25 @@ DSDDMR::~DSDDMR()
 {
 }
 
-void DSDDMR::initData(DSDDMRBurstType burstType)
+void DSDDMR::initData()
 {
 //    std::cerr << "DSDDMR::initData" << std::endl;
-    m_burstType = burstType;
+    m_burstType = DSDDMRBaseStation;
     processDataFirstHalf(90+1);
 }
 
-void DSDDMR::initVoice(DSDDMRBurstType burstType)
+void DSDDMR::initVoice()
 {
 //    std::cerr << "DSDDMR::initVoice" << std::endl;
-    m_burstType = burstType;
+    m_burstType = DSDDMRBaseStation;
     processVoiceFirstHalf(90+1);
+}
+
+void DSDDMR::initVoiceMS()
+{
+    std::cerr << "DSDDMR::initVoiceMS" << std::endl;
+    m_burstType = DSDDMRMobileStation;
+    processVoiceFirstHalfMS();
 }
 
 void DSDDMR::processData()
@@ -359,6 +366,51 @@ void DSDDMR::processSyncOrSkip()
 	m_cachSymbolIndex++; // last dibit counts
 }
 
+void DSDDMR::processVoiceMS()
+{
+    int dibit = m_dsdDecoder->m_dsdSymbol.getDibit(); // get dibit from symbol
+
+    processVoiceDibit(dibit);
+
+    if (m_symbolIndex == 132 - 1) // last dibit
+    {
+        m_voice1FrameCount++;
+        std::cerr << "DSDDMR::processVoiceMS: " << m_symbolIndex << " : " << m_voice1FrameCount << std::endl;
+
+        if (m_voice1FrameCount < 6) // continuation expected on slot + 2
+        {
+            m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDMRSkipMS; // skip next slot
+        }
+        else // no super frame on going on this slot
+        {
+            m_dsdDecoder->m_voice1On = false;
+            m_dsdDecoder->resetFrameSync(); // back to sync
+        }
+
+        m_symbolIndex = 0;
+    }
+    else
+    {
+        m_symbolIndex++;
+    }
+}
+
+void DSDDMR::processSkipMS()
+{
+
+    if (m_symbolIndex == 132 - 1) // last dibit
+    {
+        std::cerr << "DSDDMR::processSkipMS: " << m_symbolIndex << std::endl;
+        // return to voice super frame
+        m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDMRvoiceMS;
+        m_symbolIndex = 0;
+    }
+    else
+    {
+        m_symbolIndex++;
+    }
+}
+
 void DSDDMR::processDataFirstHalf(unsigned int shiftBack)
 {
     unsigned char *dibit_p = m_dsdDecoder->m_dsdSymbol.getDibitBack(shiftBack);
@@ -408,24 +460,44 @@ void DSDDMR::processVoiceFirstHalf(unsigned int shiftBack)
 
 }
 
+void DSDDMR::processVoiceFirstHalfMS()
+{
+    unsigned char *dibit_p = m_dsdDecoder->m_dsdSymbol.getDibitBack(90+1); // no CACH with MS
+
+    for (m_symbolIndex = 0; m_symbolIndex < 90; m_symbolIndex++, m_cachSymbolIndex++)
+    {
+        processVoiceDibit(dibit_p[m_symbolIndex]);
+    }
+
+    // only one slot in MS
+    m_slot = DSDDMRSlot1;
+    m_voice1FrameCount = 0;
+    m_dsdDecoder->m_voice1On = true;
+    m_voice1EmbSig_dibitsIndex = 0;
+    m_voice1EmbSig_OK = true;
+}
+
 void DSDDMR::processDataDibit(unsigned char dibit)
 {
 	// CACH
 
-	if ((m_symbolIndex < 12) && (m_burstType == DSDDMRBaseStation))
+	if (m_symbolIndex < 12)
 	{
-        m_cachBits[m_cachInterleave[2*m_symbolIndex]]   = (dibit >> 1) & 1;
-        m_cachBits[m_cachInterleave[2*m_symbolIndex+1]] = dibit & 1;
+	    if (m_burstType == DSDDMRBaseStation)
+	    {
+	        m_cachBits[m_cachInterleave[2*m_symbolIndex]]   = (dibit >> 1) & 1;
+	        m_cachBits[m_cachInterleave[2*m_symbolIndex+1]] = dibit & 1;
 
-        if(m_symbolIndex == 12-1)
-        {
-            decodeCACH(m_cachBits);
+	        if(m_symbolIndex == 12-1)
+	        {
+	            decodeCACH(m_cachBits);
 
-//            std::cerr << "DSDDMR::processDataDibit: start frame:"
-//                    << " slot: " << (int) m_slot
-//                    << " VC1: " << m_voice1FrameCount
-//                    << " VC2: " << m_voice2FrameCount << std::endl;
-        }
+	//            std::cerr << "DSDDMR::processDataDibit: start frame:"
+	//                    << " slot: " << (int) m_slot
+	//                    << " VC1: " << m_voice1FrameCount
+	//                    << " VC2: " << m_voice2FrameCount << std::endl;
+	        }
+	    }
 	}
 
 	// data first half
@@ -473,28 +545,31 @@ void DSDDMR::processVoiceDibit(unsigned char dibit)
 {
 	// CACH
 
-    if ((m_symbolIndex < 12) && (m_burstType == DSDDMRBaseStation))
+    if (m_symbolIndex < 12)
 	{
-        m_cachBits[m_cachInterleave[2*m_symbolIndex]]   = (dibit >> 1) & 1;
-        m_cachBits[m_cachInterleave[2*m_symbolIndex+1]] = dibit & 1;
-
-        if(m_symbolIndex == 12-1)
+        if (m_burstType == DSDDMRBaseStation)
         {
-            decodeCACH(m_cachBits);
+            m_cachBits[m_cachInterleave[2*m_symbolIndex]]   = (dibit >> 1) & 1;
+            m_cachBits[m_cachInterleave[2*m_symbolIndex+1]] = dibit & 1;
 
-            if (m_cachOK)
+            if(m_symbolIndex == 12-1)
             {
-                if (m_slot == DSDDMRSlot1) {
-                    memcpy(&m_dsdDecoder->m_state.slot0light[4], "VOX", 3);
-                } else if (m_slot == DSDDMRSlot2) {
-                    memcpy(&m_dsdDecoder->m_state.slot1light[4], "VOX", 3);
-                }
-            }
+                decodeCACH(m_cachBits);
 
-//            std::cerr << "DSDDMR::processVoiceDibit: start frame:"
-//                    << " slot: " << (int) m_slot
-//                    << " VC1: " << m_voice1FrameCount
-//                    << " VC2: " << m_voice2FrameCount << std::endl;
+                if (m_cachOK)
+                {
+                    if (m_slot == DSDDMRSlot1) {
+                        memcpy(&m_dsdDecoder->m_state.slot0light[4], "VOX", 3);
+                    } else if (m_slot == DSDDMRSlot2) {
+                        memcpy(&m_dsdDecoder->m_state.slot1light[4], "VOX", 3);
+                    }
+                }
+
+    //            std::cerr << "DSDDMR::processVoiceDibit: start frame:"
+    //                    << " slot: " << (int) m_slot
+    //                    << " VC1: " << m_voice1FrameCount
+    //                    << " VC2: " << m_voice2FrameCount << std::endl;
+            }
         }
 	}
 
