@@ -480,9 +480,7 @@ void DSDDecoder::run(short sample)
 void DSDDecoder::processFrameInit()
 {
     if ((m_syncType == DSDSyncDMRDataP)
-            || (m_syncType == DSDSyncDMRVoiceN)
-            || (m_syncType == DSDSyncDMRVoiceP)
-            || (m_syncType == DSDSyncDMRDataN)) // DMR
+            || (m_syncType == DSDSyncDMRVoiceP)) // DMR
     {
         m_state.nac = 0;
         m_state.lastsrc = 0;
@@ -497,7 +495,7 @@ void DSDDecoder::processFrameInit()
             }
         }
 
-        if ((m_syncType == DSDSyncDMRVoiceN) || (m_syncType == DSDSyncDMRVoiceP))
+        if (m_syncType == DSDSyncDMRVoiceP)
         {
             sprintf(m_state.fsubtype, " VOICE        ");
             m_dsdDMR.initVoice(m_dmrBurstType);    // initializations not consuming a live symbol
