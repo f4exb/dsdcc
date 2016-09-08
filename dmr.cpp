@@ -372,7 +372,7 @@ void DSDDMR::processVoiceMS()
 
     processVoiceDibit(dibit);
 
-    if (m_symbolIndex == 132 - 1) // last dibit
+    if (m_symbolIndex == 144 - 1) // last dibit
     {
         m_voice1FrameCount++;
         std::cerr << "DSDDMR::processVoiceMS: " << m_symbolIndex << " : " << m_voice1FrameCount << std::endl;
@@ -398,7 +398,7 @@ void DSDDMR::processVoiceMS()
 void DSDDMR::processSkipMS()
 {
 
-    if (m_symbolIndex == 132 - 1) // last dibit
+    if (m_symbolIndex == 144 - 1) // last dibit
     {
         std::cerr << "DSDDMR::processSkipMS: " << m_symbolIndex << std::endl;
         // return to voice super frame
@@ -462,9 +462,9 @@ void DSDDMR::processVoiceFirstHalf(unsigned int shiftBack)
 
 void DSDDMR::processVoiceFirstHalfMS()
 {
-    unsigned char *dibit_p = m_dsdDecoder->m_dsdSymbol.getDibitBack(90+1); // no CACH with MS
+    unsigned char *dibit_p = m_dsdDecoder->m_dsdSymbol.getDibitBack(78+1); // no CACH with MS
 
-    for (m_symbolIndex = 0; m_symbolIndex < 90; m_symbolIndex++, m_cachSymbolIndex++)
+    for (m_symbolIndex = 12; m_symbolIndex < 90; m_symbolIndex++, m_cachSymbolIndex++)
     {
         processVoiceDibit(dibit_p[m_symbolIndex]);
     }
