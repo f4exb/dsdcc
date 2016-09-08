@@ -662,7 +662,6 @@ int DSDDecoder::getFrameSync()
     }
     else // Sync identification starts here
     {
-        m_stationType = DSDStationTypeNotApplicable;
         m_dmrBurstType = DSDDMR::DSDDMRBurstNone;
 
         if (m_opts.frame_p25p1 == 1)
@@ -1075,6 +1074,7 @@ void DSDDecoder::noCarrier()
 {
     m_dsdSymbol.noCarrier();
 
+    m_stationType = DSDStationTypeNotApplicable;
     m_lastSyncType = DSDSyncNone;
     m_state.carrier = 0;
 
