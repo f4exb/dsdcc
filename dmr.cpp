@@ -141,7 +141,7 @@ void DSDDMR::initVoice(DSDDMRBurstType burstType)
 
 void DSDDMR::processData()
 {
-    if (!m_cachOK)
+    if ((!m_cachOK) && (m_burstType == DSDDMRBaseStation))
     {
         m_slotText = m_dsdDecoder->m_state.slot0light;
         memcpy(m_dsdDecoder->m_state.slot0light, "/-- UNK", 7);
@@ -230,7 +230,7 @@ void DSDDMR::processData()
 
 void DSDDMR::processVoice()
 {
-    if (!m_cachOK)
+	if ((!m_cachOK) && (m_burstType == DSDDMRBaseStation))
     {
         m_slotText = m_dsdDecoder->m_state.slot0light;
         memcpy(m_dsdDecoder->m_state.slot0light, "/-- UNK", 7);
@@ -412,7 +412,7 @@ void DSDDMR::processDataDibit(unsigned char dibit)
 {
 	// CACH
 
-	if (m_symbolIndex < 12)
+	if ((m_symbolIndex < 12) && (m_burstType == DSDDMRBaseStation))
 	{
         m_cachBits[m_cachInterleave[2*m_symbolIndex]]   = (dibit >> 1) & 1;
         m_cachBits[m_cachInterleave[2*m_symbolIndex+1]] = dibit & 1;
@@ -473,7 +473,7 @@ void DSDDMR::processVoiceDibit(unsigned char dibit)
 {
 	// CACH
 
-    if (m_symbolIndex < 12)
+    if ((m_symbolIndex < 12) && (m_burstType == DSDDMRBaseStation))
 	{
         m_cachBits[m_cachInterleave[2*m_symbolIndex]]   = (dibit >> 1) & 1;
         m_cachBits[m_cachInterleave[2*m_symbolIndex+1]] = dibit & 1;
