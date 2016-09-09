@@ -403,7 +403,7 @@ void DSDDMR::processVoiceMS()
 
         if (m_voice1FrameCount < 6) // continuation expected on slot + 2
         {
-            m_dsdDecoder->m_dsdSymbol.setSkipTimingControl(true);
+            m_dsdDecoder->m_dsdSymbol.setNoSignal(true);
             m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDMRSkipMS; // skip next slot
         }
         else // no super frame on going on this slot
@@ -427,7 +427,7 @@ void DSDDMR::processSkipMS()
     {
 //        std::cerr << "DSDDMR::processSkipMS: " << m_symbolIndex << std::endl;
         // return to voice super frame
-        m_dsdDecoder->m_dsdSymbol.setSkipTimingControl(false);
+        m_dsdDecoder->m_dsdSymbol.setNoSignal(false);
         m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDMRvoiceMS;
         m_symbolIndex = 0;
     }

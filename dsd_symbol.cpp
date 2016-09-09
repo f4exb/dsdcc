@@ -32,7 +32,7 @@ const int DSDSymbol::m_zeroCrossingCorrectionProfile9600[11] = { 0, 1, 1, 1, 1, 
 DSDSymbol::DSDSymbol(DSDDecoder *dsdDecoder) :
         m_dsdDecoder(dsdDecoder),
         m_symbol(0),
-        m_skipTimingControl(false),
+        m_noSignal(false),
         m_zeroCrossingSlopeDivisor(232), // for 10 samples per symbol
         m_lmmSamples(10*24),
 		m_ringingFilter(48000.0, 4800.0, 0.99),
@@ -106,35 +106,37 @@ bool DSDSymbol::pushSample(short sample)
     }
 
     m_filteredSample = sample;
-    m_lmmSamples.update(sample); // store for running min/max calculation
 
-    // ringing filter
-
-    short sampleSq = ((((int) sample)- m_center) * (((int) sample)- m_center)) >> 15;
-    short sampleRinging = m_ringingFilter.run(sampleSq);
-
-    // zero crossing - rising edge only with enough steepness
-
-    if ((sampleRinging > 0) && (m_lastsample < 0) && (sampleRinging - m_lastsample > (m_max - m_min) / m_zeroCrossingSlopeDivisor))
+    if (!m_noSignal)
     {
-        m_symbolSyncSample = m_max;
-        int targetZero = (m_sampleIndex - (m_samplesPerSymbol/4)) % m_samplesPerSymbol; // empirically should be ~T/4 away
+        m_lmmSamples.update(sample); // store for running min/max calculation
 
-        if (targetZero < (m_samplesPerSymbol)/2) // sampling point lags
+        // ringing filter
+        short sampleSq = ((((int) sample)- m_center) * (((int) sample)- m_center)) >> 15;
+        short sampleRinging = m_ringingFilter.run(sampleSq);
+
+        // zero crossing - rising edge only with enough steepness
+        if ((sampleRinging > 0) && (m_lastsample < 0) && (sampleRinging - m_lastsample > (m_max - m_min) / m_zeroCrossingSlopeDivisor))
         {
-            m_zeroCrossingPos = -targetZero;
-            m_zeroCrossing = -targetZero;
-            m_zeroCrossingInCycle = true;
+            m_symbolSyncSample = m_max;
+            int targetZero = (m_sampleIndex - (m_samplesPerSymbol/4)) % m_samplesPerSymbol; // empirically should be ~T/4 away
+
+            if (targetZero < (m_samplesPerSymbol)/2) // sampling point lags
+            {
+                m_zeroCrossingPos = -targetZero;
+                m_zeroCrossing = -targetZero;
+                m_zeroCrossingInCycle = true;
+            }
+            else // sampling point leads
+            {
+                m_zeroCrossingPos = m_samplesPerSymbol - targetZero;
+                m_zeroCrossing = m_samplesPerSymbol - targetZero;
+                m_zeroCrossingInCycle = true;
+            }
         }
-        else // sampling point leads
-        {
-            m_zeroCrossingPos = m_samplesPerSymbol - targetZero;
-            m_zeroCrossing = m_samplesPerSymbol - targetZero;
-            m_zeroCrossingInCycle = true;
-        }
+
+        m_lastsample = sampleRinging;
     }
-
-    m_lastsample = sampleRinging;
 
     // symbol estimation
 
@@ -167,7 +169,7 @@ bool DSDSymbol::pushSample(short sample)
 
     // timing control
 
-    if ((m_sampleIndex == 0) && (!m_skipTimingControl))
+    if ((m_sampleIndex == 0) && (!m_noSignal))
     {
         m_symbolSyncSample = m_center;
 
