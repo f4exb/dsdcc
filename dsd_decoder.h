@@ -25,9 +25,9 @@
 #include "dmr_voice.h"
 #include "dmr_data.h"
 #include "dmr.h"
-#include "dstar.h"
 #include "ysf.h"
 #include "dpmr.h"
+#include "dstar.h"
 #include "nxdn.h"
 
 #define DSD_SQUELCH_TIMEOUT_SAMPLES 960 // 200ms timeout after return to sync search
@@ -41,6 +41,7 @@ class DSDDecoder
     friend class DSDMBEDecoder;
     friend class DSDDMR;
     friend class DSDDstar;
+    friend class DSDDstarOld;
     friend class DSDYSF;
     friend class DSDdPMR;
     friend class DSDNXDN;

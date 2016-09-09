@@ -18,63 +18,18 @@
 #define DSDCC_DSTAR_H_
 
 #include <string>
+#include "dstarold.h"
 
 namespace DSDcc
 {
 
-class DSDDecoder;
-
-class DSDDstar
+class DSDDstar : public DSDDstarOld
 {
 public:
-    DSDDstar(DSDDecoder *dsdDecoder);
+	DSDDstar(DSDDecoder *dsdDecoder);
     ~DSDDstar();
-
-    void init(bool header = false);
-    void process();
-    void processHD();
-
-    const std::string& getRpt1() const { return m_rpt1; }
-    const std::string& getRpt2() const { return m_rpt2; }
-    const std::string& getYourSign() const { return m_yourSign; }
-    const std::string& getMySign() const { return m_mySign; }
-
-private:
-    void initVoiceFrame();
-    void initDataFrame();
-    void processVoice();
-    void processData();
-    void dstar_header_decode();
-    void reset_header_strings();
-    void storeSymbolDV(int bitindex, unsigned char bit, bool lsbFirst = true);
-
-    DSDDecoder *m_dsdDecoder;
-    int m_symbolIndex;    //!< Current symbol index in non HD sequence
-    int m_symbolIndexHD;  //!< Current symbol index in HD sequence
-    int m_dibitCache[97]; // has to handle a voice + data frame (97 dibits)
-    int m_dibitIndex;     // index in dibit cache
-
-    // DSTAR
-    unsigned char data[9];
-    unsigned int bits[4];
-    int framecount;
-    int sync_missed;
-    unsigned char slowdata[4];
-    unsigned int bitbuffer;
-    const int *w, *x;
-
-    // DSTAR-HD
-    int radioheaderbuffer[660];
-    std::string m_rpt1;
-    std::string m_rpt2;
-    std::string m_yourSign;
-    std::string m_mySign;
-
-    // constants
-    static const int dW[72];
-    static const int dX[72];
 };
 
 } // namespace DSDcc
 
-#endif /* DSDCC_DSTAR_H_ */
+#endif /* DSTAR_H_ */
