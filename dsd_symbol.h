@@ -40,6 +40,7 @@ public:
     void setFSK(unsigned int nbSymbols, bool inverted=false);
 
     int getSymbol() const { return m_symbol; }
+    void setSkipTimingControl(bool skipTimingControl) { m_skipTimingControl = skipTimingControl; }
     bool pushSample(short sample); //!< push a new sample into the decoder. Returns true if a new symbol is available
     int getDibit(); //!< from the last retrieved symbol Returns either the bit (0,1) or the dibit value (0,1,2,3)
     unsigned char *getDibitBack(unsigned int shift) { return m_binSymbolBuffer.getBack(shift); }
@@ -86,6 +87,7 @@ private:
     int m_sampleIndex; //!< the current sample index for the symbol in progress
     int m_sum;
     int m_count;
+    bool m_skipTimingControl; //!< used for DMR mobile when in silent slot
 
     int m_zeroCrossing;
     bool m_zeroCrossingInCycle;

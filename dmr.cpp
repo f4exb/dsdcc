@@ -141,7 +141,7 @@ void DSDDMR::initVoice()
 
 void DSDDMR::initVoiceMS()
 {
-    std::cerr << "DSDDMR::initVoiceMS" << std::endl;
+//    std::cerr << "DSDDMR::initVoiceMS" << std::endl;
     m_burstType = DSDDMRMobileStation;
     processVoiceFirstHalfMS();
 }
@@ -375,10 +375,11 @@ void DSDDMR::processVoiceMS()
     if (m_symbolIndex == 144 - 1) // last dibit
     {
         m_voice1FrameCount++;
-        std::cerr << "DSDDMR::processVoiceMS: " << m_symbolIndex << " : " << m_voice1FrameCount << std::endl;
+//        std::cerr << "DSDDMR::processVoiceMS: " << m_symbolIndex << " : " << m_voice1FrameCount << std::endl;
 
         if (m_voice1FrameCount < 6) // continuation expected on slot + 2
         {
+            m_dsdDecoder->m_dsdSymbol.setSkipTimingControl(true);
             m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDMRSkipMS; // skip next slot
         }
         else // no super frame on going on this slot
@@ -400,8 +401,9 @@ void DSDDMR::processSkipMS()
 
     if (m_symbolIndex == 144 - 1) // last dibit
     {
-        std::cerr << "DSDDMR::processSkipMS: " << m_symbolIndex << std::endl;
+//        std::cerr << "DSDDMR::processSkipMS: " << m_symbolIndex << std::endl;
         // return to voice super frame
+        m_dsdDecoder->m_dsdSymbol.setSkipTimingControl(false);
         m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDMRvoiceMS;
         m_symbolIndex = 0;
     }
@@ -471,6 +473,7 @@ void DSDDMR::processVoiceFirstHalfMS()
 
     // only one slot in MS
     m_slot = DSDDMRSlot1;
+    memcpy(&m_dsdDecoder->m_state.slot0light[4], "VOX", 3);
     m_voice1FrameCount = 0;
     m_dsdDecoder->m_voice1On = true;
     m_voice1EmbSig_dibitsIndex = 0;

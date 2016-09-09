@@ -32,6 +32,7 @@ const int DSDSymbol::m_zeroCrossingCorrectionProfile9600[11] = { 0, 1, 1, 1, 1, 
 DSDSymbol::DSDSymbol(DSDDecoder *dsdDecoder) :
         m_dsdDecoder(dsdDecoder),
         m_symbol(0),
+        m_skipTimingControl(false),
         m_zeroCrossingSlopeDivisor(232), // for 10 samples per symbol
         m_lmmSamples(10*24),
 		m_ringingFilter(48000.0, 4800.0, 0.99),
@@ -166,7 +167,7 @@ bool DSDSymbol::pushSample(short sample)
 
     // timing control
 
-    if (m_sampleIndex == 0)
+    if ((m_sampleIndex == 0) && (!m_skipTimingControl))
     {
         m_symbolSyncSample = m_center;
 
