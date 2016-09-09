@@ -132,6 +132,13 @@ void DSDDMR::initData()
     processDataFirstHalf(90+1);
 }
 
+void DSDDMR::initDataMS()
+{
+//    std::cerr << "DSDDMR::initDataMS" << std::endl;
+    m_burstType = DSDDMRMobileStation;
+    processDataFirstHalfMS();
+}
+
 void DSDDMR::initVoice()
 {
 //    std::cerr << "DSDDMR::initVoice" << std::endl;
@@ -233,6 +240,23 @@ void DSDDMR::processData()
     }
 
     m_cachSymbolIndex++; // last dibit counts
+}
+
+void DSDDMR::processDataMS()
+{
+    int dibit = m_dsdDecoder->m_dsdSymbol.getDibit(); // get dibit from symbol
+
+    processDataDibit(dibit);
+
+    if (m_symbolIndex == 144 - 1) // last dibit
+    {
+        m_dsdDecoder->resetFrameSync(); // back to sync
+        m_symbolIndex = 0;
+    }
+    else
+    {
+        m_symbolIndex++;
+    }
 }
 
 void DSDDMR::processVoice()
@@ -420,6 +444,18 @@ void DSDDMR::processDataFirstHalf(unsigned int shiftBack)
 //    std::cerr << "DSDDMR::processDataFirstHalf" << std::endl;
 
     for (m_symbolIndex = 0; m_symbolIndex < 90; m_symbolIndex++, m_cachSymbolIndex++)
+    {
+        processDataDibit(dibit_p[m_symbolIndex]);
+    }
+}
+
+void DSDDMR::processDataFirstHalfMS()
+{
+    unsigned char *dibit_p = m_dsdDecoder->m_dsdSymbol.getDibitBack(78+1);
+
+//    std::cerr << "DSDDMR::processDataFirstHalfMS" << std::endl;
+
+    for (m_symbolIndex = 12; m_symbolIndex < 90; m_symbolIndex++, m_cachSymbolIndex++)
     {
         processDataDibit(dibit_p[m_symbolIndex]);
     }

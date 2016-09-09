@@ -73,6 +73,8 @@ public:
     void initVoiceMS();
     void processVoiceMS();
     void processSkipMS();
+    void initDataMS();
+    void processDataMS();
 
 private:
     struct DMRAddresses
@@ -94,6 +96,7 @@ private:
     static void textVoiceEmbeddedSignalling(DMRAddresses& addresses, char *slotText);
 
     void processVoiceFirstHalfMS();
+    void processDataFirstHalfMS();
 
     DSDDecoder *m_dsdDecoder;
     int  m_symbolIndex;                   //!< current symbol index in non HD sequence

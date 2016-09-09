@@ -457,6 +457,9 @@ void DSDDecoder::run(short sample)
         case DSDprocessDMRdata:
             m_dsdDMR.processData();
             break;
+        case DSDprocessDMRdataMS:
+            m_dsdDMR.processDataMS();
+            break;
         case DSDprocessDMRsyncOrSkip:
             m_dsdDMR.processSyncOrSkip();
             break;
@@ -516,7 +519,7 @@ void DSDDecoder::processFrameInit()
             m_fsmState = DSDprocessDMRdata;
         }
     }
-    else if (m_syncType == DSDSyncDMRVoiceMS)
+    else if ((m_syncType == DSDSyncDMRDataMS) || (m_syncType == DSDSyncDMRVoiceMS))
     {
         m_state.nac = 0;
         m_state.lastsrc = 0;
@@ -531,10 +534,20 @@ void DSDDecoder::processFrameInit()
             }
         }
 
-        sprintf(m_state.fsubtype, " VOICE        ");
-        m_dsdDMR.initVoiceMS();    // initializations not consuming a live symbol
-        m_dsdDMR.processVoiceMS(); // process current symbol first
-        m_fsmState = DSDprocessDMRvoiceMS;
+        if (m_syncType == DSDSyncDMRVoiceMS)
+        {
+            sprintf(m_state.fsubtype, " VOICE        ");
+            m_dsdDMR.initVoiceMS();    // initializations not consuming a live symbol
+            m_dsdDMR.processVoiceMS(); // process current symbol first
+            m_fsmState = DSDprocessDMRvoiceMS;
+        }
+        else
+        {
+            m_dsdDMR.initDataMS();    // initializations not consuming a live symbol
+            m_dsdDMR.processDataMS(); // process current symbol first
+            m_fsmState = DSDprocessDMRdataMS;
+        }
+
     }
     else if ((m_syncType == DSDSyncDStarP) || (m_syncType == DSDSyncDStarN)) // D-Star voice
     {
@@ -839,6 +852,27 @@ int DSDDecoder::getFrameSync()
 				m_mbeRate = DSDMBERate3600x2450;
 				return (int) DSDSyncDMRDataP; // done
         	}
+
+            if (memcmp(m_dsdSymbol.getSyncDibitBack(24), m_syncDMRDataMS, 24) == 0)
+            {
+                m_state.carrier = 1;
+                m_dsdSymbol.setFSK(4);
+
+                m_stationType = DSDMobileStation;
+                m_dmrBurstType = DSDDMR::DSDDMRMobileStation;
+
+                // data frame
+                sprintf(m_state.ftype, "+DMRd        ");
+
+                if (m_opts.errorbars == 1)
+                {
+                    printFrameSync(" +DMRd     ",  m_synctest_pos + 1);
+                }
+
+                m_lastSyncType = DSDSyncDMRDataMS;
+                m_mbeRate = DSDMBERate3600x2450;
+                return (int) DSDSyncDMRDataMS; // done
+            }
 
         	if (memcmp(m_dsdSymbol.getSyncDibitBack(24), m_syncDMRVoiceBS, 24) == 0)
         	{
