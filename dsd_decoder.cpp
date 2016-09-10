@@ -570,27 +570,6 @@ void DSDDecoder::processFrameInit()
         m_dsdDstar.process(); // process current symbol first
         m_fsmState = DSDprocessDSTAR;
     }
-    else if ((m_syncType == DSDSyncNXDNP) || (m_syncType == DSDSyncNXDNN)) // NXDN conventional
-    {
-        m_state.nac = 0;
-        m_state.lastsrc = 0;
-        m_state.lasttg = 0;
-
-        if (m_opts.errorbars == 1)
-        {
-            if (m_opts.verbose > 0)
-            {
-                int level = m_dsdSymbol.getLevel();
-                printf("inlvl: %2i%% ", level);
-            }
-        }
-
-        m_state.nac = 0;
-        sprintf(m_state.fsubtype, " RDCH         ");
-        m_dsdNXDN.init();
-        m_dsdNXDN.process(); // process current symbol first
-        m_fsmState = DSDprocessNXDN;
-    }
     else if ((m_syncType == DSDSyncDStarHeaderP) || (m_syncType == DSDSyncDStarHeaderN)) // D-Star header
     {
         m_state.nac = 0;
@@ -611,6 +590,27 @@ void DSDDecoder::processFrameInit()
         m_dsdDstar.init(true);
         m_dsdDstar.processHD(); // process current symbol first
         m_fsmState = DSDprocessDSTAR_HD;
+    }
+    else if ((m_syncType == DSDSyncNXDNP) || (m_syncType == DSDSyncNXDNN)) // NXDN conventional
+    {
+        m_state.nac = 0;
+        m_state.lastsrc = 0;
+        m_state.lasttg = 0;
+
+        if (m_opts.errorbars == 1)
+        {
+            if (m_opts.verbose > 0)
+            {
+                int level = m_dsdSymbol.getLevel();
+                printf("inlvl: %2i%% ", level);
+            }
+        }
+
+        m_state.nac = 0;
+        sprintf(m_state.fsubtype, " RDCH         ");
+        m_dsdNXDN.init();
+        m_dsdNXDN.process(); // process current symbol first
+        m_fsmState = DSDprocessNXDN;
     }
     else if (m_syncType == DSDSyncDPMR) // dPMR classic (not packet)
     {

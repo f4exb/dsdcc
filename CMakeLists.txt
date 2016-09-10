@@ -37,7 +37,6 @@ set(dsdcc_SOURCES
     dsd_state.cpp
     dsd_symbol.cpp
     dstar.cpp
-    dstarold.cpp
     ysf.cpp
     dpmr.cpp
     nxdn.cpp
@@ -57,7 +56,6 @@ set(dsdcc_HEADERS
     dsd_state.h
     dsd_symbol.h
     dstar.h
-    dstarold.h
     ysf.h
     dpmr.h
     nxdn.h

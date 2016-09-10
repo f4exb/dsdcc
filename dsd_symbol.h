@@ -38,13 +38,15 @@ public:
     void snapLevels(int nbSymbols); //!< take snapshot for min/max over a number of symbols
     void setSamplesPerSymbol(int samplesPerSymbol);
     void setFSK(unsigned int nbSymbols, bool inverted=false);
-
-    int getSymbol() const { return m_symbol; }
     void setNoSignal(bool noSignal) { m_noSignal = noSignal; }
     bool pushSample(short sample); //!< push a new sample into the decoder. Returns true if a new symbol is available
+
+    int getSymbol() const { return m_symbol; }
     int getDibit(); //!< from the last retrieved symbol Returns either the bit (0,1) or the dibit value (0,1,2,3)
     unsigned char *getDibitBack(unsigned int shift) { return m_binSymbolBuffer.getBack(shift); }
     unsigned char *getSyncDibitBack(unsigned int shift) { return m_syncSymbolBuffer.getBack(shift); }
+    unsigned char *getNonInvertedSyncDibitBack(unsigned int shift) { return m_nonInvertedSyncSymbolBuffer.getBack(shift); }
+
     static int invert_dibit(int dibit);
     int getLevel() const { return (m_max - m_min) / 328; }
     int getCarrierPos() const { return m_center / 164; }
@@ -113,6 +115,7 @@ private:
     DSDSecondOrderRecursiveFilter m_ringingFilter;
     DoubleBuffer<unsigned char> m_binSymbolBuffer;    //!< digitized symbol
     DoubleBuffer<unsigned char> m_syncSymbolBuffer;   //!< symbol digitized for synchronization: positive is 1, negative is 3
+    DoubleBuffer<unsigned char> m_nonInvertedSyncSymbolBuffer; //!< same but resetting to positive sync
 
     static const int m_zeroCrossingCorrectionProfile2400[11];
     static const int m_zeroCrossingCorrectionProfile4800[11];

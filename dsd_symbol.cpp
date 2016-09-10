@@ -37,7 +37,8 @@ DSDSymbol::DSDSymbol(DSDDecoder *dsdDecoder) :
         m_lmmSamples(10*24),
 		m_ringingFilter(48000.0, 4800.0, 0.99),
 		m_binSymbolBuffer(1024),
-		m_syncSymbolBuffer(64)
+		m_syncSymbolBuffer(64),
+		m_nonInvertedSyncSymbolBuffer(64)
 {
     resetSymbol();
     resetZeroCrossing();
@@ -378,6 +379,7 @@ void DSDSymbol::digitizeIntoBinaryBuffer()
     unsigned char binSymbol = digitize(m_symbol);
     m_binSymbolBuffer.push(binSymbol);
     m_syncSymbolBuffer.push(m_symbol > 0 ? 1 : 3);
+    m_nonInvertedSyncSymbolBuffer.push((m_invertedFSK ? (m_symbol <= 0) : (m_symbol > 0)) ? 1 : 3);
 }
 
 int DSDSymbol::invert_dibit(int dibit)
