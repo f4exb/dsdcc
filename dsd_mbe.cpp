@@ -326,33 +326,33 @@ void DSDMBEDecoder::upsample(int upsampling, float invalue)
 //    outbuf1++;
     if (upsampling == 6)
     {
-        *outbuf1 = ((invalue * (float) 0.166) + (c * (float) 0.834));
+        *outbuf1 = m_upsamplingFilter.run((invalue * (float) 0.166) + (c * (float) 0.834));
         outbuf1++;
-        *outbuf1 = ((invalue * (float) 0.332) + (c * (float) 0.668));
+        *outbuf1 = m_upsamplingFilter.run((invalue * (float) 0.332) + (c * (float) 0.668));
         outbuf1++;
-        *outbuf1 = ((invalue * (float) 0.5) + (c * (float) 0.5));
+        *outbuf1 = m_upsamplingFilter.run((invalue * (float) 0.5) + (c * (float) 0.5));
         outbuf1++;
-        *outbuf1 = ((invalue * (float) 0.668) + (c * (float) 0.332));
+        *outbuf1 = m_upsamplingFilter.run((invalue * (float) 0.668) + (c * (float) 0.332));
         outbuf1++;
-        *outbuf1 = ((invalue * (float) 0.834) + (c * (float) 0.166));
+        *outbuf1 = m_upsamplingFilter.run((invalue * (float) 0.834) + (c * (float) 0.166));
         outbuf1++;
-        *outbuf1 = d;
+        *outbuf1 = m_upsamplingFilter.run(d);
         m_upsamplerLastValue = d;
         outbuf1++;
     }
     else if (upsampling == 7)
     {
-        *outbuf1 = ((invalue * (float) 0.142) + (c * (float) 0.857));
+        *outbuf1 = m_upsamplingFilter.run((invalue * (float) 0.142) + (c * (float) 0.857));
         outbuf1++;
-        *outbuf1 = ((invalue * (float) 0.286) + (c * (float) 0.714));
+        *outbuf1 = m_upsamplingFilter.run((invalue * (float) 0.286) + (c * (float) 0.714));
         outbuf1++;
-        *outbuf1 = ((invalue * (float) 0.429) + (c * (float) 0.571));
+        *outbuf1 = m_upsamplingFilter.run((invalue * (float) 0.429) + (c * (float) 0.571));
         outbuf1++;
-        *outbuf1 = ((invalue * (float) 0.571) + (c * (float) 0.429));
+        *outbuf1 = m_upsamplingFilter.run((invalue * (float) 0.571) + (c * (float) 0.429));
         outbuf1++;
-        *outbuf1 = ((invalue * (float) 0.714) + (c * (float) 0.286));
+        *outbuf1 = m_upsamplingFilter.run((invalue * (float) 0.714) + (c * (float) 0.286));
         outbuf1++;
-        *outbuf1 = ((invalue * (float) 0.857) + (c * (float) 0.142));
+        *outbuf1 = m_upsamplingFilter.run((invalue * (float) 0.857) + (c * (float) 0.142));
         outbuf1++;
         *outbuf1 = d;
         m_upsamplerLastValue = d;

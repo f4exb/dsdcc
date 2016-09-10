@@ -17,6 +17,8 @@
 #ifndef DSDCC_DSD_MBE_H_
 #define DSDCC_DSD_MBE_H_
 
+#include "dsd_filters.h"
+
 extern "C" {
 #include <mbelib.h>
 }
@@ -92,6 +94,8 @@ private:
     int m_upsample;            //!< upsampling factor
     bool m_stereo;             //!< double each audio sample to produce L+R channels
     unsigned char m_channels;  //!< when in stereo output to none (0) or only left (1), right (2) or both (3) channels
+
+    DSDMBEAudioInterpolatorFilter m_upsamplingFilter;
 };
 
 }

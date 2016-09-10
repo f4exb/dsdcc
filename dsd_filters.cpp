@@ -200,6 +200,8 @@ short DSDFilters::dsd_input_filter(short sample, int mode)
     return (short) (sum / gain); // filtered sample out
 }
 
+// ====================================================================
+
 DSDSecondOrderRecursiveFilter::DSDSecondOrderRecursiveFilter(float samplingFrequency, float centerFrequency, float r) :
 		m_r(r),
 		m_frequencyRatio(centerFrequency/samplingFrequency)
@@ -238,6 +240,41 @@ void DSDSecondOrderRecursiveFilter::init()
 	{
 		m_v[i] = 0.0f;
 	}
+}
+
+// ====================================================================
+
+const float DSDMBEAudioInterpolatorFilter::m_a0 = 3.869430E-02;
+const float DSDMBEAudioInterpolatorFilter::m_a1 = 7.738860E-02;
+const float DSDMBEAudioInterpolatorFilter::m_a2 = 3.869430E-02;
+const float DSDMBEAudioInterpolatorFilter::m_b1 = 1.392667E+00;
+const float DSDMBEAudioInterpolatorFilter::m_b2 = -5.474446E-01;
+
+DSDMBEAudioInterpolatorFilter::DSDMBEAudioInterpolatorFilter()
+{}
+
+DSDMBEAudioInterpolatorFilter::~DSDMBEAudioInterpolatorFilter()
+{}
+
+void DSDMBEAudioInterpolatorFilter::init()
+{
+    m_x[0] = 0.0f;
+    m_x[1] = 0.0f;
+    m_y[0] = 0.0f;
+    m_y[1] = 0.0f;
+}
+
+float DSDMBEAudioInterpolatorFilter::run(float sample)
+{
+    float y = m_a0*sample + m_a1*m_x[0] + m_a2*m_x[1] + m_b1*m_y[0] + m_b2*m_y[1]; // this is y[n]
+
+    m_x[1] = m_x[0];
+    m_x[0] = sample;
+
+    m_y[1] = m_y[0];
+    m_y[0] = y;
+
+    return y;
 }
 
 } // namespace dsdcc
