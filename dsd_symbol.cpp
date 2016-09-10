@@ -36,7 +36,7 @@ DSDSymbol::DSDSymbol(DSDDecoder *dsdDecoder) :
         m_zeroCrossingSlopeDivisor(232), // for 10 samples per symbol
         m_lmmSamples(10*24),
 		m_ringingFilter(48000.0, 4800.0, 0.99),
-		m_binSymbolBuffer(512),
+		m_binSymbolBuffer(1024),
 		m_syncSymbolBuffer(64)
 {
     resetSymbol();

@@ -54,7 +54,7 @@
 namespace DSDcc
 {
 
-const int Descramble::SCRAMBLER_TABLE_BITS[] = {
+const unsigned char Descramble::SCRAMBLER_TABLE_BITS[] = {
         0,0,0,0,1,1,1,0,1,1,1,1,0,0,1,0,1,1,0,0,1,0,0,1,0,0,0,0,0,0,1,0,
         0,0,1,0,0,1,1,0,0,0,1,0,1,1,1,0,1,0,1,1,0,1,1,0,0,0,0,0,1,1,0,0,
         1,1,0,1,0,1,0,0,1,1,1,0,0,1,1,1,1,0,1,1,0,1,0,0,0,0,1,0,1,0,1,0,
@@ -79,8 +79,11 @@ const int Descramble::SCRAMBLER_TABLE_BITS[] = {
         1,1,0,0,0,1,0,1,1,1,0,1,0,1,1,0,1,1,0,0,0,0,0,1,1,0,0,1,1,0,1,0,
         1,0,0,1,1,1,0,0,1,1,1,1,0,1,1,0};
 
-int Descramble::traceBack(int * out, int * m_pathMemory0, int * m_pathMemory1,
-        int * m_pathMemory2, int * m_pathMemory3)
+int Descramble::traceBack(unsigned char *out,
+        unsigned char * m_pathMemory0,
+        unsigned char * m_pathMemory1,
+        unsigned char * m_pathMemory2,
+        unsigned char * m_pathMemory3)
 {
     enum FEC_STATE
     {
@@ -154,8 +157,13 @@ int Descramble::traceBack(int * out, int * m_pathMemory0, int * m_pathMemory1,
     return (length);
 } // end function
 
-void Descramble::viterbiDecode(int n, int *data, int *m_pathMemory0, int *m_pathMemory1,
-        int *m_pathMemory2, int *m_pathMemory3, int *m_pathMetric)
+void Descramble::viterbiDecode(int n,
+        unsigned char *data,
+        unsigned char *m_pathMemory0,
+        unsigned char *m_pathMemory1,
+        unsigned char *m_pathMemory2,
+        unsigned char *m_pathMemory3,
+        unsigned char *m_pathMetric)
 {
     int tempMetric[4];
     int metric[8];
@@ -236,19 +244,19 @@ void Descramble::viterbiDecode(int n, int *data, int *m_pathMemory0, int *m_path
 
 } // end function ViterbiDecode
 
-int Descramble::FECdecoder(int * in, int * out)
+int Descramble::FECdecoder(unsigned char *in, unsigned char *out)
 {
     int outLen;
 
-    int m_pathMemory0[330];
-    memset(m_pathMemory0, 0, 330 * sizeof(int));
-    int m_pathMemory1[330];
-    memset(m_pathMemory1, 0, 330 * sizeof(int));
-    int m_pathMemory2[330];
-    memset(m_pathMemory2, 0, 330 * sizeof(int));
-    int m_pathMemory3[330];
-    memset(m_pathMemory3, 0, 330 * sizeof(int));
-    int m_pathMetric[4];
+    unsigned char m_pathMemory0[330];
+    memset(m_pathMemory0, 0, 330 * sizeof(unsigned char));
+    unsigned char m_pathMemory1[330];
+    memset(m_pathMemory1, 0, 330 * sizeof(unsigned char));
+    unsigned char m_pathMemory2[330];
+    memset(m_pathMemory2, 0, 330 * sizeof(unsigned char));
+    unsigned char m_pathMemory3[330];
+    memset(m_pathMemory3, 0, 330 * sizeof(unsigned char));
+    unsigned char m_pathMetric[4];
 
     int loop, loop2;
 
@@ -261,7 +269,7 @@ int Descramble::FECdecoder(int * in, int * out)
 
     for (loop2 = 0; loop2 < 660; loop2 += 2, n++)
     {
-        int data[2];
+        unsigned char data[2];
 
         if (in[loop2])
         {
@@ -302,7 +310,7 @@ int Descramble::FECdecoder(int * in, int * out)
     return (outLen);
 } // end function FECdecoder
 
-void Descramble::deinterleave(int * in, int * out)
+void Descramble::deinterleave(unsigned char *in, unsigned char *out)
 {
 
     int k = 0;
@@ -329,7 +337,7 @@ void Descramble::deinterleave(int * in, int * out)
     }; // end for
 } // end function deinterleave
 
-void Descramble::scramble (int * in,int * out)
+void Descramble::scramble (unsigned char *in, unsigned char *out)
 {
     int loop = 0;
     int m_count = 0;

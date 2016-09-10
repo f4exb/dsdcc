@@ -23,11 +23,21 @@
 namespace DSDcc
 {
 
+class DSDDecoder;
+
 class DSDDstar : public DSDDstarOld
 {
 public:
 	DSDDstar(DSDDecoder *dsdDecoder);
-    ~DSDDstar();
+   ~DSDDstar();
+
+   void init(bool header = false);
+   void processHD();
+
+private:
+   void dstar_header_decode();
+
+   DSDDecoder *m_dsdDecoder;
 };
 
 } // namespace DSDcc

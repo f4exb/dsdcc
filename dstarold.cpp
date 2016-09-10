@@ -16,7 +16,6 @@
 
 #include <string.h>
 #include "dsd_decoder.h"
-#include "descramble.h"
 #include "dstarold.h"
 
 namespace DSDcc
@@ -142,31 +141,6 @@ void DSDDstarOld::reset_header_strings()
     m_mySign.clear();
 }
 
-void DSDDstarOld::init(bool header)
-{
-    //fprintf(stderr, "DSDDstar::init: symbol %d (%d)\n", m_dsdDecoder->m_state.symbolcnt, m_dsdDecoder->m_dsdSymbol.getSymbol());
-
-    if (header)
-    {
-        framecount = 0;
-    }
-    else
-    {
-        framecount = 1; //just saw a sync frame; there should be 20 not 21 till the next
-    }
-
-    if ((m_dsdDecoder->m_opts.errorbars == 1) && (!header))
-    {
-        m_dsdDecoder->getLogger().log( "e:"); // print this only for voice/data frames
-    }
-
-    sync_missed = 0;
-    bitbuffer = 0;
-    m_symbolIndex = 0;
-    m_symbolIndexHD = 0;
-    m_dsdDecoder->m_voice1On = true;
-}
-
 void DSDDstarOld::initVoiceFrame()
 {
     //fprintf(stderr, "DSDDstar::initVoiceFrame\n");
@@ -205,23 +179,6 @@ void DSDDstarOld::process()
     }
 
     m_symbolIndex++;
-}
-
-void DSDDstarOld::processHD()
-{
-    int dibit = m_dsdDecoder->m_dsdSymbol.getDibit(); // get dibit from symbol and store it in HD cache
-    radioheaderbuffer[m_symbolIndexHD] = dibit;
-
-    if (m_symbolIndexHD == 660-1)
-    {
-        dstar_header_decode();
-        init(); // init for DSTAR
-        m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDSTAR; // go to DSTAR
-    }
-    else
-    {
-        m_symbolIndexHD++;
-    }
 }
 
 void DSDDstarOld::processVoice()
@@ -362,81 +319,6 @@ void DSDDstarOld::processData()
             m_dsdDecoder->resetFrameSync(); // end
         }
     }
-}
-
-void DSDDstarOld::dstar_header_decode()
-{
-    int radioheaderbuffer2[660];
-    unsigned char radioheader[41];
-    int octetcount, bitcount, loop;
-    unsigned char bit2octet[] = {0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80};
-    unsigned int FCSinheader;
-    unsigned int FCScalculated;
-    int len;
-
-    Descramble::scramble(radioheaderbuffer, radioheaderbuffer2);
-    Descramble::deinterleave(radioheaderbuffer2, radioheaderbuffer);
-    len = Descramble::FECdecoder(radioheaderbuffer, radioheaderbuffer2);
-    memset(radioheader, 0, 41);
-
-    // note we receive 330 bits, but we only use 328 of them (41 octets)
-    // bits 329 and 330 are unused
-    octetcount = 0;
-    bitcount = 0;
-
-    for (loop = 0; loop < 328; loop++)
-    {
-        if (radioheaderbuffer2[loop])
-        {
-            radioheader[octetcount] |= bit2octet[bitcount];
-        };
-
-        bitcount++;
-
-        // increase octetcounter and reset bitcounter every 8 bits
-        if (bitcount >= 8)
-        {
-            octetcount++;
-            bitcount = 0;
-        }
-    }
-
-    // print header - TODO: store it in the state object for access from caller
-    m_dsdDecoder->getLogger().log("\nDSTAR HEADER: ");
-    //printf("FLAG1: %02X - FLAG2: %02X - FLAG3: %02X\n", radioheader[0],
-    //      radioheader[1], radioheader[2]);
-    m_rpt2 = std::string((const char *) &radioheader[3], 8);
-    m_dsdDecoder->getLogger().log("RPT 2: %s ", m_rpt2.c_str());
-//    m_dsdDecoder->getLogger().log("RPT 2: %c%c%c%c%c%c%c%c ", radioheader[3], radioheader[4],
-//            radioheader[5], radioheader[6], radioheader[7], radioheader[8],
-//            radioheader[9], radioheader[10]);
-    m_rpt1 = std::string((const char *) &radioheader[11], 8);
-    m_dsdDecoder->getLogger().log("RPT 1: %s ", m_rpt1.c_str());
-//    m_dsdDecoder->getLogger().log("RPT 1: %c%c%c%c%c%c%c%c ", radioheader[11], radioheader[12],
-//            radioheader[13], radioheader[14], radioheader[15], radioheader[16],
-//            radioheader[17], radioheader[18]);
-    m_yourSign = std::string((const char *) &radioheader[19], 8);
-    m_dsdDecoder->getLogger().log("YOUR: %s ", m_yourSign.c_str());
-//    m_dsdDecoder->getLogger().log("YOUR: %c%c%c%c%c%c%c%c ", radioheader[19], radioheader[20],
-//            radioheader[21], radioheader[22], radioheader[23], radioheader[24],
-//            radioheader[25], radioheader[26]);
-    m_mySign = std::string((const char *) &radioheader[27], 8);
-    m_mySign += '/';
-    m_mySign += std::string((const char *) &radioheader[35], 4);
-    m_dsdDecoder->getLogger().log("MY: %s\n", m_mySign.c_str());
-//    m_dsdDecoder->getLogger().log("MY: %c%c%c%c%c%c%c%c/%c%c%c%c\n", radioheader[27], radioheader[28],
-//            radioheader[29], radioheader[30], radioheader[31], radioheader[32],
-//            radioheader[33], radioheader[34], radioheader[35], radioheader[36],
-//            radioheader[37], radioheader[38]);
-
-    //FCSinheader = ((radioheader[39] << 8) | radioheader[40]) & 0xFFFF;
-    //FCScalculated = calc_fcs((unsigned char*) radioheader, 39);
-    //printf("Check sum = %04X ", FCSinheader);
-    //if (FCSinheader == FCScalculated) {
-    //  printf("(OK)\n");
-    //} else {
-    //  printf("(NOT OK- Calculated FCS = %04X)\n", FCScalculated);
-    //}; // end else - if
 }
 
 } // namespace DSDcc

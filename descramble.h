@@ -23,16 +23,26 @@ namespace DSDcc
 class Descramble
 {
 public:
-    static void scramble (int * in,int * out);
-    static void deinterleave (int * in, int * out);
-    static int FECdecoder (int * in, int * out);
+    static void scramble (unsigned char *in, unsigned char *out);
+    static void deinterleave (unsigned char *in, unsigned char *out);
+    static int FECdecoder (unsigned char *in, unsigned char *out);
 
 private:
-    static int traceBack (int * out, int * m_pathMemory0, int * m_pathMemory1, int * m_pathMemory2, int * m_pathMemory3);
-    static void viterbiDecode (int n, int *data, int *m_pathMemory0, int *m_pathMemory1, int *m_pathMemory2, int *m_pathMemory3, int *m_pathMetric);
+    static int traceBack (unsigned char *out,
+            unsigned char *m_pathMemory0,
+            unsigned char *m_pathMemory1,
+            unsigned char *m_pathMemory2,
+            unsigned char *m_pathMemory3);
+    static void viterbiDecode (int n,
+            unsigned char *data,
+            unsigned char *m_pathMemory0,
+            unsigned char *m_pathMemory1,
+            unsigned char *m_pathMemory2,
+            unsigned char *m_pathMemory3,
+            unsigned char *m_pathMetric);
 
     static const int SCRAMBLER_TABLE_BITS_LENGTH=720;
-    static const int SCRAMBLER_TABLE_BITS[];
+    static const unsigned char SCRAMBLER_TABLE_BITS[];
 };
 
 

@@ -30,9 +30,7 @@ public:
     DSDDstarOld(DSDDecoder *dsdDecoder);
     ~DSDDstarOld();
 
-    void init(bool header = false);
     void process();
-    void processHD();
 
     const std::string& getRpt1() const { return m_rpt1; }
     const std::string& getRpt2() const { return m_rpt2; }
@@ -44,7 +42,6 @@ protected:
     void initDataFrame();
     void processVoice();
     void processData();
-    void dstar_header_decode();
     void reset_header_strings();
     void storeSymbolDV(int bitindex, unsigned char bit, bool lsbFirst = true);
 
