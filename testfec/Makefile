@@ -1,4 +1,4 @@
-all: qr golay hamming7 hamming12 hamming16
+all: qr golay hamming7 hamming12 hamming16 viterbi.o
 
 hamming7: fec.o hamming7.cpp
 	g++ -o hamming7 fec.o hamming7.cpp
@@ -17,6 +17,9 @@ qr: fec.o qr.cpp
 
 fec.o: ../fec.h ../fec.cpp
 	g++ -c -o fec.o -I.. ../fec.cpp
+
+viterbi.o: ../viterbi.h ../viterbi.cpp
+	g++ -c -o viterbi.o -I.. ../viterbi.cpp
 
 clean:
 	rm -f *.o qr golay hamming7 hamming12 hamming16
