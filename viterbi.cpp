@@ -66,191 +66,83 @@ Viterbi::Viterbi(int k, int n, unsigned int *polys) :
         m_k(k),
         m_n(n),
         m_polys(polys),
-        m_vdInt(0)
+        m_nbSymbolsMax(0)
 {
-    if (k >= 6) {
-        m_d = (1 << (k-6));
-    } else {
-        m_d = 1;
-    }
-
-    m_syms = new int[1<<k];
+    m_pathMetrics = new int[(1<<m_k) - 1];
+    m_paths = 0;
 }
 
 Viterbi::~Viterbi()
 {
-    delete[] m_syms;
+    delete[] m_pathMetrics;
+
+    if (m_paths) {
+        delete[] m_paths;
+    }
 }
 
-int Viterbi::encode(
+void Viterbi::encodeToSymbols(
         unsigned char *symbols,
-        unsigned char *data,
-        unsigned int nbytes,
-        unsigned int startstate,
-        unsigned int endstate)
+        unsigned char *dataBits,
+        unsigned int nbBits,
+        unsigned int startstate)
 {
     int i, j;
     unsigned int encstate = startstate;
 
-    while (nbytes-- != 0)
+    for (int i = 0; i < nbBits; nbBits++)
     {
-        for (i = 7; i >= 0; i--)
-        {
-            encstate = (encstate << 1) | ((*data >> i) & 1);
-
-            for (j = 0; j < m_n; j++)
-            {
-                *symbols++ = parity(encstate & m_polys[j]);
-            }
-        }
-        data++;
-    }
-
-    /* Flush out tail */
-    for (i = m_k - 2; i >= 0; i--)
-    {
-        encstate = (encstate << 1) | ((endstate >> i) & 1);
+        encstate = (encstate >> 1) | (dataBits[i] << (m_k-1));
+        *symbols = 0;
 
         for (j = 0; j < m_n; j++)
         {
-            *symbols++ = parity(encstate & m_polys[j]);
+            *symbols += parity(encstate & m_polys[j]) << j;
         }
-    }
 
-    return 0;
+        symbols++;
+    }
 }
 
-int Viterbi::viterbi(
-        unsigned long *metric,
-        unsigned char *data,
-        unsigned char *symbols,
-        unsigned int nbits,
-        int mettab[2][256],
-        unsigned int startstate,
-        unsigned int endstate
+void Viterbi::encodeToBits(
+        unsigned char *codedBits,
+        unsigned char *dataBits,
+        unsigned int nbBits,
+        unsigned int startstate)
+{
+    int i, j;
+    unsigned int encstate = startstate;
+
+    for (int i = 0; i < nbBits; nbBits++)
+    {
+        encstate = (encstate >> 1) | (dataBits[i] << (m_k-1));
+
+        for (j = 0; j < m_n; j++)
+        {
+            *codedBits = parity(encstate & m_polys[j]);
+            codedBits++;
+        }
+    }
+}
+
+void Viterbi::decodeFromSymbols(
+        unsigned char *dataBits,    //!< Decoded output data bits
+        unsigned char *symbols,     //!< Input symbols
+        unsigned int nbSymbols,     //!< Number of imput symbols
+        unsigned int startstate     //!< Encoder starting state
 )
 {
-    int bitcnt = -(m_k - 1);
-    long m0, m1;
-    int i, j, sym;
-    int mets[1 << m_n];
-    unsigned long paths[(nbits + m_k - 1) * m_d], *pp, mask;
-    long cmetric[1 << (m_k - 1)], nmetric[1 << (m_k - 1)];
-
-    memset(paths, 0, sizeof(paths));
-
-    if (!m_vdInt)
+    if (nbSymbols > m_nbSymbolsMax)
     {
-        for (i = 0; i < (1 << m_k); i++)
-        {
-            sym = 0;
-
-            for (j = 0; j < m_n; j++)
-            {
-                sym = (sym << 1) + parity(i & m_polys[j]);
-            }
-
-            m_syms[i] = sym;
+        if (m_paths) {
+            delete[] m_paths;
         }
 
-        m_vdInt++;
+        m_paths = new unsigned char[((1<<m_k) - 1) * nbSymbols];
+        m_nbSymbolsMax = nbSymbols;
     }
 
-    startstate &= ~((1 << (m_k - 1)) - 1);
-    endstate &= ~((1 << (m_k - 1)) - 1);
 
-    /* Initialize starting metrics */
-
-    for (i = 0; i < 1 << (m_k - 1); i++)
-    {
-        cmetric[i] = -999999;
-    }
-
-    cmetric[startstate] = 0;
-    pp = paths;
-
-    for (;;)
-    { /* For each data bit */
-        /* Read input symbols and compute branch metrics */
-        for (i = 0; i < 1 << m_n; i++)
-        {
-            mets[i] = 0;
-            for (j = 0; j < m_n; j++)
-            {
-                mets[i] += mettab[(i >> (m_n - j - 1)) & 1][symbols[j]];
-            }
-        }
-
-        symbols += m_n;
-        /* Run the add-compare-select operations */
-        mask = 1;
-
-        for (i = 0; i < 1 << (m_k - 1); i += 2)
-        {
-            int b1, b2;
-
-            b1 = mets[m_syms[i]];
-            nmetric[i] = m0 = cmetric[i / 2] + b1;
-            b2 = mets[m_syms[i + 1]];
-            b1 -= b2;
-            m1 = cmetric[(i / 2) + (1 << (m_k - 2))] + b2;
-
-            if (m1 > m0)
-            {
-                nmetric[i] = m1;
-                *pp |= mask;
-            }
-
-            m0 -= b1;
-            nmetric[i + 1] = m0;
-            m1 += b1;
-
-            if (m1 > m0)
-            {
-                nmetric[i + 1] = m1;
-                *pp |= mask << 1;
-            }
-
-            mask <<= 2;
-
-            if (mask == 0)
-            {
-                mask = 1;
-                pp++;
-            }
-        }
-        if (mask != 1)
-        {
-            pp++;
-        }
-        if (++bitcnt == nbits)
-        {
-            *metric = nmetric[endstate];
-            break;
-        }
-
-        memcpy(cmetric, nmetric, sizeof(cmetric));
-    }
-
-    /* Chain back from terminal state to produce decoded data */
-    if (data == 0)
-    {
-        return 0;/* Discard output */
-    }
-
-    memset(data, 0, (nbits + 7) / 8); /* round up in case nbits % 8 != 0 */
-
-    for (i = nbits - 1; i >= 0; i--)
-    {
-        pp -= m_d;
-        if (pp[endstate >> 5] & (1 << (endstate & 31)))
-        {
-            endstate |= (1 << (m_k - 1));
-            data[i >> 3] |= 0x80 >> (i & 7);
-        }
-        endstate >>= 1;
-    }
-    return 0;
 }
 
 

@@ -29,23 +29,27 @@ public:
     ~Viterbi();
 
     /** Convolutionally encode data into binary symbols */
-    int encode(
+    void encodeToSymbols(
         unsigned char *symbols,
-        unsigned char *data,
-        unsigned int nbytes,
-        unsigned int startstate,
-        unsigned int endstate
+        unsigned char *dataBits,
+        unsigned int nbBits,
+        unsigned int startstate
+    );
+
+    /** Convolutionally encode data into bits */
+    void encodeToBits(
+        unsigned char *codedBits,
+        unsigned char *dataBits,
+        unsigned int nbBits,
+        unsigned int startstate
     );
 
     /* Viterbi decoder */
-    int viterbi(
-        unsigned long *metric,      //!< Final path metric (returned value)
-        unsigned char *data,        //!< Decoded output data
-        unsigned char *symbols,     //!< Raw deinterleaved input symbols
-        unsigned int nbits,         //!< Number of output bits
-        int mettab[2][256],         //!< Metric table, [sent sym][rx symbol]
-        unsigned int startstate,    //!< Encoder starting state
-        unsigned int endstate       //!< Encoder ending state
+    void decodeFromSymbols(
+        unsigned char *dataBits,    //!< Decoded output data bits
+        unsigned char *symbols,     //!< Input symbols
+        unsigned int nbSymbols,     //!< Number of imput symbols
+        unsigned int startstate     //!< Encoder starting state
     );
 
     static const unsigned int Poly23[];
@@ -66,9 +70,9 @@ private:
     int m_k;
     int m_n;
     unsigned int *m_polys;
-    int m_d;
-    int *m_syms;
-    int m_vdInt;
+    int *m_pathMetrics;
+    unsigned char *m_paths;
+    int m_nbSymbolsMax;
 };
 
 } // namespace DSDcc
