@@ -25,13 +25,13 @@ namespace DSDcc
 class Viterbi
 {
 public:
-    Viterbi(int k, int n, unsigned int *polys);
+    Viterbi(int k, int n, const unsigned int *polys, bool msbFirst = true);
     ~Viterbi();
 
     /** Convolutionally encode data into binary symbols */
     void encodeToSymbols(
         unsigned char *symbols,
-        unsigned char *dataBits,
+        const unsigned char *dataBits,
         unsigned int nbBits,
         unsigned int startstate
     );
@@ -39,7 +39,7 @@ public:
     /** Convolutionally encode data into bits */
     void encodeToBits(
         unsigned char *codedBits,
-        unsigned char *dataBits,
+        const unsigned char *dataBits,
         unsigned int nbBits,
         unsigned int startstate
     );
@@ -47,19 +47,28 @@ public:
     /* Viterbi decoder */
     void decodeFromSymbols(
         unsigned char *dataBits,    //!< Decoded output data bits
-        unsigned char *symbols,     //!< Input symbols
+        const unsigned char *symbols,     //!< Input symbols
         unsigned int nbSymbols,     //!< Number of imput symbols
         unsigned int startstate     //!< Encoder starting state
     );
 
-    static const unsigned int Poly23[];
+    const unsigned char *getBranchCodes() const { return m_branchCodes; }
+    const unsigned char *getPredA() const { return m_predA; }
+    const unsigned char *getPredB() const { return m_predB; }
+    const unsigned char *getBitA() const { return m_bitA; }
+    const unsigned char *getBitB() const { return m_bitB; }
+
+    static const unsigned int Poly23[];  //!< MIT lecture example
+    static const unsigned int Poly23a[]; //!< D-Star
     static const unsigned int Poly24[];
     static const unsigned int Poly25[];
     static const unsigned int Poly25a[];
-    static const unsigned int Poly25y[];
+    static const unsigned int Poly25y[]; //!< Yaesu System Fusion
     static const unsigned char Partab[];
 
 private:
+    void initCodes();
+    void initTreillis();
     static inline int parity(int x)
     {
       x ^= (x >> 16);
@@ -69,9 +78,15 @@ private:
 
     int m_k;
     int m_n;
-    unsigned int *m_polys;
+    const unsigned int *m_polys;
+    bool m_msbFirst;
     int *m_pathMetrics;
     unsigned char *m_paths;
+    unsigned char *m_branchCodes;
+    unsigned char *m_predA;
+    unsigned char *m_bitA;
+    unsigned char *m_predB;
+    unsigned char *m_bitB;
     int m_nbSymbolsMax;
 };
 
