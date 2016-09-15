@@ -366,7 +366,7 @@ void Viterbi::decodeFromSymbols(
             if (a_b) // A selected
             {
                 m_pathMetrics[ib + (is+1)*(1<<(m_k-1))] = pmA;
-                m_traceback[ib + is*(1<<(m_k-1))] = (predA<<1) + bitA;
+                m_traceback[ib + is*(1<<(m_k-1))] = (predA<<1) + bitA; // Pack predecessor branch # and bit value
 
                 if ((pmA >= 0) && (pmA < minMetric))
                 {
@@ -383,7 +383,7 @@ void Viterbi::decodeFromSymbols(
             else
             {
                 m_pathMetrics[ib + (is+1)*(1<<(m_k-1))] = pmB;
-                m_traceback[ib + is*(1<<(m_k-1))] = (predB<<1) + bitB;
+                m_traceback[ib + is*(1<<(m_k-1))] = (predB<<1) + bitB; // Pack predecessor branch # and bit value
 
                 if ((pmB >= 0) && (pmB < minMetric))
                 {
@@ -412,8 +412,8 @@ void Viterbi::decodeFromSymbols(
 //    			<< " bit: " << (int)  (m_traceback[bIx + is*(1<<(m_k-1))] % 2)
 //				<< " pred: " << (int) (m_traceback[bIx + is*(1<<(m_k-1))] >> 1)
 //				<< std::endl;
-    	dataBits[is] = m_traceback[bIx + is*(1<<(m_k-1))] % 2;
-    	bIx = m_traceback[bIx + is*(1<<(m_k-1))] >> 1;
+    	dataBits[is] = m_traceback[bIx + is*(1<<(m_k-1))] % 2; // unpack bit value
+    	bIx = m_traceback[bIx + is*(1<<(m_k-1))] >> 1;         // unpack predecessor branch #
     }
 }
 
