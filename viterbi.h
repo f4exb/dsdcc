@@ -78,11 +78,6 @@ private:
         return Partab[x & 0xff];
     }
 
-    static int compare (const void * a, const void * b)
-    {
-        return ( *(int*)a - *(int*)b );
-    }
-
     int m_k;
     int m_n;
     const unsigned int *m_polys;

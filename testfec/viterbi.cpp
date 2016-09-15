@@ -16,9 +16,11 @@
 
 #include <iostream>
 #include <string.h>
+#include <stdio.h>
 #include <sys/time.h>
 
 #include "../viterbi.h"
+#include "../descramble.h"
 
 long long getUSecs()
 {
@@ -241,8 +243,9 @@ void testViterbiLegacy()
 
 	std::cout << "Test legacy Viterbi decoder from DSD" << std::endl;
 	std::cout << "------------------------------------" << std::endl;
+	std::cout << "-- test new Viterbi class --" << std::endl;
 
-	DSDcc::Viterbi viterbi(3, 2, DSDcc::Viterbi::Poly23a);
+	DSDcc::Viterbi viterbi(3, 2, DSDcc::Viterbi::Poly23a, false); // false = dibit coding is LSB first for D-Star
 
     bitify(bitsPh, text, 41);
     bitsPh[328] = 0;
@@ -251,6 +254,13 @@ void testViterbiLegacy()
 	viterbi.encodeToSymbols(symbolsPh, bitsPh, 41*8 + 2, 0);
 	long long usecs = getUSecs() - ts;
 	std::cout << "Phrase encoded: in " << usecs << " microseconds" << std::endl;
+
+	for (int i = 0; i < 41*8 + 2; i++) // flip some bits
+	{
+	    if (i%6 == 5) {
+	        symbolsPh[i] ^= 1;
+	    }
+	}
 
 	ts = getUSecs();
 	viterbi.decodeFromSymbols(decodedBitsPh, symbolsPh, 41*8 + 2, 0);
@@ -261,6 +271,25 @@ void testViterbiLegacy()
 	decodedText[41] = '\0';
 
 	std::cout << "Phrase: " << decodedText << std::endl;
+
+	std::cout << "-- Legacy DSD Viterbi class --" << std::endl;
+
+	unsigned char symbolsPhBits[660];
+
+	for (int i = 0; i < 660; i++)
+	{
+	    symbolsPhBits[i] = (symbolsPh[i/2]>>(i%2)) & 1;
+	}
+
+    ts = getUSecs();
+	DSDcc::Descramble::FECdecoder(symbolsPhBits, decodedBitsPh);
+    usecs = getUSecs() - ts;
+    std::cout << "Phrase decoded: in " << usecs << " microseconds" << std::endl;
+
+    charify(decodedText, decodedBitsPh, 41*8);
+    decodedText[41] = '\0';
+
+    std::cout << "Phrase: " << decodedText << std::endl;
 }
 
 void testViterbi(DSDcc::Viterbi& viterbi)
@@ -327,6 +356,13 @@ void testViterbi(DSDcc::Viterbi& viterbi)
 	usecs = getUSecs() - ts;
 	std::cout << "-- Test #2 --" << std::endl;
 	std::cout << "Phrase encoded: in " << usecs << " microseconds" << std::endl;
+
+    for (int i = 0; i < 43*8; i++) // flip some bits
+    {
+        if (i%6 == 5) {
+            symbolsPh[i] ^= 1;
+        }
+    }
 
 	ts = getUSecs();
 	viterbi.decodeFromSymbols(decodedBitsPh, symbolsPh, 43*8, 0);
