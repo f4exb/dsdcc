@@ -41,6 +41,7 @@ void testMIT()
 	unsigned char symbolsA[6];
 
 	std::cout << "Test (MIT) K=3 N=2 Polys={1+x+x^2, 1+x}" << std::endl;
+	std::cout << "---------------------------------------" << std::endl;
 
 	DSDcc::Viterbi viterbi23(3, 2, DSDcc::Viterbi::Poly23);
 	const unsigned char *codes = viterbi23.getBranchCodes();
@@ -123,7 +124,7 @@ void testMIT()
 	long long ts = getUSecs();
 	viterbi23.decodeFromSymbols(decodedDataBitsA, symbolsA, 6, 0);
 	long long usecs = getUSecs() - ts;
-	std::cerr << "Decoded in " << usecs << " microseconds" << std::endl;
+	std::cerr << "A decoded: in " << usecs << " microseconds" << std::endl;
 
     if (memcmp(decodedDataBitsA, dataBitsA, 6) == 0)
     {
@@ -132,6 +133,29 @@ void testMIT()
     else
     {
         std::cout << "A decoded: bits are invalid: " << std::endl;
+
+        for (int i = 0; i < 6; i++)
+        {
+            std::cout << (int) decodedDataBitsA[i] << " ";
+        }
+
+        std::cout << std::endl;
+    }
+
+    const unsigned char corruptSymbolsA[6] = {3, 2, 3, 0, 1, 2};
+
+	ts = getUSecs();
+	viterbi23.decodeFromSymbols(decodedDataBitsA, corruptSymbolsA, 6, 0);
+	usecs = getUSecs() - ts;
+	std::cerr << "~A decoded: in " << usecs << " microseconds" << std::endl;
+
+    if (memcmp(decodedDataBitsA, dataBitsA, 6) == 0)
+    {
+        std::cout << "~A decoded: bits are valid" << std::endl;
+    }
+    else
+    {
+        std::cout << "~A decoded: bits are invalid: " << std::endl;
 
         for (int i = 0; i < 6; i++)
         {

@@ -64,39 +64,48 @@ const unsigned char Viterbi::Partab[] = {
         1, 0, 0, 1, 0, 1, 1, 0,
 };
 
+// calculated with:
+//int NumberOfSetBits(int i)
+//{
+//     // Java: use >>> instead of >>
+//     // C or C++: use uint32_t
+//     i = i - ((i >> 1) & 0x55555555);
+//     i = (i & 0x33333333) + ((i >> 2) & 0x33333333);
+//     return (((i + (i >> 4)) & 0x0F0F0F0F) * 0x01010101) >> 24;
+//}
 const unsigned char Viterbi::NbOnes[] = {
-        0, 1, 1, 2, 1, 2, 2, 3, //  7
-        1, 2, 2, 3, 2, 3, 3, 4, // 15
-        1, 2, 2, 3, 2, 3, 3, 4, // 23
-        2, 3, 3, 4, 3, 4, 4, 5, // 31
-        1, 2, 2, 3, 2, 3, 3, 4, // 39
-        2, 3, 3, 4, 3, 4, 4, 5, // 47
-        2, 3, 3, 4, 3, 4, 5, 5, // 55
-        3, 4, 4, 5, 4, 5, 4, 6, // 63
-        1, 2, 2, 3, 2, 3, 3, 4, // 71
-        2, 3, 3, 4, 3, 4, 4, 5, // 79
-        2, 3, 3, 4, 3, 4, 4, 5, // 87
-        3, 4, 4, 5, 4, 5, 5, 6, // 95
-        2, 3, 3, 4, 3, 4, 4, 5, // 103
-        3, 4, 4, 5, 4, 5, 5, 6, // 111
-        3, 4, 4, 5, 4, 5, 5, 6, // 119
-        4, 5, 5, 6, 5, 6, 6, 7, // 127
-        1, 2, 2, 3, 2, 3, 3, 4, // 135
-        2, 3, 3, 4, 3, 4, 4, 5, // 143
-        2, 3, 3, 4, 3, 4, 4, 5, // 151
-        3, 4, 4, 5, 4, 5, 5, 6, // 159
-        2, 3, 3, 4, 3, 4, 4, 5, // 167
-        3, 4, 4, 5, 4, 5, 5, 6, // 175
-        3, 4, 4, 5, 4, 5, 5, 6, // 183
-        4, 5, 5, 6, 5, 6, 6, 7, // 191
-        2, 3, 3, 4, 3, 4, 4, 5, // 199
-        3, 4, 4, 5, 4, 5, 5, 6, // 207
-        3, 4, 4, 5, 4, 5, 5, 6, // 215
-        4, 5, 5, 6, 5, 6, 6, 7, // 223
-        3, 4, 4, 5, 4, 5, 5, 6, // 231
-        4, 5, 5, 6, 5, 6, 6, 7, // 239
-        4, 5, 5, 6, 5, 6, 6, 7, // 247
-        5, 6, 6, 7, 6, 7, 7, 8, // 255
+		0, 1, 1, 2, 1, 2, 2, 3,
+		1, 2, 2, 3, 2, 3, 3, 4,
+		1, 2, 2, 3, 2, 3, 3, 4,
+		2, 3, 3, 4, 3, 4, 4, 5,
+		1, 2, 2, 3, 2, 3, 3, 4,
+		2, 3, 3, 4, 3, 4, 4, 5,
+		2, 3, 3, 4, 3, 4, 4, 5,
+		3, 4, 4, 5, 4, 5, 5, 6,
+		1, 2, 2, 3, 2, 3, 3, 4,
+		2, 3, 3, 4, 3, 4, 4, 5,
+		2, 3, 3, 4, 3, 4, 4, 5,
+		3, 4, 4, 5, 4, 5, 5, 6,
+		2, 3, 3, 4, 3, 4, 4, 5,
+		3, 4, 4, 5, 4, 5, 5, 6,
+		3, 4, 4, 5, 4, 5, 5, 6,
+		4, 5, 5, 6, 5, 6, 6, 7,
+		1, 2, 2, 3, 2, 3, 3, 4,
+		2, 3, 3, 4, 3, 4, 4, 5,
+		2, 3, 3, 4, 3, 4, 4, 5,
+		3, 4, 4, 5, 4, 5, 5, 6,
+		2, 3, 3, 4, 3, 4, 4, 5,
+		3, 4, 4, 5, 4, 5, 5, 6,
+		3, 4, 4, 5, 4, 5, 5, 6,
+		4, 5, 5, 6, 5, 6, 6, 7,
+		2, 3, 3, 4, 3, 4, 4, 5,
+		3, 4, 4, 5, 4, 5, 5, 6,
+		3, 4, 4, 5, 4, 5, 5, 6,
+		4, 5, 5, 6, 5, 6, 6, 7,
+		3, 4, 4, 5, 4, 5, 5, 6,
+		4, 5, 5, 6, 5, 6, 6, 7,
+		4, 5, 5, 6, 5, 6, 6, 7,
+		5, 6, 6, 7, 6, 7, 7, 8,
 };
 
 
@@ -113,7 +122,7 @@ Viterbi::Viterbi(int k, int n, const unsigned int *polys, bool msbFirst) :
     m_predB = new unsigned char[1<<(m_k-1)];
     m_bitB  = new unsigned char[1<<(m_k-1)];
     m_pathMetrics = 0;
-    m_paths = 0;
+    m_traceback = 0;
 
     initCodes();
     initTreillis();
@@ -125,8 +134,8 @@ Viterbi::~Viterbi()
         delete[] m_pathMetrics;
     }
 
-    if (m_paths) {
-        delete[] m_paths;
+    if (m_traceback) {
+        delete[] m_traceback;
     }
 
     delete[] m_bitB;
@@ -247,15 +256,15 @@ void Viterbi::decodeFromSymbols(
 {
     if (nbSymbols > m_nbSymbolsMax)
     {
-        if (m_paths) {
-            delete[] m_paths;
+        if (m_traceback) {
+            delete[] m_traceback;
         }
 
         if (m_pathMetrics) {
             delete[] m_pathMetrics;
         }
 
-        m_paths = new unsigned char[(1<<(m_k-1)) * nbSymbols];
+        m_traceback = new unsigned char[(1<<(m_k-1)) * nbSymbols];
         m_pathMetrics = new int[(1<<(m_k-1)) * (nbSymbols+1)];
         m_nbSymbolsMax = nbSymbols;
     }
@@ -265,12 +274,12 @@ void Viterbi::decodeFromSymbols(
     m_pathMetrics[startstate] = 0;
 
     unsigned int minPathIndex;
-    unsigned char minBit;
+    int minMetric;
 
     for (int is = 0; is < nbSymbols; is++)
     {
-        int minMetric = INT_MAX;
-        std::cerr << "S[" << is << "]=" << (int) symbols[is] << std::endl;
+        minMetric = INT_MAX;
+//        std::cerr << "S[" << is << "]=" << (int) symbols[is] << std::endl;
 
         // compute branch metrics
     	for (unsigned int ib = 0; ib < 1<<(m_k-1); ib++)
@@ -313,20 +322,20 @@ void Viterbi::decodeFromSymbols(
 
             // decisions, decisions ...
 
-            std::cerr << "  Branch:"
-                    << " " << ib
-                    << " predA: " << (int) predA
-                    << " pm[" << predPMIxA << "]: " << m_pathMetrics[predPMIxA]
-                    << " bitA: " << (int) bitA
-                    << " codeA: " << (int) codeA
-                    << " bmA: " << (int) bmA
-                    << " pmA: " << pmA
-                    << " | predB: " << (int) predB
-                    << " pm[" << predPMIxB << "]: " << m_pathMetrics[predPMIxB]
-                    << " bitB: " << (int) bitB
-                    << " codeB: " << (int) codeB
-                    << " bmB: " << (int) bmB
-                    << " pmB: " << pmB << std::endl;
+//            std::cerr << "  Branch:"
+//                    << " " << ib
+//                    << " predA: " << (int) predA
+//                    << " pm[" << (int) predA << ":" << is*(1<<(m_k-1)) << "]: " << m_pathMetrics[predPMIxA]
+//                    << " bitA: " << (int) bitA
+//                    << " codeA: " << (int) codeA
+//                    << " bmA: " << (int) bmA
+//                    << " pmA: " << pmA
+//                    << " | predB: " << (int) predB
+//                    << " pm[" << (int) predB << ":" << is*(1<<(m_k-1)) << "]: " << m_pathMetrics[predPMIxB]
+//                    << " bitB: " << (int) bitB
+//                    << " codeB: " << (int) codeB
+//                    << " bmB: " << (int) bmB
+//                    << " pmB: " << pmB << std::endl;
 
             bool a_b; // true: A, false: B
 
@@ -357,46 +366,55 @@ void Viterbi::decodeFromSymbols(
             if (a_b) // A selected
             {
                 m_pathMetrics[ib + (is+1)*(1<<(m_k-1))] = pmA;
-                m_paths[ib*nbSymbols + is] = bitA;
+                m_traceback[ib + is*(1<<(m_k-1))] = (predA<<1) + bitA;
 
                 if ((pmA >= 0) && (pmA < minMetric))
                 {
                     minMetric = pmA;
                     minPathIndex = ib;
-                    minBit = bitA;
                 }
 
-                std::cerr << "    Select A:"
-                        << " pm: " << pmA
-                        << " bit: " << (int) bitA
-                        << std::endl;
+//                std::cerr << "    Select A:"
+//                        << " pm: " << pmA
+//                        << " bit: " << (int) bitA
+//						<< " m_traceback[" << ib + is*(1<<(m_k-1)) << "]: " << (predA<<1) + bitA
+//                        << std::endl;
             }
             else
             {
                 m_pathMetrics[ib + (is+1)*(1<<(m_k-1))] = pmB;
-                m_paths[ib*nbSymbols + is] = bitB;
+                m_traceback[ib + is*(1<<(m_k-1))] = (predB<<1) + bitB;
 
                 if ((pmB >= 0) && (pmB < minMetric))
                 {
                     minMetric = pmB;
                     minPathIndex = ib;
-                    minBit = bitB;
                 }
 
-                std::cerr << "    Select B:"
-                        << " pm: " << pmB
-                        << " bit: " << (int) bitB
-                        << std::endl;
+//                std::cerr << "    Select B:"
+//                        << " pm: " << pmB
+//                        << " bit: " << (int) bitB
+//						<< " m_traceback[" << ib + is*(1<<(m_k-1)) << "]: " << (predB<<1) + bitB
+//                        << std::endl;
 
-            }
+            } // path decision
     	} // branches
-
-    	std::cerr << "  Selected branch:"
-    	        << " index: " << minPathIndex
-    	        << " bit: " << (int) minBit << std::endl;
     } // symbols
 
-    memcpy(dataBits, &m_paths[minPathIndex*nbSymbols], nbSymbols);
+    // trace back
+
+    unsigned int bIx = minPathIndex;
+
+    for (int is = nbSymbols-1; is >= 0; is--)
+    {
+//    	std::cerr << "is: " << is
+//    			<< " bIx: " << (int) bIx
+//    			<< " bit: " << (int)  (m_traceback[bIx + is*(1<<(m_k-1))] % 2)
+//				<< " pred: " << (int) (m_traceback[bIx + is*(1<<(m_k-1))] >> 1)
+//				<< std::endl;
+    	dataBits[is] = m_traceback[bIx + is*(1<<(m_k-1))] % 2;
+    	bIx = m_traceback[bIx + is*(1<<(m_k-1))] >> 1;
+    }
 }
 
 

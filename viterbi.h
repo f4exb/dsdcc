@@ -88,7 +88,7 @@ private:
     const unsigned int *m_polys;
     bool m_msbFirst;
     int *m_pathMetrics;
-    unsigned char *m_paths;
+    unsigned char *m_traceback;
     unsigned char *m_branchCodes;
     unsigned char *m_predA;
     unsigned char *m_bitA;
