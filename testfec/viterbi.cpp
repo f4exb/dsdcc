@@ -16,11 +16,25 @@
 
 #include <iostream>
 #include <string.h>
+#include <sys/time.h>
+
 #include "../viterbi.h"
+
+long long getUSecs()
+{
+    struct timeval tp;
+    gettimeofday(&tp, 0);
+    return (long long) tp.tv_sec * 1000000L + tp.tv_usec;
+}
 
 void testMIT()
 {
 	const unsigned char mitCodewords[] = {0, 3, 2, 1, 3, 0, 1, 2};
+
+	const unsigned char validPredA[] = {0, 2, 0, 2};
+	const unsigned char validPredB[] = {1, 3, 1, 3};
+	const unsigned char validBitA[]  = {0, 0, 1, 1};
+	const unsigned char validBitB[]  = {0, 0, 1, 1};
 
 	const unsigned char dataBitsA[6] = {1, 0, 1, 1, 0, 0};
 	const unsigned char correctSymbolsA[6] = {3, 3, 1, 0, 1, 2};
@@ -51,12 +65,40 @@ void testMIT()
 	const unsigned char *predB = viterbi23.getPredB();
 	const unsigned char *bitA  = viterbi23.getBitA();
 	const unsigned char *bitB  = viterbi23.getBitB();
+	bool predOK = true;
 
-	for (int s = 0; s < 4; s++)
-	{
-		std::cout << "S" << s << ": " << (int) bitA[s] << ":" << (int) predA[s] << std::endl;
-		std::cout << " " << s << ": " << (int) bitB[s] << ":" << (int) predB[s] << std::endl;
+	if (memcmp(validPredA, predA, 4) == 0) {
+	    std::cout << "First set of predecessor valid" << std::endl;
+	} else {
+	    predOK = false;
 	}
+
+    if (memcmp(validPredB, predB, 4) == 0) {
+        std::cout << "Second set of predecessor valid" << std::endl;
+    } else {
+        predOK = false;
+    }
+
+    if (memcmp(validBitA, bitA, 4) == 0) {
+        std::cout << "First set of predecessor bit transitions valid" << std::endl;
+    } else {
+        predOK = false;
+    }
+
+    if (memcmp(validBitA, bitB, 4) == 0) {
+        std::cout << "Second set of predecessor bit transitions valid" << std::endl;
+    } else {
+        predOK = false;
+    }
+
+    if (!predOK)
+    {
+        for (int s = 0; s < 4; s++)
+        {
+            std::cout << "S" << s << ": " << (int) predA[s] << " (" << (int) bitA[s] << ")" << std::endl;
+            std::cout << " " << s << ": " << (int) predB[s] << " (" << (int) bitB[s] << ")" << std::endl;
+        }
+    }
 
 	viterbi23.encodeToSymbols(symbolsA, dataBitsA, 6, 0);
 
@@ -75,6 +117,29 @@ void testMIT()
 
 		std::cout << std::endl;
 	}
+
+	unsigned char decodedDataBitsA[6];
+
+	long long ts = getUSecs();
+	viterbi23.decodeFromSymbols(decodedDataBitsA, symbolsA, 6, 0);
+	long long usecs = getUSecs() - ts;
+	std::cerr << "Decoded in " << usecs << " microseconds" << std::endl;
+
+    if (memcmp(decodedDataBitsA, dataBitsA, 6) == 0)
+    {
+        std::cout << "A decoded: bits are valid" << std::endl;
+    }
+    else
+    {
+        std::cout << "A decoded: bits are invalid: " << std::endl;
+
+        for (int i = 0; i < 6; i++)
+        {
+            std::cout << (int) decodedDataBitsA[i] << " ";
+        }
+
+        std::cout << std::endl;
+    }
 }
 
 int main(int argc, char *argv[])

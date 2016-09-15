@@ -7,3 +7,4 @@ testfec/golay
 testfec/hamming7
 testfec/hamming12
 testfec/hamming16
+testfec/viterbi

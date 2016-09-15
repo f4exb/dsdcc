@@ -65,15 +65,22 @@ public:
     static const unsigned int Poly25a[];
     static const unsigned int Poly25y[]; //!< Yaesu System Fusion
     static const unsigned char Partab[];
+    static const unsigned char NbOnes[];
 
 private:
     void initCodes();
     void initTreillis();
+
     static inline int parity(int x)
     {
-      x ^= (x >> 16);
-      x ^= (x >> 8);
-      return Partab[x & 0xff];
+        x ^= (x >> 16);
+        x ^= (x >> 8);
+        return Partab[x & 0xff];
+    }
+
+    static int compare (const void * a, const void * b)
+    {
+        return ( *(int*)a - *(int*)b );
     }
 
     int m_k;
