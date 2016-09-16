@@ -157,12 +157,12 @@ void Viterbi3::doMetrics(
 
     if (m1 < m2)
     {
-        m_pathMemory1[n] = 0; // upper path (S2)
+        m_pathMemory1[n] = 2; // upper path (S2)
         tempMetric[1] = m1;
     }
     else
     {
-        m_pathMemory1[n] = 1; // lower path (S3)
+        m_pathMemory1[n] = 3; // lower path (S3)
         tempMetric[1] = m2;
     }; // end else - if
 
@@ -187,12 +187,12 @@ void Viterbi3::doMetrics(
 
     if (m1 < m2)
     {
-        m_pathMemory3[n] = 0; // upper path (S2)
+        m_pathMemory3[n] = 2; // upper path (S2)
         tempMetric[3] = m1;
     }
     else
     {
-        m_pathMemory3[n] = 1; // lower path (S3)
+        m_pathMemory3[n] = 3; // lower path (S3)
         tempMetric[3] = m2;
     }; // end else - if
 
@@ -216,67 +216,30 @@ void Viterbi3::traceBack (
         unsigned char *m_pathMemory3
 )
 {
-    enum FEC_STATE
-    {
-        S0, S1, S2, S3
-    } state;
-
-    state = (FEC_STATE) startState;
+    unsigned int state = startState;
 
     for (int loop = nbSymbols - 1; loop >= 0; loop--)
     {
         // TODO: store directly the integer state value in path memory
         switch (state)
         {
-        case S0: // if state S0, Prev. state = S0 | S1
-            if (m_pathMemory0[loop])
-            {
-                state = S1; // lower path
-            }
-            else
-            {
-                state = S0; // upper path
-            }
-
+        case 0: // if state S0, Prev. state = S0 | S1
+            state = m_pathMemory0[loop];
             out[loop] = 0;
             break;
 
-        case S1: // if state S1, Prev. state = S2 | S3
-            if (m_pathMemory1[loop])
-            {
-                state = S3; // lower path
-            }
-            else
-            {
-                state = S2; // upper path
-            }
-
+        case 1: // if state S1, Prev. state = S2 | S3
+            state = m_pathMemory1[loop];
             out[loop] = 0;
             break;
 
-        case S2: // if state S2, Prev. state = S0 | S1
-            if (m_pathMemory2[loop])
-            {
-                state = S1; // lower path
-            }
-            else
-            {
-                state = S0; // upper path
-            }
-
+        case 2: // if state S2, Prev. state = S0 | S1
+            state = m_pathMemory2[loop];
             out[loop] = 1;
             break;
 
-        case S3: // if state S3, Prev. state = S2 | S3
-            if (m_pathMemory3[loop])
-            {
-                state = S3; // lower path
-            }
-            else
-            {
-                state = S2; // upper path
-            }
-
+        case 3: // if state S3, Prev. state = S2 | S3
+            state = m_pathMemory3[loop];
             out[loop] = 1;
             break;
 

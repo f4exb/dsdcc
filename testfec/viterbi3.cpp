@@ -268,6 +268,11 @@ void testViterbiLegacy()
 	usecs = getUSecs() - ts;
 	std::cout << "Phrase decoded: in " << usecs << " microseconds" << std::endl;
 
+    ts = getUSecs();
+    viterbi.decodeFromSymbols(decodedBitsPh, symbolsPh, 41*8 + 2, 0);
+    usecs = getUSecs() - ts;
+    std::cout << "Phrase decoded: in " << usecs << " microseconds" << std::endl;
+
 	charify(decodedText, decodedBitsPh, 41*8);
 	decodedText[41] = '\0';
 
