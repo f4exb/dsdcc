@@ -108,6 +108,8 @@ const unsigned char Viterbi::NbOnes[] = {
 		5, 6, 6, 7, 6, 7, 7, 8,
 };
 
+const int32_t Viterbi::m_maxMetric = 0x7FFFFFFF;
+
 
 Viterbi::Viterbi(int k, int n, const unsigned int *polys, bool msbFirst) :
         m_k(k),
@@ -264,12 +266,12 @@ void Viterbi::decodeFromSymbols(
         }
 
         m_traceback = new unsigned char[(1<<(m_k-1)) * nbSymbols];
-        m_pathMetrics = new int[(1<<(m_k-1)) * (nbSymbols+1)];
+        m_pathMetrics = new int32_t[(1<<(m_k-1)) * (nbSymbols+1)];
         m_nbSymbolsMax = nbSymbols;
     }
 
     // initial path metrics state
-    memset(m_pathMetrics, INT_MAX, sizeof(int) * (1<<(m_k-1)));
+    memset(m_pathMetrics, m_maxMetric, sizeof(int) * (1<<(m_k-1)));
     m_pathMetrics[startstate] = 0;
 
     unsigned int minPathIndex;
@@ -277,7 +279,7 @@ void Viterbi::decodeFromSymbols(
 
     for (int is = 0; is < nbSymbols; is++)
     {
-        minMetric = INT_MAX;
+        minMetric = m_maxMetric;
 //        std::cerr << "S[" << is << "]=" << (int) symbols[is] << std::endl;
 
         // compute branch metrics
@@ -292,7 +294,7 @@ void Viterbi::decodeFromSymbols(
     	    unsigned char bmA = NbOnes[codeA ^ symbols[is]]; // branch metric
     	    int pmA; // path metric
 
-            if (m_pathMetrics[predPMIxA] < INT_MAX)
+            if (m_pathMetrics[predPMIxA] < m_maxMetric)
     	    {
                 pmA = m_pathMetrics[predPMIxA] + bmA; // add branch metric to path metric
     	    }
@@ -310,7 +312,7 @@ void Viterbi::decodeFromSymbols(
             unsigned char bmB = NbOnes[codeB ^ symbols[is]]; // branch metric
             int pmB; // path metric
 
-            if (m_pathMetrics[predPMIxB] < INT_MAX)
+            if (m_pathMetrics[predPMIxB] < m_maxMetric)
             {
                 pmB = m_pathMetrics[predPMIxB] + bmB; // add branch metric to path metric
             }
