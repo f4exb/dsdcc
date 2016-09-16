@@ -306,47 +306,47 @@ void testViterbi(DSDcc::Viterbi& viterbi)
     // ================================================================
 
     int k = viterbi.getK();
-    const unsigned char dataBitsA[6] = {1, 0, 1, 1, 0, 0};
-    const unsigned char correctSymbolsA[6] = {3, 3, 1, 0, 1, 2};
-    const unsigned char corruptSymbols[6]  = {1, 0, 0, 2, 0, 0};
+    const unsigned char dataBitsA[10]      = {1, 0, 1, 1, 0, 0, 0, 1, 0, 1};
+    const unsigned char corruptSymbols[10] = {1, 0, 0, 2, 0, 0, 1, 0, 0, 2};
 
-    unsigned char *dataBits = new unsigned char[6+k-1];
-    unsigned char *symbols = new unsigned char[6+k-1];
-    unsigned char *decodedDataBits = new unsigned char[6+k-1];
+    unsigned char *dataBits = new unsigned char[10+k-1];
+    unsigned char *symbols = new unsigned char[10+k-1];
+    unsigned char *decodedDataBits = new unsigned char[10+k-1];
 
-    memcpy(dataBits, dataBitsA, 6);
+    memset(dataBits, 0, 10+k-1);
+    memcpy(dataBits, dataBitsA, 10);
 
     long long ts = getUSecs();
-    viterbi.encodeToSymbols(symbols, dataBits, 6+k-1, 0);
+    viterbi.encodeToSymbols(symbols, dataBits, 10+k-1, 0);
     long long usecs = getUSecs() - ts;
     std::cout << "A encoded: in " << usecs << " microseconds" << std::endl;
 
     ts = getUSecs();
-    viterbi.decodeFromSymbols(decodedDataBits, symbols, 6+k-1, 0);
+    viterbi.decodeFromSymbols(decodedDataBits, symbols, 10+k-1, 0);
     usecs = getUSecs() - ts;
     std::cout << "A decoded: in " << usecs << " microseconds" << std::endl;
 
-    if (memcmp(decodedDataBits, dataBitsA, 6) == 0) {
+    if (memcmp(decodedDataBits, dataBitsA, 10) == 0) {
         std::cout << "A decoded: bits are valid" << std::endl;
     } else {
         std::cout << "A decoded: bits are invalid: " << std::endl;
-        printByteArray(decodedDataBits, 6);
+        printByteArray(decodedDataBits, 10);
     }
 
-    for (int i = 0; i < 6; i++) {
+    for (int i = 0; i < 10; i++) {
         symbols[i] ^= corruptSymbols[i];
     }
 
     ts = getUSecs();
-    viterbi.decodeFromSymbols(decodedDataBits, symbols, 6+k-1, 0);
+    viterbi.decodeFromSymbols(decodedDataBits, symbols, 10+k-1, 0);
     usecs = getUSecs() - ts;
     std::cout << "~A decoded: in " << usecs << " microseconds" << std::endl;
 
-    if (memcmp(decodedDataBits, dataBitsA, 6) == 0) {
+    if (memcmp(decodedDataBits, dataBitsA, 10) == 0) {
         std::cout << "~A decoded: bits are valid" << std::endl;
     } else {
         std::cout << "~A decoded: bits are invalid: " << std::endl;
-        printByteArray(decodedDataBits, 6);
+        printByteArray(decodedDataBits, 10);
     }
 
     delete[] decodedDataBits;
