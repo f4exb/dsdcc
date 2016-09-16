@@ -209,7 +209,6 @@ void Viterbi::encodeToSymbols(
         unsigned int nbBits,
         unsigned int startstate)
 {
-    int i, j;
     unsigned int encstate = startstate;
 
     for (int i = 0; i < nbBits; i++)
@@ -217,7 +216,7 @@ void Viterbi::encodeToSymbols(
         encstate = (encstate >> 1) | (dataBits[i] << (m_k-1));
         *symbols = 0;
 
-        for (j = 0; j < m_n; j++)
+        for (int j = 0; j < m_n; j++)
         {
             *symbols += parity(encstate & m_polys[j]) << (m_msbFirst ? (m_n - 1) - j : j);
         }
@@ -235,7 +234,7 @@ void Viterbi::encodeToBits(
     int i, j;
     unsigned int encstate = startstate;
 
-    for (int i = 0; i < nbBits; nbBits++)
+    for (int i = 0; i < nbBits; i++)
     {
         encstate = (encstate >> 1) | (dataBits[i] << (m_k-1));
 

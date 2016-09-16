@@ -67,7 +67,7 @@ public:
     static const unsigned char Partab[];
     static const unsigned char NbOnes[];
 
-private:
+protected:
     void initCodes();
     void initTreillis();
 
