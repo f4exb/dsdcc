@@ -1,13 +1,13 @@
 #CXXFLAGS=-g
 CXXFLAGS=-O3
 
-all: qr golay hamming7 hamming12 hamming16 viterbi viterbi3
+all: qr golay hamming7 hamming12 hamming16 viterbi viterbi35
 
 viterbi: viterbi.o descramble.o viterbi.cpp
 	g++ -o viterbi viterbi.o descramble.o viterbi.cpp
 
-viterbi3: viterbi3.o viterbi.o descramble.o viterbi3.cpp
-	g++ -o viterbi3 viterbi3.o viterbi.o descramble.o viterbi3.cpp
+viterbi35: viterbi3.o viterbi5.o viterbi.o descramble.o viterbi35.cpp
+	g++ -o viterbi35 viterbi3.o viterbi5.o viterbi.o descramble.o viterbi35.cpp
 
 hamming7: fec.o hamming7.cpp
 	g++ -o hamming7 fec.o hamming7.cpp
@@ -33,9 +33,12 @@ viterbi.o: ../viterbi.h ../viterbi.cpp
 viterbi3.o: ../viterbi3.h ../viterbi3.cpp
 	g++ $(CXXFLAGS) -c -o viterbi3.o -I.. ../viterbi3.cpp
 
+viterbi5.o: ../viterbi5.h ../viterbi5.cpp
+	g++ $(CXXFLAGS) -c -o viterbi5.o -I.. ../viterbi5.cpp
+
 descramble.o: ../descramble.h ../descramble.cpp
 	g++ $(CXXFLAGS) -c -o descramble.o -I.. ../descramble.cpp
 
 clean:
-	rm -f *.o qr golay hamming7 hamming12 hamming16 viterbi viterbi3
+	rm -f *.o qr golay hamming7 hamming12 hamming16 viterbi viterbi35
 	

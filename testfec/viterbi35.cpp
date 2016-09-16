@@ -20,6 +20,7 @@
 #include <sys/time.h>
 
 #include "../viterbi3.h"
+#include "../viterbi5.h"
 #include "../descramble.h"
 
 long long getUSecs()
@@ -399,50 +400,37 @@ void testDStar()
 	std::cout << std::endl;
 }
 
-//void test24()
-//{
-//	std::cout << "Test K=4 N=2 with Polys={1+x+x^2+x^3, 1+x^2+x^3}" << std::endl;
-//	std::cout << "------------------------------------------------" << std::endl;
-//
-//	DSDcc::Viterbi viterbi24(4, 2, DSDcc::Viterbi::Poly24);
-//
-//	testViterbi(viterbi24);
-//
-//	std::cout << std::endl;
-//}
-//
-//void test25()
-//{
-//	std::cout << "Test K=5 N=2 with Polys={1+x^2+x^3+x^4, 1+x+x^4}" << std::endl;
-//	std::cout << "------------------------------------------------" << std::endl;
-//
-//	DSDcc::Viterbi viterbi25(5, 2, DSDcc::Viterbi::Poly25);
-//
-//	testViterbi(viterbi25);
-//
-//	std::cout << std::endl;
-//}
-//
-//void testYSF()
-//{
-//	std::cout << "Test (YSF) K=5 N=2 Polys={1+x^3+x^4, 1+x+x^2+X^4}" << std::endl;
-//	std::cout << "-------------------------------------------------" << std::endl;
-//
-//	DSDcc::Viterbi viterbi25y(5, 2, DSDcc::Viterbi::Poly25y);
-//
-//	testViterbi(viterbi25y);
-//
-//	std::cout << std::endl;
-//}
+void test25()
+{
+	std::cout << "Test K=5 N=2 with Polys={1+x^2+x^3+x^4, 1+x+x^4}" << std::endl;
+	std::cout << "------------------------------------------------" << std::endl;
+
+	DSDcc::Viterbi5 viterbi25(2, DSDcc::Viterbi::Poly25);
+
+	testViterbi(viterbi25);
+
+	std::cout << std::endl;
+}
+
+void testYSF()
+{
+	std::cout << "Test (YSF) K=5 N=2 Polys={1+x^3+x^4, 1+x+x^2+X^4}" << std::endl;
+	std::cout << "-------------------------------------------------" << std::endl;
+
+	DSDcc::Viterbi5 viterbi25y(2, DSDcc::Viterbi::Poly25y);
+
+	testViterbi(viterbi25y);
+
+	std::cout << std::endl;
+}
 
 int main(int argc, char *argv[])
 {
 	testBitifyCharify();
 	testMIT();
 	testDStar();
-//	test24();
-//	test25();
-//	testYSF();
+	test25();
+	testYSF();
 	testViterbiLegacy();
 	return 0;
 }
