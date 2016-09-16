@@ -37,6 +37,17 @@ public:
         unsigned int nbSymbols,     //!< Number of imput symbols
         unsigned int startstate     //!< Encoder starting state
     );
+
+private:
+    void doMetrics (
+        int n,
+        unsigned char symbol,
+        unsigned char *m_pathMemory0,
+        unsigned char *m_pathMemory1,
+        unsigned char *m_pathMemory2,
+        unsigned char *m_pathMemory3,
+        int *m_pathMetric
+    );
 };
 
 } // namespace DSDcc

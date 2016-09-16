@@ -51,8 +51,8 @@ void Viterbi3::decodeFromSymbols(
             delete[] m_pathMetrics;
         }
 
-        m_traceback = new unsigned char[(1<<(m_k-1)) * nbSymbols];
-        m_pathMetrics = new int[(1<<(m_k-1)) * (nbSymbols+1)];
+        m_traceback = new unsigned char[4 * nbSymbols];
+        m_pathMetrics = new int[4 * (nbSymbols+1)];
         m_nbSymbolsMax = nbSymbols;
     }
 
@@ -68,7 +68,19 @@ void Viterbi3::decodeFromSymbols(
         minMetric = INT_MAX;
 //        std::cerr << "S[" << is << "]=" << (int) symbols[is] << std::endl;
 
-        // compute branch metrics
+//        // compute metrics
+//        doMetrics(
+//            is,
+//            symbols[is],
+//            m_traceback,
+//            &m_traceback[nbSymbols],
+//            &m_traceback[2*nbSymbols],
+//            &m_traceback[3*nbSymbols],
+//            m_pathMetrics
+//        );
+
+
+
         for (unsigned int ib = 0; ib < 1<<(m_k-1); ib++)
         {
             // path A
@@ -203,6 +215,103 @@ void Viterbi3::decodeFromSymbols(
         bIx = m_traceback[bIx + is*(1<<(m_k-1))] >> 1;         // unpack predecessor branch #
     }
 }
+
+void Viterbi3::doMetrics(
+        int n,
+        unsigned char symbol,
+        unsigned char *m_pathMemory0,
+        unsigned char *m_pathMemory1,
+        unsigned char *m_pathMemory2,
+        unsigned char *m_pathMemory3,
+        int *m_pathMetric
+)
+{
+    int tempMetric[4];
+    int metric[8];
+    int loop;
+
+    int m1;
+    int m2;
+
+    // Treillis edges:
+
+                                                   // State Received
+    metric[0] = NbOnes[m_branchCodes[0] ^ symbol]; // 00    0
+    metric[1] = NbOnes[m_branchCodes[1] ^ symbol]; // 00    1
+    metric[2] = NbOnes[m_branchCodes[2] ^ symbol]; // 01    0
+    metric[3] = NbOnes[m_branchCodes[3] ^ symbol]; // 01    1
+    metric[4] = NbOnes[m_branchCodes[4] ^ symbol]; // 10    0
+    metric[5] = NbOnes[m_branchCodes[5] ^ symbol]; // 10    1
+    metric[6] = NbOnes[m_branchCodes[6] ^ symbol]; // 11    0
+    metric[7] = NbOnes[m_branchCodes[7] ^ symbol]; // 11    1
+
+    // This hardcodes the Treillis structure:
+
+    // Pres. state = S0, Prev. state = S0 & S1
+    m1 = metric[0] + m_pathMetric[0];
+    m2 = metric[2] + m_pathMetric[1];
+    if (m1 < m2)
+    {
+        m_pathMemory0[n] = 0;
+        tempMetric[0] = m1;
+    }
+    else
+    {
+        m_pathMemory0[n] = 1;
+        tempMetric[0] = m2;
+    }; // end else - if
+
+    // Pres. state = S1, Prev. state = S2 & S3
+    m1 = metric[4] + m_pathMetric[2];
+    m2 = metric[6] + m_pathMetric[3];
+    if (m1 < m2)
+    {
+        m_pathMemory1[n] = 0;
+        tempMetric[1] = m1;
+    }
+    else
+    {
+        m_pathMemory1[n] = 1;
+        tempMetric[1] = m2;
+    }; // end else - if
+
+    // Pres. state = S2, Prev. state = S0 & S1
+    m1 = metric[1] + m_pathMetric[0];
+    m2 = metric[3] + m_pathMetric[1];
+    if (m1 < m2)
+    {
+        m_pathMemory2[n] = 0;
+        tempMetric[2] = m1;
+    }
+    else
+    {
+        m_pathMemory2[n] = 1;
+        tempMetric[2] = m2;
+    }
+
+    // Pres. state = S3, Prev. state = S2 & S3
+    m1 = metric[5] + m_pathMetric[2];
+    m2 = metric[7] + m_pathMetric[3];
+    if (m1 < m2)
+    {
+        m_pathMemory3[n] = 0;
+        tempMetric[3] = m1;
+    }
+    else
+    {
+        m_pathMemory3[n] = 1;
+        tempMetric[3] = m2;
+    }; // end else - if
+
+    // Store new path metrics
+
+    m_pathMetric[0] = tempMetric[0];
+    m_pathMetric[1] = tempMetric[1];
+    m_pathMetric[2] = tempMetric[2];
+    m_pathMetric[3] = tempMetric[3];
+
+} // end function ViterbiDecode
+
 
 }
 

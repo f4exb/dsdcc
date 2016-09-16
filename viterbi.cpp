@@ -269,7 +269,7 @@ void Viterbi::decodeFromSymbols(
     }
 
     // initial path metrics state
-    memset(m_pathMetrics, -1, sizeof(int) * (1<<(m_k-1)));
+    memset(m_pathMetrics, INT_MAX, sizeof(int) * (1<<(m_k-1)));
     m_pathMetrics[startstate] = 0;
 
     unsigned int minPathIndex;
@@ -292,13 +292,13 @@ void Viterbi::decodeFromSymbols(
     	    unsigned char bmA = NbOnes[codeA ^ symbols[is]]; // branch metric
     	    int pmA; // path metric
 
-    	    if (m_pathMetrics[predPMIxA] < 0) // predecessor has an infinite metric
+            if (m_pathMetrics[predPMIxA] < INT_MAX)
     	    {
-    	        pmA = -1; // path metric is infinite
+                pmA = m_pathMetrics[predPMIxA] + bmA; // add branch metric to path metric
     	    }
     	    else
     	    {
-    	        pmA = m_pathMetrics[predPMIxA] + bmA; // add branch metric to path metric
+                pmA = m_pathMetrics[predPMIxA];
     	    }
 
             // path B
@@ -310,13 +310,13 @@ void Viterbi::decodeFromSymbols(
             unsigned char bmB = NbOnes[codeB ^ symbols[is]]; // branch metric
             int pmB; // path metric
 
-            if (m_pathMetrics[predPMIxB] < 0) // predecessor has an infinite metric
+            if (m_pathMetrics[predPMIxB] < INT_MAX)
             {
-                pmB = -1; // path metric is infinite
+                pmB = m_pathMetrics[predPMIxB] + bmB; // add branch metric to path metric
             }
             else
             {
-                pmB = m_pathMetrics[predPMIxB] + bmB; // add branch metric to path metric
+                pmB = m_pathMetrics[predPMIxB];
             }
 
             // decisions, decisions ...
@@ -349,14 +349,6 @@ void Viterbi::decodeFromSymbols(
                     a_b = bmA < bmB;
                 }
             }
-            else if (pmA < 0) // A infinite
-            {
-                a_b = false;
-            }
-            else if (pmB < 0) // B infinite
-            {
-                a_b = true;
-            }
             else
             {
                 a_b = pmA < pmB;
@@ -367,7 +359,7 @@ void Viterbi::decodeFromSymbols(
                 m_pathMetrics[ib + (is+1)*(1<<(m_k-1))] = pmA;
                 m_traceback[ib + is*(1<<(m_k-1))] = (predA<<1) + bitA; // Pack predecessor branch # and bit value
 
-                if ((pmA >= 0) && (pmA < minMetric))
+                if (pmA < minMetric)
                 {
                     minMetric = pmA;
                     minPathIndex = ib;
@@ -384,7 +376,7 @@ void Viterbi::decodeFromSymbols(
                 m_pathMetrics[ib + (is+1)*(1<<(m_k-1))] = pmB;
                 m_traceback[ib + is*(1<<(m_k-1))] = (predB<<1) + bitB; // Pack predecessor branch # and bit value
 
-                if ((pmB >= 0) && (pmB < minMetric))
+                if (pmB < minMetric)
                 {
                     minMetric = pmB;
                     minPathIndex = ib;

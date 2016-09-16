@@ -172,14 +172,15 @@ void Descramble::viterbiDecode(int n,
     int m1;
     int m2;
 
-    metric[0] = (data[1] ^ 0) + (data[0] ^ 0);
-    metric[1] = (data[1] ^ 1) + (data[0] ^ 1);
-    metric[2] = (data[1] ^ 1) + (data[0] ^ 0);
-    metric[3] = (data[1] ^ 0) + (data[0] ^ 1);
-    metric[4] = (data[1] ^ 1) + (data[0] ^ 1);
-    metric[5] = (data[1] ^ 0) + (data[0] ^ 0);
-    metric[6] = (data[1] ^ 0) + (data[0] ^ 1);
-    metric[7] = (data[1] ^ 1) + (data[0] ^ 0);
+    // Organization is not understandable:
+    metric[0] = (data[1] ^ 0) + (data[0] ^ 0); // 0/00 S0
+    metric[1] = (data[1] ^ 1) + (data[0] ^ 1); // 0/11 S0
+    metric[2] = (data[1] ^ 1) + (data[0] ^ 0); // 0/10 S1
+    metric[3] = (data[1] ^ 0) + (data[0] ^ 1); // 0/01 S1
+    metric[4] = (data[1] ^ 1) + (data[0] ^ 1); // 1/11 S2
+    metric[5] = (data[1] ^ 0) + (data[0] ^ 0); // 1/00 S2
+    metric[6] = (data[1] ^ 0) + (data[0] ^ 1); // 1/01 S3
+    metric[7] = (data[1] ^ 1) + (data[0] ^ 0); // 1/10 S3
 
     // Pres. state = S0, Prev. state = S0 & S2
     m1 = metric[0] + m_pathMetric[0];
@@ -209,7 +210,7 @@ void Descramble::viterbiDecode(int n,
         tempMetric[1] = m2;
     }; // end else - if
 
-    // Pres. state = S2, Prev. state = S2 & S3
+    // Pres. state = S2, Prev. state = S1 & S3
     m1 = metric[2] + m_pathMetric[1];
     m2 = metric[6] + m_pathMetric[3];
     if (m1 < m2)
