@@ -98,10 +98,6 @@ void testMIT()
 	const unsigned char validBitA[]  = {0, 0, 1, 1};
 	const unsigned char validBitB[]  = {0, 0, 1, 1};
 
-	const unsigned char dataBitsA[6] = {1, 0, 1, 1, 0, 0};
-	const unsigned char correctSymbolsA[6] = {3, 3, 1, 0, 1, 2};
-	unsigned char symbolsA[6];
-
 	std::cout << "Test (MIT) K=3 N=2 Polys={1+x+x^2, 1+x}" << std::endl;
 	std::cout << "---------------------------------------" << std::endl;
 
@@ -157,81 +153,91 @@ void testMIT()
         }
     }
 
+    // ================================================================
 	std::cout << "-- Test #1 --" << std::endl;
+    // ================================================================
 
-	long long ts = getUSecs();
-	viterbi23.encodeToSymbols(symbolsA, dataBitsA, 6, 0);
-	long long usecs = getUSecs() - ts;
-	std::cout << "A encoded: in " << usecs << " microseconds" << std::endl;
+    const unsigned char dataBitsA[6+2] = {1, 0, 1, 1, 0, 0, 0, 0};
+    const unsigned char correctSymbolsA[6] = {3, 3, 1, 0, 1, 2};
+    const unsigned char corruptSymbols[6]  = {1, 0, 0, 2, 0, 1};
+    unsigned char symbols[6+2];
+    unsigned char decodedDataBits[6+2];
 
-	if (memcmp(symbolsA, correctSymbolsA, 6) == 0)
-	{
-		std::cout << "A encoded: codewords are valid" << std::endl;
-	}
-	else
-	{
-		std::cout << "A endoded: codewords are invalid: " << std::endl;
-		printByteArray(symbolsA, 6);
-	}
+    long long ts = getUSecs();
+    viterbi23.encodeToSymbols(symbols, dataBitsA, 6+2, 0);
+    long long usecs = getUSecs() - ts;
+    std::cout << "A encoded: in " << usecs << " microseconds" << std::endl;
 
-	unsigned char decodedDataBitsA[6];
+    if (memcmp(symbols, correctSymbolsA, 6) == 0) {
+        std::cout << "A encoded: codewords are valid" << std::endl;
+    } else {
+        std::cout << "A endoded: codewords are invalid: " << std::endl;
+        printByteArray(symbols, 6);
+    }
 
-	ts = getUSecs();
-	viterbi23.decodeFromSymbols(decodedDataBitsA, symbolsA, 6, 0);
-	usecs = getUSecs() - ts;
-	std::cout << "A decoded: in " << usecs << " microseconds" << std::endl;
+    ts = getUSecs();
+    viterbi23.decodeFromSymbols(decodedDataBits, symbols, 6+2, 0);
+    usecs = getUSecs() - ts;
+    std::cout << "A decoded: in " << usecs << " microseconds" << std::endl;
 
-    if (memcmp(decodedDataBitsA, dataBitsA, 6) == 0)
-    {
+    if (memcmp(decodedDataBits, dataBitsA, 6) == 0) {
         std::cout << "A decoded: bits are valid" << std::endl;
-    }
-    else
-    {
+    } else {
         std::cout << "A decoded: bits are invalid: " << std::endl;
-        printByteArray(decodedDataBitsA, 6);
+        printByteArray(decodedDataBits, 6);
     }
-                                           //{0, 1, 2, 0, 0, 0};
-    const unsigned char corruptSymbolsA[6] = {3, 2, 3, 0, 1, 2};
 
-	ts = getUSecs();
-	viterbi23.decodeFromSymbols(decodedDataBitsA, corruptSymbolsA, 6, 0);
-	usecs = getUSecs() - ts;
-	std::cout << "~A decoded: in " << usecs << " microseconds" << std::endl;
+    for (int i = 0; i < 6; i++) {
+        symbols[i] ^= corruptSymbols[i];
+    }
 
-    if (memcmp(decodedDataBitsA, dataBitsA, 6) == 0)
-    {
+    ts = getUSecs();
+    viterbi23.decodeFromSymbols(decodedDataBits, symbols, 6+2, 0);
+    usecs = getUSecs() - ts;
+    std::cout << "~A decoded: in " << usecs << " microseconds" << std::endl;
+
+    if (memcmp(decodedDataBits, dataBitsA, 6) == 0) {
         std::cout << "~A decoded: bits are valid" << std::endl;
-    }
-    else
-    {
+    } else {
         std::cout << "~A decoded: bits are invalid: " << std::endl;
-        printByteArray(decodedDataBitsA, 6);
+        printByteArray(decodedDataBits, 6);
     }
+
+    // ================================================================
+    std::cout << "-- Test #2 --" << std::endl;
+    // ================================================================
 
     char text[44], decodedText[44];
     sprintf(text, "The quick brown fox jumps over the lazy dog");
-    unsigned char bitsPh[43*8];
-    unsigned char symbolsPh[43*8];
-    unsigned char decodedBitsPh[43*8];
+    unsigned char bitsPh[44*8];
+    unsigned char symbolsPh[44*8];
+    unsigned char decodedBitsPh[44*8];
 
-    bitify(bitsPh, text, 43);
-	ts = getUSecs();
-    viterbi23.encodeToSymbols(symbolsPh, bitsPh, 43*8, 0);
-	usecs = getUSecs() - ts;
-	std::cout << "-- Test #2 --" << std::endl;
-	std::cout << "Phrase encoded: in " << usecs << " microseconds" << std::endl;
+    bitify(bitsPh, text, 44);
+    ts = getUSecs();
+    viterbi23.encodeToSymbols(symbolsPh, bitsPh, 44*8, 0);
+    usecs = getUSecs() - ts;
+    std::cout << "Phrase encoded: in " << usecs << " microseconds" << std::endl;
 
-	ts = getUSecs();
-	viterbi23.decodeFromSymbols(decodedBitsPh, symbolsPh, 43*8, 0);
-	usecs = getUSecs() - ts;
-	std::cout << "Phrase decoded: in " << usecs << " microseconds" << std::endl;
+    for (int i = 0; i < 43*8; i++) // flip some bits
+    {
+        if (i%2 == 1) {
+            symbolsPh[i] ^= 1;
+        }
+    }
 
-	charify(decodedText, decodedBitsPh, 43*8);
-	decodedText[43] = '\0';
+    ts = getUSecs();
+    viterbi23.decodeFromSymbols(decodedBitsPh, symbolsPh, 44*8, 0);
+    usecs = getUSecs() - ts;
+    std::cout << "Phrase decoded: in " << usecs << " microseconds" << std::endl;
 
-	std::cout << "Phrase: " << decodedText << std::endl;
-	std::cout << std::endl;
+    charify(decodedText, decodedBitsPh, 44*8);
+    decodedText[43] = '\0';
+
+    std::cout << "Phrase: " << decodedText << std::endl;
+    std::cout << std::endl;
 }
+
 
 void testViterbiLegacy()
 {
@@ -257,7 +263,7 @@ void testViterbiLegacy()
 
 	for (int i = 0; i < 41*8 + 2; i++) // flip some bits
 	{
-	    if (i%6 == 5) {
+	    if (i%3 == 2) {
 	        symbolsPh[i] ^= 1;
 	    }
 	}
@@ -294,85 +300,87 @@ void testViterbiLegacy()
 
 void testViterbi(DSDcc::Viterbi& viterbi)
 {
-	const unsigned char dataBitsA[6] = {1, 0, 1, 1, 0, 0};
-	const unsigned char corruptSymbols[6] = {0, 0, 2, 1, 0, 0};
-	unsigned char symbolsA[6];
+    // ================================================================
+    std::cout << "-- Test #1 --" << std::endl;
+    // ================================================================
 
-	std::cout << "-- Test #1 --" << std::endl;
+    int k = viterbi.getK();
+    const unsigned char dataBitsA[6] = {1, 0, 1, 1, 0, 0};
+    const unsigned char correctSymbolsA[6] = {3, 3, 1, 0, 1, 2};
+    const unsigned char corruptSymbols[6]  = {1, 0, 0, 2, 0, 1};
 
-	long long ts = getUSecs();
-	viterbi.encodeToSymbols(symbolsA, dataBitsA, 6, 0);
-	long long usecs = getUSecs() - ts;
-	std::cout << "A encoded: in " << usecs << " microseconds" << std::endl;
+    unsigned char *symbols = new unsigned char[6+k-1];
+    unsigned char *decodedDataBits = new unsigned char[6+k-1];
 
-	unsigned char decodedDataBitsA[6];
+    long long ts = getUSecs();
+    viterbi.encodeToSymbols(symbols, dataBitsA, 6+k-1, 0);
+    long long usecs = getUSecs() - ts;
+    std::cout << "A encoded: in " << usecs << " microseconds" << std::endl;
 
-	ts = getUSecs();
-	viterbi.decodeFromSymbols(decodedDataBitsA, symbolsA, 6, 0);
-	usecs = getUSecs() - ts;
-	std::cout << "A decoded: in " << usecs << " microseconds" << std::endl;
+    ts = getUSecs();
+    viterbi.decodeFromSymbols(decodedDataBits, symbols, 6+k-1, 0);
+    usecs = getUSecs() - ts;
+    std::cout << "A decoded: in " << usecs << " microseconds" << std::endl;
 
-    if (memcmp(decodedDataBitsA, dataBitsA, 6) == 0)
-    {
+    if (memcmp(decodedDataBits, dataBitsA, 6) == 0) {
         std::cout << "A decoded: bits are valid" << std::endl;
-    }
-    else
-    {
+    } else {
         std::cout << "A decoded: bits are invalid: " << std::endl;
-        printByteArray(decodedDataBitsA, 6);
+        printByteArray(decodedDataBits, 6);
     }
 
-    unsigned char corruptSymbolsA[6];
-
-    for (int i = 0; i < 6; i++)
-    {
-    	corruptSymbolsA[i] = corruptSymbols[i] ^ symbolsA[i];
+    for (int i = 0; i < 6; i++) {
+        symbols[i] ^= corruptSymbols[i];
     }
 
-	ts = getUSecs();
-	viterbi.decodeFromSymbols(decodedDataBitsA, corruptSymbolsA, 6, 0);
-	usecs = getUSecs() - ts;
-	std::cout << "~A decoded: in " << usecs << " microseconds" << std::endl;
+    ts = getUSecs();
+    viterbi.decodeFromSymbols(decodedDataBits, symbols, 6+k-1, 0);
+    usecs = getUSecs() - ts;
+    std::cout << "~A decoded: in " << usecs << " microseconds" << std::endl;
 
-    if (memcmp(decodedDataBitsA, dataBitsA, 6) == 0)
-    {
+    if (memcmp(decodedDataBits, dataBitsA, 6) == 0) {
         std::cout << "~A decoded: bits are valid" << std::endl;
-    }
-    else
-    {
+    } else {
         std::cout << "~A decoded: bits are invalid: " << std::endl;
-        printByteArray(decodedDataBitsA, 6);
+        printByteArray(decodedDataBits, 6);
     }
+
+    delete[] decodedDataBits;
+    delete[] symbols;
+
+    // ================================================================
+    std::cout << "-- Test #2 --" << std::endl;
+    // ================================================================
 
     char text[44], decodedText[44];
     sprintf(text, "The quick brown fox jumps over the lazy dog");
-    unsigned char bitsPh[43*8];
-    unsigned char symbolsPh[43*8];
-    unsigned char decodedBitsPh[43*8];
+    unsigned char bitsPh[44*8];
+    unsigned char symbolsPh[44*8];
+    unsigned char decodedBitsPh[44*8];
 
-    bitify(bitsPh, text, 43);
-	ts = getUSecs();
-	viterbi.encodeToSymbols(symbolsPh, bitsPh, 43*8, 0);
-	usecs = getUSecs() - ts;
-	std::cout << "-- Test #2 --" << std::endl;
-	std::cout << "Phrase encoded: in " << usecs << " microseconds" << std::endl;
+    bitify(bitsPh, text, 44);
+    ts = getUSecs();
+    viterbi.encodeToSymbols(symbolsPh, bitsPh, 44*8, 0);
+    usecs = getUSecs() - ts;
+    std::cout << "Phrase encoded: in " << usecs << " microseconds" << std::endl;
 
     for (int i = 0; i < 43*8; i++) // flip some bits
     {
-        if (i%6 == 5) {
+        if (i%5 == 2) {
             symbolsPh[i] ^= 1;
         }
     }
 
-	ts = getUSecs();
-	viterbi.decodeFromSymbols(decodedBitsPh, symbolsPh, 43*8, 0);
-	usecs = getUSecs() - ts;
-	std::cout << "Phrase decoded: in " << usecs << " microseconds" << std::endl;
+    ts = getUSecs();
+    viterbi.decodeFromSymbols(decodedBitsPh, symbolsPh, 44*8, 0);
+    usecs = getUSecs() - ts;
+    std::cout << "Phrase decoded: in " << usecs << " microseconds" << std::endl;
 
-	charify(decodedText, decodedBitsPh, 43*8);
-	decodedText[43] = '\0';
+    charify(decodedText, decodedBitsPh, 44*8);
+    decodedText[43] = '\0';
 
-	std::cout << "Phrase: " << decodedText << std::endl;
+    std::cout << "Phrase: " << decodedText << std::endl;
+    std::cout << std::endl;
 }
 
 void testDStar()

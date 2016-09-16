@@ -52,7 +52,7 @@ void Viterbi3::decodeFromSymbols(
         }
 
         m_traceback = new unsigned char[4 * nbSymbols];
-        m_pathMetrics = new uint32_t[4 * (nbSymbols+1)];
+        m_pathMetrics = new uint32_t[4];
         m_nbSymbolsMax = nbSymbols;
     }
 
@@ -60,164 +60,53 @@ void Viterbi3::decodeFromSymbols(
     memset(m_pathMetrics, Viterbi::m_maxMetric, sizeof(uint32_t) * (1<<(m_k-1)));
     m_pathMetrics[startstate] = 0;
 
-    unsigned int minPathIndex;
-    int minMetric;
-
     for (int is = 0; is < nbSymbols; is++)
     {
-        minMetric = INT_MAX;
-//        std::cerr << "S[" << is << "]=" << (int) symbols[is] << std::endl;
+//        std::cerr << "Viterbi3::decodeFromSymbols: S[" << is << "]=" << (int) symbols[is] << std::endl;
 
-//        // compute metrics
-//        doMetrics(
-//            is,
-//            symbols[is],
-//            m_traceback,
-//            &m_traceback[nbSymbols],
-//            &m_traceback[2*nbSymbols],
-//            &m_traceback[3*nbSymbols],
-//            m_pathMetrics
-//        );
-
-
-
-        for (unsigned int ib = 0; ib < 1<<(m_k-1); ib++)
-        {
-            // path A
-
-            unsigned char predA = m_predA[ib];
-            unsigned int predPMIxA = is*(1<<(m_k-1)) + predA;
-            unsigned char bitA = m_bitA[ib];
-            unsigned char codeA = m_branchCodes[(predA<<1)+bitA];
-            unsigned char bmA = NbOnes[codeA ^ symbols[is]]; // branch metric
-            int pmA; // path metric
-
-            if (m_pathMetrics[predPMIxA] < 0) // predecessor has an infinite metric
-            {
-                pmA = -1; // path metric is infinite
-            }
-            else
-            {
-                pmA = m_pathMetrics[predPMIxA] + bmA; // add branch metric to path metric
-            }
-
-            // path B
-
-            unsigned char predB = m_predB[ib];
-            unsigned int predPMIxB = is*(1<<(m_k-1)) + predB;
-            unsigned char bitB = m_bitB[ib];
-            unsigned char codeB = m_branchCodes[(predB<<1)+bitB];
-            unsigned char bmB = NbOnes[codeB ^ symbols[is]]; // branch metric
-            int pmB; // path metric
-
-            if (m_pathMetrics[predPMIxB] < 0) // predecessor has an infinite metric
-            {
-                pmB = -1; // path metric is infinite
-            }
-            else
-            {
-                pmB = m_pathMetrics[predPMIxB] + bmB; // add branch metric to path metric
-            }
-
-            // decisions, decisions ...
-
-//            std::cerr << "  Branch:"
-//                    << " " << ib
-//                    << " predA: " << (int) predA
-//                    << " pm[" << (int) predA << ":" << is*(1<<(m_k-1)) << "]: " << m_pathMetrics[predPMIxA]
-//                    << " bitA: " << (int) bitA
-//                    << " codeA: " << (int) codeA
-//                    << " bmA: " << (int) bmA
-//                    << " pmA: " << pmA
-//                    << " | predB: " << (int) predB
-//                    << " pm[" << (int) predB << ":" << is*(1<<(m_k-1)) << "]: " << m_pathMetrics[predPMIxB]
-//                    << " bitB: " << (int) bitB
-//                    << " codeB: " << (int) codeB
-//                    << " bmB: " << (int) bmB
-//                    << " pmB: " << pmB << std::endl;
-
-            bool a_b; // true: A, false: B
-
-            if (pmA == pmB) // path metrics are even
-            {
-                if (bmA == bmB)
-                {
-                    a_b = true; // arbitrary
-                }
-                else
-                {
-                    a_b = bmA < bmB;
-                }
-            }
-            else if (pmA < 0) // A infinite
-            {
-                a_b = false;
-            }
-            else if (pmB < 0) // B infinite
-            {
-                a_b = true;
-            }
-            else
-            {
-                a_b = pmA < pmB;
-            }
-
-            if (a_b) // A selected
-            {
-                m_pathMetrics[ib + (is+1)*(1<<(m_k-1))] = pmA;
-                m_traceback[ib + is*(1<<(m_k-1))] = (predA<<1) + bitA; // Pack predecessor branch # and bit value
-
-                if ((pmA >= 0) && (pmA < minMetric))
-                {
-                    minMetric = pmA;
-                    minPathIndex = ib;
-                }
-
-//                std::cerr << "    Select A:"
-//                        << " pm: " << pmA
-//                        << " bit: " << (int) bitA
-//                      << " m_traceback[" << ib + is*(1<<(m_k-1)) << "]: " << (predA<<1) + bitA
-//                        << std::endl;
-            }
-            else
-            {
-                m_pathMetrics[ib + (is+1)*(1<<(m_k-1))] = pmB;
-                m_traceback[ib + is*(1<<(m_k-1))] = (predB<<1) + bitB; // Pack predecessor branch # and bit value
-
-                if ((pmB >= 0) && (pmB < minMetric))
-                {
-                    minMetric = pmB;
-                    minPathIndex = ib;
-                }
-
-//                std::cerr << "    Select B:"
-//                        << " pm: " << pmB
-//                        << " bit: " << (int) bitB
-//                      << " m_traceback[" << ib + is*(1<<(m_k-1)) << "]: " << (predB<<1) + bitB
-//                        << std::endl;
-
-            } // path decision
-        } // branches
+        // compute metrics
+        doMetrics(
+                is,
+                m_branchCodes,
+                symbols[is],
+                m_traceback,
+                &m_traceback[nbSymbols],
+                &m_traceback[2*nbSymbols],
+                &m_traceback[3*nbSymbols],
+                m_pathMetrics
+        );
     } // symbols
 
     // trace back
 
-    unsigned int bIx = minPathIndex;
+    uint32_t minPathMetric;
+    unsigned int minPathIndex;
 
-    for (int is = nbSymbols-1; is >= 0; is--)
+    for (int i = 0; i < 4; i++)
     {
-//      std::cerr << "is: " << is
-//              << " bIx: " << (int) bIx
-//              << " bit: " << (int)  (m_traceback[bIx + is*(1<<(m_k-1))] % 2)
-//              << " pred: " << (int) (m_traceback[bIx + is*(1<<(m_k-1))] >> 1)
-//              << std::endl;
-        dataBits[is] = m_traceback[bIx + is*(1<<(m_k-1))] % 2; // unpack bit value
-        bIx = m_traceback[bIx + is*(1<<(m_k-1))] >> 1;         // unpack predecessor branch #
+        if (m_pathMetrics[i] < minPathMetric)
+        {
+            minPathMetric = m_pathMetrics[i];
+            minPathIndex = i;
+        }
     }
+
+//    std::cerr << "Viterbi3::decodeFromSymbols: last path node: " << minPathIndex << std::endl;
+
+    traceBack(
+            nbSymbols,
+            minPathIndex,
+            dataBits,
+            m_traceback,
+            &m_traceback[nbSymbols],
+            &m_traceback[2*nbSymbols],
+            &m_traceback[3*nbSymbols]
+    );
 }
 
 void Viterbi3::doMetrics(
         int n,
+        unsigned char *branchCodes,
         unsigned char symbol,
         unsigned char *m_pathMemory0,
         unsigned char *m_pathMemory1,
@@ -236,70 +125,74 @@ void Viterbi3::doMetrics(
     // Treillis edges:
 
                                                    // State Received
-    metric[0] = NbOnes[m_branchCodes[0] ^ symbol]; // 00    0
-    metric[1] = NbOnes[m_branchCodes[1] ^ symbol]; // 00    1
-    metric[2] = NbOnes[m_branchCodes[2] ^ symbol]; // 01    0
-    metric[3] = NbOnes[m_branchCodes[3] ^ symbol]; // 01    1
-    metric[4] = NbOnes[m_branchCodes[4] ^ symbol]; // 10    0
-    metric[5] = NbOnes[m_branchCodes[5] ^ symbol]; // 10    1
-    metric[6] = NbOnes[m_branchCodes[6] ^ symbol]; // 11    0
-    metric[7] = NbOnes[m_branchCodes[7] ^ symbol]; // 11    1
+    metric[0] = NbOnes[branchCodes[0] ^ symbol]; // 00    0
+    metric[1] = NbOnes[branchCodes[1] ^ symbol]; // 00    1
+    metric[2] = NbOnes[branchCodes[2] ^ symbol]; // 01    0
+    metric[3] = NbOnes[branchCodes[3] ^ symbol]; // 01    1
+    metric[4] = NbOnes[branchCodes[4] ^ symbol]; // 10    0
+    metric[5] = NbOnes[branchCodes[5] ^ symbol]; // 10    1
+    metric[6] = NbOnes[branchCodes[6] ^ symbol]; // 11    0
+    metric[7] = NbOnes[branchCodes[7] ^ symbol]; // 11    1
 
     // This hardcodes the Treillis structure:
 
     // Pres. state = S0, Prev. state = S0 & S1
     m1 = metric[0] + m_pathMetric[0];
     m2 = metric[2] + m_pathMetric[1];
+
     if (m1 < m2)
     {
-        m_pathMemory0[n] = 0;
+        m_pathMemory0[n] = 0; // upper path (S0)
         tempMetric[0] = m1;
     }
     else
     {
-        m_pathMemory0[n] = 1;
+        m_pathMemory0[n] = 1; // lower path (S1)
         tempMetric[0] = m2;
     }; // end else - if
 
     // Pres. state = S1, Prev. state = S2 & S3
     m1 = metric[4] + m_pathMetric[2];
     m2 = metric[6] + m_pathMetric[3];
+
     if (m1 < m2)
     {
-        m_pathMemory1[n] = 0;
+        m_pathMemory1[n] = 0; // upper path (S2)
         tempMetric[1] = m1;
     }
     else
     {
-        m_pathMemory1[n] = 1;
+        m_pathMemory1[n] = 1; // lower path (S3)
         tempMetric[1] = m2;
     }; // end else - if
 
     // Pres. state = S2, Prev. state = S0 & S1
     m1 = metric[1] + m_pathMetric[0];
     m2 = metric[3] + m_pathMetric[1];
+
     if (m1 < m2)
     {
-        m_pathMemory2[n] = 0;
+        m_pathMemory2[n] = 0; // upper path (S0)
         tempMetric[2] = m1;
     }
     else
     {
-        m_pathMemory2[n] = 1;
+        m_pathMemory2[n] = 1; // lower path (S1)
         tempMetric[2] = m2;
     }
 
     // Pres. state = S3, Prev. state = S2 & S3
     m1 = metric[5] + m_pathMetric[2];
     m2 = metric[7] + m_pathMetric[3];
+
     if (m1 < m2)
     {
-        m_pathMemory3[n] = 0;
+        m_pathMemory3[n] = 0; // upper path (S2)
         tempMetric[3] = m1;
     }
     else
     {
-        m_pathMemory3[n] = 1;
+        m_pathMemory3[n] = 1; // lower path (S3)
         tempMetric[3] = m2;
     }; // end else - if
 
@@ -312,6 +205,84 @@ void Viterbi3::doMetrics(
 
 } // end function ViterbiDecode
 
+
+void Viterbi3::traceBack (
+        int nbSymbols,
+        unsigned int startState,
+        unsigned char *out,
+        unsigned char *m_pathMemory0,
+        unsigned char *m_pathMemory1,
+        unsigned char *m_pathMemory2,
+        unsigned char *m_pathMemory3
+)
+{
+    enum FEC_STATE
+    {
+        S0, S1, S2, S3
+    } state;
+
+    state = (FEC_STATE) startState;
+
+    for (int loop = nbSymbols - 1; loop >= 0; loop--)
+    {
+        // TODO: store directly the integer state value in path memory
+        switch (state)
+        {
+        case S0: // if state S0, Prev. state = S0 | S1
+            if (m_pathMemory0[loop])
+            {
+                state = S1; // lower path
+            }
+            else
+            {
+                state = S0; // upper path
+            }
+
+            out[loop] = 0;
+            break;
+
+        case S1: // if state S1, Prev. state = S2 | S3
+            if (m_pathMemory1[loop])
+            {
+                state = S3; // lower path
+            }
+            else
+            {
+                state = S2; // upper path
+            }
+
+            out[loop] = 0;
+            break;
+
+        case S2: // if state S2, Prev. state = S0 | S1
+            if (m_pathMemory2[loop])
+            {
+                state = S1; // lower path
+            }
+            else
+            {
+                state = S0; // upper path
+            }
+
+            out[loop] = 1;
+            break;
+
+        case S3: // if state S3, Prev. state = S2 | S3
+            if (m_pathMemory3[loop])
+            {
+                state = S3; // lower path
+            }
+            else
+            {
+                state = S2; // upper path
+            }
+
+            out[loop] = 1;
+            break;
+
+        }; // end switch
+    }; // end for
+}
 
 }
 

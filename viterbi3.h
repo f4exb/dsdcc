@@ -32,21 +32,32 @@ public:
 
     /* Viterbi decoder */
     void decodeFromSymbols(
-        unsigned char *dataBits,    //!< Decoded output data bits
-        const unsigned char *symbols,     //!< Input symbols
-        unsigned int nbSymbols,     //!< Number of imput symbols
-        unsigned int startstate     //!< Encoder starting state
+            unsigned char *dataBits,    //!< Decoded output data bits
+            const unsigned char *symbols,     //!< Input symbols
+            unsigned int nbSymbols,     //!< Number of imput symbols
+            unsigned int startstate     //!< Encoder starting state
     );
 
 private:
-    void doMetrics (
-        int n,
-        unsigned char symbol,
-        unsigned char *m_pathMemory0,
-        unsigned char *m_pathMemory1,
-        unsigned char *m_pathMemory2,
-        unsigned char *m_pathMemory3,
-        uint32_t  *m_pathMetric
+    static void doMetrics (
+            int n,
+            unsigned char *branchCodes,
+            unsigned char symbol,
+            unsigned char *m_pathMemory0,
+            unsigned char *m_pathMemory1,
+            unsigned char *m_pathMemory2,
+            unsigned char *m_pathMemory3,
+            uint32_t *m_pathMetric
+    );
+
+    static void traceBack (
+            int nbSymbols,
+            unsigned int startState,
+            unsigned char *out,
+            unsigned char *m_pathMemory0,
+            unsigned char *m_pathMemory1,
+            unsigned char *m_pathMemory2,
+            unsigned char *m_pathMemory3
     );
 };
 

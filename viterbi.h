@@ -54,6 +54,8 @@ public:
         unsigned int startstate     //!< Encoder starting state
     );
 
+    int getK() const { return m_k; }
+    int getN() const { return m_n; }
     const unsigned char *getBranchCodes() const { return m_branchCodes; }
     const unsigned char *getPredA() const { return m_predA; }
     const unsigned char *getPredB() const { return m_predB; }
