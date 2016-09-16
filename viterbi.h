@@ -84,7 +84,7 @@ protected:
     int m_n;
     const unsigned int *m_polys;
     bool m_msbFirst;
-    int32_t *m_pathMetrics;
+    uint32_t *m_pathMetrics;
     unsigned char *m_traceback;
     unsigned char *m_branchCodes;
     unsigned char *m_predA;
@@ -93,7 +93,7 @@ protected:
     unsigned char *m_bitB;
     int m_nbSymbolsMax;
 
-    static const int32_t m_maxMetric;
+    static const uint32_t m_maxMetric;
 };
 
 } // namespace DSDcc
