@@ -57,7 +57,7 @@ void Viterbi3::decodeFromSymbols(
     }
 
     // initial path metrics state
-    memset(m_pathMetrics, -1, sizeof(int) * (1<<(m_k-1)));
+    memset(m_pathMetrics, Viterbi::m_maxMetric, sizeof(uint32_t) * (1<<(m_k-1)));
     m_pathMetrics[startstate] = 0;
 
     unsigned int minPathIndex;
