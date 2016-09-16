@@ -46,7 +46,7 @@ private:
         unsigned char *m_pathMemory1,
         unsigned char *m_pathMemory2,
         unsigned char *m_pathMemory3,
-        int *m_pathMetric
+        uint32_t  *m_pathMetric
     );
 };
 

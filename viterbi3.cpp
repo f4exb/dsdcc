@@ -52,7 +52,7 @@ void Viterbi3::decodeFromSymbols(
         }
 
         m_traceback = new unsigned char[4 * nbSymbols];
-        m_pathMetrics = new int[4 * (nbSymbols+1)];
+        m_pathMetrics = new uint32_t[4 * (nbSymbols+1)];
         m_nbSymbolsMax = nbSymbols;
     }
 
@@ -223,15 +223,15 @@ void Viterbi3::doMetrics(
         unsigned char *m_pathMemory1,
         unsigned char *m_pathMemory2,
         unsigned char *m_pathMemory3,
-        int *m_pathMetric
+        uint32_t  *m_pathMetric
 )
 {
-    int tempMetric[4];
-    int metric[8];
+    uint32_t tempMetric[4];
+    uint32_t metric[8];
     int loop;
 
-    int m1;
-    int m2;
+    uint32_t m1;
+    uint32_t m2;
 
     // Treillis edges:
 
