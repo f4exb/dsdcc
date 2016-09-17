@@ -34,7 +34,7 @@ void decode(DSDcc::QR_16_7_6& qr_16_7_6, unsigned char *codeword)
             std::cout << (int) codeword[i] << " ";
         }
 
-        std::cout << std::endl;
+        std::cout << std::endl << "Decoding OK" << std::endl;
     }
     else
     {

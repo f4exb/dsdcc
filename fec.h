@@ -84,6 +84,38 @@ private:
     static const unsigned char m_H[20*12]; //!< Parity check matrix of bits
 };
 
+class Golay_23_12
+{
+public:
+    Golay_23_12();
+    ~Golay_23_12();
+
+    void init();
+    void encode(unsigned char *origBits, unsigned char *encodedBits);
+    bool decode(unsigned char *rxBits);
+
+private:
+    unsigned char m_corr[2048][3];         //!< up to 3 bit error correction by syndrome index
+    static const unsigned char m_G[23*12]; //!< Generator matrix of bits
+    static const unsigned char m_H[23*11]; //!< Parity check matrix of bits
+};
+
+class Golay_24_12
+{
+public:
+    Golay_24_12();
+    ~Golay_24_12();
+
+    void init();
+    void encode(unsigned char *origBits, unsigned char *encodedBits);
+    bool decode(unsigned char *rxBits);
+
+private:
+    unsigned char m_corr[4096][3];         //!< up to 3 bit error correction by syndrome index
+    static const unsigned char m_G[24*12]; //!< Generator matrix of bits
+    static const unsigned char m_H[24*12]; //!< Parity check matrix of bits
+};
+
 class QR_16_7_6
 {
 public:

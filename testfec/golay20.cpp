@@ -33,7 +33,7 @@ void decode(DSDcc::Golay_20_8& Golay_20_8, unsigned char *codeword)
             std::cout << (int) codeword[i] << " ";
         }
 
-        std::cout << std::endl;
+        std::cout << std::endl << "Decoding OK" << std::endl;
     }
     else
     {

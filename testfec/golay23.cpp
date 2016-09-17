@@ -17,22 +17,20 @@
 #include <iostream>
 #include "../fec.h"
 
-void decode(DSDcc::Hamming_12_8& hamming_12_8, unsigned char *codeword)
+void decode(DSDcc::Golay_23_12& Golay_23_12, unsigned char *codeword)
 {
-    unsigned char decoded[8];
-
-    for (int i = 0; i < 12; i++)
+    for (int i = 0; i < 23; i++)
     {
         std::cout << (int) codeword[i] << " ";
     }
 
     std::cout << std::endl;
 
-    if (hamming_12_8.decode(codeword, decoded, 1))
+    if (Golay_23_12.decode(codeword))
     {
-        for (int i = 0; i < 8; i++)
+        for (int i = 0; i < 12; i++)
         {
-            std::cout << (int) decoded[i] << " ";
+            std::cout << (int) codeword[i] << " ";
         }
 
         std::cout << std::endl << "Decoding OK" << std::endl;
@@ -45,26 +43,36 @@ void decode(DSDcc::Hamming_12_8& hamming_12_8, unsigned char *codeword)
 
 int main(int argc, char *argv[])
 {
-    unsigned char msg[8]  = {1, 0, 0, 1, 1, 1, 0, 1};
-    unsigned char er0[12] = {0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    unsigned char codeword[12];
+    unsigned char msg[12]  = {1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0};
+    unsigned char er0[23] = {0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    unsigned char codeword[23];
 
-    DSDcc::Hamming_12_8 hamming_12_8;
-    hamming_12_8.encode(msg, codeword);
+    DSDcc::Golay_23_12 golay_23_12;
+    golay_23_12.encode(msg, codeword);
 
     std::cout << "No errors" << std::endl;
-    decode(hamming_12_8, codeword);
+    decode(golay_23_12, codeword);
 
-    std::cout << std::endl << "Error (2)" << std::endl;
-    decode(hamming_12_8, er0);
+    std::cout << std::endl << "Error on one bit (4)" << std::endl;
+    decode(golay_23_12, er0);
 
-    std::cout << std::endl << "Flip one bit (2)" << std::endl;
-    codeword[2] ^=  1;
-    decode(hamming_12_8, codeword);
+    std::cout << std::endl << "Flip one bit (4)" << std::endl;
+    codeword[4] ^=  1;
+    decode(golay_23_12, codeword);
+
+    std::cout << std::endl << "Flip two bits (1,5)" << std::endl;
+    codeword[1] ^= 1;
+    codeword[5] ^= 1;
+    decode(golay_23_12, codeword);
+
+    std::cout << std::endl << "Flip three bits (1,5,9)" << std::endl;
+    codeword[1] ^= 1;
+    codeword[5] ^= 1;
+    codeword[9] ^= 1;
+    decode(golay_23_12, codeword);
 
     return 0;
 }
-
 
 
 

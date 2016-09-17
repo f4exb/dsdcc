@@ -35,7 +35,7 @@ void decode(DSDcc::Hamming_16_11_4& hamming_16_11_4, unsigned char *codeword)
             std::cout << (int) decoded[i] << " ";
         }
 
-        std::cout << std::endl;
+        std::cout << std::endl << "Decoding OK" << std::endl;
     }
     else
     {
