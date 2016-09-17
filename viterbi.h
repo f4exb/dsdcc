@@ -59,8 +59,6 @@ public:
     const unsigned char *getBranchCodes() const { return m_branchCodes; }
     const unsigned char *getPredA() const { return m_predA; }
     const unsigned char *getPredB() const { return m_predB; }
-    const unsigned char *getBitA() const { return m_bitA; }
-    const unsigned char *getBitB() const { return m_bitB; }
 
     static const unsigned int Poly23[];  //!< MIT lecture example
     static const unsigned int Poly23a[]; //!< D-Star
@@ -90,9 +88,7 @@ protected:
     unsigned char *m_traceback;
     unsigned char *m_branchCodes;
     unsigned char *m_predA;
-    unsigned char *m_bitA;
     unsigned char *m_predB;
-    unsigned char *m_bitB;
     int m_nbSymbolsMax;
 
     static const uint32_t m_maxMetric;

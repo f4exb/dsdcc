@@ -117,8 +117,6 @@ void testMIT()
 
 	const unsigned char *predA = viterbi.getPredA();
 	const unsigned char *predB = viterbi.getPredB();
-	const unsigned char *bitA  = viterbi.getBitA();
-	const unsigned char *bitB  = viterbi.getBitB();
 	bool predOK = true;
 
 	if (memcmp(validPredA, predA, 4) == 0) {
@@ -133,24 +131,12 @@ void testMIT()
         predOK = false;
     }
 
-    if (memcmp(validBitA, bitA, 4) == 0) {
-        std::cout << "First set of predecessor bit transitions valid" << std::endl;
-    } else {
-        predOK = false;
-    }
-
-    if (memcmp(validBitA, bitB, 4) == 0) {
-        std::cout << "Second set of predecessor bit transitions valid" << std::endl;
-    } else {
-        predOK = false;
-    }
-
     if (!predOK)
     {
         for (int s = 0; s < 4; s++)
         {
-            std::cout << "S" << s << ": " << (int) predA[s] << " (" << (int) bitA[s] << ")" << std::endl;
-            std::cout << " " << s << ": " << (int) predB[s] << " (" << (int) bitB[s] << ")" << std::endl;
+            std::cout << "S" << s << ": " << (int) predA[s] << std::endl;
+            std::cout << " " << s << ": " << (int) predB[s] << std::endl;
         }
     }
 

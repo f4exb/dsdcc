@@ -120,9 +120,7 @@ Viterbi::Viterbi(int k, int n, const unsigned int *polys, bool msbFirst) :
 {
     m_branchCodes = new unsigned char[(1<<m_k)];
     m_predA = new unsigned char[1<<(m_k-1)];
-    m_bitA  = new unsigned char[1<<(m_k-1)];
     m_predB = new unsigned char[1<<(m_k-1)];
-    m_bitB  = new unsigned char[1<<(m_k-1)];
     m_pathMetrics = 0;
     m_traceback = 0;
 
@@ -140,9 +138,7 @@ Viterbi::~Viterbi()
         delete[] m_traceback;
     }
 
-    delete[] m_bitB;
     delete[] m_predB;
-    delete[] m_bitA;
     delete[] m_predA;
 	delete[] m_branchCodes;
 }
@@ -152,57 +148,26 @@ void Viterbi::initCodes()
 	unsigned char symbol;
 	unsigned char dataBit;
 
-	for (int i = 0; i < (1<<m_k); i++)
+	for (int i = 0; i < (1<<(m_k-1)); i++)
 	{
-		dataBit = i%2;
-		encodeToSymbols(&symbol, &dataBit, 1, (i>>1)<<1);
-		m_branchCodes[i] = symbol;
+		dataBit = 0;
+		encodeToSymbols(&symbol, &dataBit, 1, i<<1);
+		m_branchCodes[2*i] = symbol;
+        dataBit = 1;
+        encodeToSymbols(&symbol, &dataBit, 1, i<<1);
+        m_branchCodes[2*i+1] = symbol;
 	}
 }
 
 void Viterbi::initTreillis()
 {
-    memset(m_bitA, 0xFF, 1<<(m_k-1));
-    memset(m_bitB, 0xFF, 1<<(m_k-1));
-
-	for (unsigned int s = 0; s < 1<<(m_k-1); s++)
-	{
-		unsigned char nextS = (s>>1);
-        // branch A
-		if (m_bitA[nextS] == 0xFF)
-		{
-	        m_predA[nextS] = s;
-	        m_bitA[nextS] = 0;
-		}
-		// branch B
-		else if (m_bitB[nextS] == 0xFF)
-		{
-	        m_predB[nextS] = s;
-	        m_bitB[nextS] = 0;
-		}
-		else
-		{
-		    std::cout << "Viterbi::initTreillis: error at symbol " << (int) s << " (0)" << std::endl;
-		}
-
-		nextS += 1<<(m_k-2);
-        // branch A
-        if (m_bitA[nextS] == 0xFF)
-        {
-            m_predA[nextS] = s;
-            m_bitA[nextS] = 1;
-        }
-        // branch B
-        else if (m_bitB[nextS] == 0xFF)
-        {
-            m_predB[nextS] = s;
-            m_bitB[nextS] = 1;
-        }
-        else
-        {
-            std::cout << "Viterbi::initTreillis: error at symbol " << (int) s << " (1)" << std::endl;
-        }
-	}
+    for (unsigned int s = 0; s < 1<<(m_k-2); s++)
+    {
+        m_predA[s] = (s<<1);
+        m_predB[s] = (s<<1) + 1;
+        m_predA[s+(1<<(m_k-2))] = (s<<1);
+        m_predB[s+(1<<(m_k-2))] = (s<<1) + 1;
+    }
 }
 
 void Viterbi::encodeToSymbols(
@@ -285,12 +250,13 @@ void Viterbi::decodeFromSymbols(
         // compute branch metrics
     	for (unsigned int ib = 0; ib < 1<<(m_k-1); ib++)
     	{
-    	    // path A
+            unsigned char bit = ib < 1<<(m_k-2) ? 0 : 1;
+
+            // path A
 
     	    unsigned char predA = m_predA[ib];
     	    unsigned int predPMIxA = (is%2)*(1<<(m_k-1)) + predA;
-    	    unsigned char bitA = m_bitA[ib];
-    	    unsigned char codeA = m_branchCodes[(predA<<1)+bitA];
+    	    unsigned char codeA = m_branchCodes[(predA<<1)+bit];
     	    unsigned char bmA = NbOnes[codeA ^ symbols[is]]; // branch metric
     	    unsigned int pmA = m_pathMetrics[predPMIxA] + bmA; // add branch metric to path metric
 
@@ -298,8 +264,7 @@ void Viterbi::decodeFromSymbols(
 
     	    unsigned char predB = m_predB[ib];
             unsigned int predPMIxB = (is%2)*(1<<(m_k-1)) + predB;
-            unsigned char bitB = m_bitB[ib];
-            unsigned char codeB = m_branchCodes[(predB<<1)+bitB];
+            unsigned char codeB = m_branchCodes[(predB<<1)+bit];
             unsigned char bmB = NbOnes[codeB ^ symbols[is]]; // branch metric
             unsigned int pmB = m_pathMetrics[predPMIxB] + bmB; // add branch metric to path metric
 
@@ -341,7 +306,7 @@ void Viterbi::decodeFromSymbols(
             if (a_b) // A selected
             {
                 m_pathMetrics[ib + ((is+1)%2)*(1<<(m_k-1))] = pmA;
-                m_traceback[ib + is*(1<<(m_k-1))] = (predA<<1) + bitA; // Pack predecessor branch # and bit value
+                m_traceback[ib + is*(1<<(m_k-1))] = (predA<<1) + bit; // Pack predecessor branch # and bit value
 
                 if (pmA < minMetric)
                 {
@@ -358,7 +323,7 @@ void Viterbi::decodeFromSymbols(
             else
             {
                 m_pathMetrics[ib + ((is+1)%2)*(1<<(m_k-1))] = pmB;
-                m_traceback[ib + is*(1<<(m_k-1))] = (predB<<1) + bitB; // Pack predecessor branch # and bit value
+                m_traceback[ib + is*(1<<(m_k-1))] = (predB<<1) + bit; // Pack predecessor branch # and bit value
 
                 if (pmB < minMetric)
                 {
