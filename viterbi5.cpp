@@ -51,13 +51,13 @@ void Viterbi5::decodeFromSymbols(
             delete[] m_pathMetrics;
         }
 
-        m_traceback = new unsigned char[4 * nbSymbols];
-        m_pathMetrics = new uint32_t[4];
+        m_traceback = new unsigned char[16 * nbSymbols];
+        m_pathMetrics = new uint32_t[16];
         m_nbSymbolsMax = nbSymbols;
     }
 
     // initial path metrics state
-    memset(m_pathMetrics, Viterbi::m_maxMetric, sizeof(uint32_t) * (1<<(m_k-1)));
+    memset(m_pathMetrics, Viterbi::m_maxMetric, 16 * sizeof(uint32_t));
     m_pathMetrics[startstate] = 0;
 
     for (int is = 0; is < nbSymbols; is++)
@@ -153,7 +153,6 @@ void Viterbi5::doMetrics(
 {
     uint32_t tempMetric[16];
     uint32_t metric[32];
-    int loop;
 
     uint32_t m1;
     uint32_t m2;
