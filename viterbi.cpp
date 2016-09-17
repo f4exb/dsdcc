@@ -266,7 +266,7 @@ void Viterbi::decodeFromSymbols(
         }
 
         m_traceback = new unsigned char[(1<<(m_k-1)) * nbSymbols];
-        m_pathMetrics = new uint32_t[(1<<(m_k-1)) * (nbSymbols+1)];
+        m_pathMetrics = new uint32_t[(1<<(m_k-1))*2]; // only one step back in memory
         m_nbSymbolsMax = nbSymbols;
     }
 
@@ -288,7 +288,7 @@ void Viterbi::decodeFromSymbols(
     	    // path A
 
     	    unsigned char predA = m_predA[ib];
-    	    unsigned int predPMIxA = is*(1<<(m_k-1)) + predA;
+    	    unsigned int predPMIxA = (is%2)*(1<<(m_k-1)) + predA;
     	    unsigned char bitA = m_bitA[ib];
     	    unsigned char codeA = m_branchCodes[(predA<<1)+bitA];
     	    unsigned char bmA = NbOnes[codeA ^ symbols[is]]; // branch metric
@@ -297,7 +297,7 @@ void Viterbi::decodeFromSymbols(
             // path B
 
     	    unsigned char predB = m_predB[ib];
-            unsigned int predPMIxB = is*(1<<(m_k-1)) + predB;
+            unsigned int predPMIxB = (is%2)*(1<<(m_k-1)) + predB;
             unsigned char bitB = m_bitB[ib];
             unsigned char codeB = m_branchCodes[(predB<<1)+bitB];
             unsigned char bmB = NbOnes[codeB ^ symbols[is]]; // branch metric
@@ -340,7 +340,7 @@ void Viterbi::decodeFromSymbols(
 
             if (a_b) // A selected
             {
-                m_pathMetrics[ib + (is+1)*(1<<(m_k-1))] = pmA;
+                m_pathMetrics[ib + ((is+1)%2)*(1<<(m_k-1))] = pmA;
                 m_traceback[ib + is*(1<<(m_k-1))] = (predA<<1) + bitA; // Pack predecessor branch # and bit value
 
                 if (pmA < minMetric)
@@ -357,7 +357,7 @@ void Viterbi::decodeFromSymbols(
             }
             else
             {
-                m_pathMetrics[ib + (is+1)*(1<<(m_k-1))] = pmB;
+                m_pathMetrics[ib + ((is+1)%2)*(1<<(m_k-1))] = pmB;
                 m_traceback[ib + is*(1<<(m_k-1))] = (predB<<1) + bitB; // Pack predecessor branch # and bit value
 
                 if (pmB < minMetric)
