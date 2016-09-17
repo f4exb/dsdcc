@@ -91,10 +91,10 @@ void Viterbi5::decodeFromSymbols(
 
     // trace back
 
-    uint32_t minPathMetric;
-    unsigned int minPathIndex;
+    uint32_t minPathMetric = m_pathMetrics[0];
+    unsigned int minPathIndex = 0;
 
-    for (int i = 0; i < 4; i++)
+    for (int i = 1; i < 16; i++)
     {
         if (m_pathMetrics[i] < minPathMetric)
         {
