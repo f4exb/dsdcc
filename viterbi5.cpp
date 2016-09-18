@@ -26,7 +26,7 @@ namespace DSDcc
 {
 
 Viterbi5::Viterbi5(int n, const unsigned int *polys, bool msbFirst) :
-        Viterbi(3, n, polys, msbFirst)
+        Viterbi(5, n, polys, msbFirst)
 {
 }
 
