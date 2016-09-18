@@ -43,6 +43,9 @@ set(dsdcc_SOURCES
     p25p1_heuristics.cpp
     dsd_upsample.cpp
     fec.cpp
+    viterbi.cpp
+    viterbi3.cpp
+    viterbi5.cpp
 )
 
 set(dsdcc_HEADERS
@@ -64,6 +67,9 @@ set(dsdcc_HEADERS
     runningmaxmin.h
     doublebuffer.h
     fec.h
+    viterbi.h
+    viterbi3.h
+    viterbi5.h
 )
 
 include_directories(
