@@ -56,7 +56,7 @@ const int DSDYSF::m_fichInterleave[100] = {
 DSDYSF::DSDYSF(DSDDecoder *dsdDecoder) :
         m_dsdDecoder(dsdDecoder),
         m_symbolIndex(0),
-        m_viterbiFICH(2, Viterbi::Poly25y, false)
+        m_viterbiFICH(2, Viterbi::Poly25y, true)
 {
 }
 
