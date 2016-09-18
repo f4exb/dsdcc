@@ -54,6 +54,14 @@ public:
         unsigned int startstate     //!< Encoder starting state
     );
 
+    /* Viterbi decoder */
+    void decodeFromBits(
+        unsigned char *dataBits,    //!< Decoded output data bits
+        const unsigned char *bits,  //!< Input bits
+        unsigned int nbBits,        //!< Number of imput bits
+        unsigned int startstate     //!< Encoder starting state
+    );
+
     int getK() const { return m_k; }
     int getN() const { return m_n; }
     const unsigned char *getBranchCodes() const { return m_branchCodes; }
@@ -89,8 +97,9 @@ protected:
     unsigned char *m_branchCodes;
     unsigned char *m_predA;
     unsigned char *m_predB;
+    unsigned char *m_symbols;
     int m_nbSymbolsMax;
-
+    int m_nbBitsMax;
     static const uint32_t m_maxMetric;
 };
 

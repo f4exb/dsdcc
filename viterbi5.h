@@ -38,6 +38,14 @@ public:
             unsigned int startstate     //!< Encoder starting state
     );
 
+    /* Viterbi decoder */
+    void decodeFromBits(
+        unsigned char *dataBits,    //!< Decoded output data bits
+        const unsigned char *bits,  //!< Input bits
+        unsigned int nbBits,        //!< Number of imput bits
+        unsigned int startstate     //!< Encoder starting state
+    );
+
 private:
     static void doMetrics (
             int n,

@@ -32,10 +32,18 @@ public:
 
     /* Viterbi decoder */
     void decodeFromSymbols(
-            unsigned char *dataBits,    //!< Decoded output data bits
-            const unsigned char *symbols,     //!< Input symbols
-            unsigned int nbSymbols,     //!< Number of imput symbols
-            unsigned int startstate     //!< Encoder starting state
+            unsigned char *dataBits,      //!< Decoded output data bits
+            const unsigned char *symbols, //!< Input symbols
+            unsigned int nbSymbols,       //!< Number of imput symbols
+            unsigned int startstate       //!< Encoder starting state
+    );
+
+    /* Viterbi decoder */
+    void decodeFromBits(
+        unsigned char *dataBits,    //!< Decoded output data bits
+        const unsigned char *bits,  //!< Input bits
+        unsigned int nbBits,        //!< Number of imput bits
+        unsigned int startstate     //!< Encoder starting state
     );
 
 private:

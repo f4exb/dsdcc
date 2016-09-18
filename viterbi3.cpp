@@ -34,6 +34,36 @@ Viterbi3::~Viterbi3()
 {
 }
 
+void Viterbi3::decodeFromBits(
+        unsigned char *dataBits,      //!< Decoded output data bits
+        const unsigned char *bits,    //!< Input bits
+        unsigned int nbBits,          //!< Number of imput bits
+        unsigned int startstate)      //!< Encoder starting state
+
+{
+    if (nbBits > m_nbBitsMax)
+    {
+        if (m_symbols) {
+            delete[] m_symbols;
+        }
+
+        m_symbols = new unsigned char[nbBits/m_n];
+        m_nbBitsMax = nbBits;
+    }
+
+    for (int i = 0; i < nbBits; i += m_n)
+    {
+        m_symbols[i/m_n] = bits[i];
+
+        for (int j = m_n-1; j > 0; j--)
+        {
+            m_symbols[i/m_n] += bits[i+j] << j;
+        }
+    }
+
+    decodeFromSymbols(dataBits, m_symbols, nbBits/m_n, startstate);
+}
+
 void Viterbi3::decodeFromSymbols(
         unsigned char *dataBits,      //!< Decoded output data bits
         const unsigned char *symbols, //!< Input symbols
