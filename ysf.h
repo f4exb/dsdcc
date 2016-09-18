@@ -19,6 +19,9 @@
 
 #include <string>
 
+#include "viterbi5.h"
+#include "fec.h"
+
 namespace DSDcc
 {
 
@@ -34,8 +37,20 @@ public:
     void process();
 
 private:
+    void processFICH(int symbolIndex, unsigned char dibit);
+    bool checkCRC16(unsigned char *bits, int nbBits);
+
     DSDDecoder *m_dsdDecoder;
-    int m_symbolIndex;    //!< Current symbol index in non HD sequence
+    int m_symbolIndex;                //!< Current symbol index
+    unsigned char m_fichRaw[100];     //!< FICH dibits after de-interleave + Viterbi stuff symbols
+    unsigned char m_fichGolay[100];   //!< FICH Golay encoded bits + 4 stuff bits + Viterbi stuff bits
+    unsigned char m_fich[48];         //!< Final FICH + CRC16
+    unsigned char m_fichCRC[16];      //!< Calculated CRC
+    Viterbi5 m_viterbiFICH;
+    Golay_24_12 m_golay_24_12;
+    unsigned char m_bitWork[48];
+
+    static const int m_fichInterleave[100]; //!<
 };
 
 } // namespace DSDcc
