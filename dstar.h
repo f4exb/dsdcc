@@ -18,6 +18,7 @@
 #define DSDCC_DSTAR_H_
 
 #include <string>
+#include "viterbi3.h"
 
 namespace DSDcc
 {
@@ -64,6 +65,7 @@ private:
    DStarFrameTYpe m_frameType;
    int m_symbolIndex;    //!< Current symbol index in non HD sequence
    int m_symbolIndexHD;  //!< Current symbol index in HD sequence
+   Viterbi3 m_viterbi;
 
    // DSTAR
    unsigned char slowdata[4];

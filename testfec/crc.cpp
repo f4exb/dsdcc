@@ -30,9 +30,9 @@ void testYSF(DSDcc::CRC& crc, const unsigned char *bytes, const char *comment, c
 
     std::cout << std::endl << "CCITT16 " << comment << " :" << std::endl;
     std::cout << "crc bit by bit      :  " << std::hex << ret_crcbitbybit << (ret_crcbitbybit == crcCorrect ? " OK" : " KO")<< std::endl;
-    std::cout << "crc bit by bit fast :  " << std::hex << ret_crcbitbybitfast << (ret_crcbitbybit == crcCorrect ? " OK" : " KO") << std::endl;
-    std::cout << "crc table           :  " << std::hex << ret_crctable << (ret_crcbitbybit == crcCorrect ? " OK" : " KO") << std::endl;
-    std::cout << "crc table fast      :  " << std::hex << ret_crctablefast << (ret_crcbitbybit == crcCorrect ? " OK" : " KO") << std::endl;
+    std::cout << "crc bit by bit fast :  " << std::hex << ret_crcbitbybitfast << (ret_crcbitbybitfast == crcCorrect ? " OK" : " KO") << std::endl;
+    std::cout << "crc table           :  " << std::hex << ret_crctable << (ret_crctable == crcCorrect ? " OK" : " KO") << std::endl;
+    std::cout << "crc table fast      :  " << std::hex << ret_crctablefast << (ret_crctablefast == crcCorrect ? " OK" : " KO") << std::endl;
 }
 
 int main(int argc, char *argv[])

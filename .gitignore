@@ -11,3 +11,4 @@ testfec/hamming12
 testfec/hamming16
 testfec/viterbi
 testfec/viterbi35
+testfec/crc

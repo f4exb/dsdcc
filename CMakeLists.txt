@@ -46,6 +46,7 @@ set(dsdcc_SOURCES
     viterbi.cpp
     viterbi3.cpp
     viterbi5.cpp
+    crc.cpp
 )
 
 set(dsdcc_HEADERS
@@ -70,6 +71,7 @@ set(dsdcc_HEADERS
     viterbi.h
     viterbi3.h
     viterbi5.h
+    crc.h
 )
 
 include_directories(

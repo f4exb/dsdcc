@@ -134,7 +134,8 @@ const int DSDDstar::dX[72] = {
 DSDDstar::DSDDstar(DSDDecoder *dsdDecoder) :
 		m_dsdDecoder(dsdDecoder),
 		m_voiceFrameCount(0),
-		m_frameType(DStarVoiceFrame)
+		m_frameType(DStarVoiceFrame),
+		m_viterbi(2, Viterbi::Poly23a, false)
 {
     reset_header_strings();
 }
@@ -354,7 +355,8 @@ void DSDDstar::dstar_header_decode()
 
     Descramble::scramble(m_dsdDecoder->m_dsdSymbol.getDibitBack(660), radioheaderbuffer2);
     Descramble::deinterleave(radioheaderbuffer2, radioheaderbuffer3);
-    Descramble::FECdecoder(radioheaderbuffer3, radioheaderbuffer2);
+//    Descramble::FECdecoder(radioheaderbuffer3, radioheaderbuffer2);
+    m_viterbi.decodeFromBits(radioheaderbuffer2, radioheaderbuffer3, 660, 0);
     memset(radioheader, 0, 41);
 
     // note we receive 330 bits, but we only use 328 of them (41 octets)

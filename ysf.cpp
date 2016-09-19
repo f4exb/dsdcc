@@ -14,8 +14,6 @@
 // along with this program. If not, see <http://www.gnu.org/licenses/>.          //
 ///////////////////////////////////////////////////////////////////////////////////
 
-#include <iostream>
-
 #include "ysf.h"
 #include "dsd_decoder.h"
 
@@ -30,33 +28,11 @@ const int DSDYSF::m_fichInterleave[100] = {
         4, 9, 14, 19, 24, 29, 34, 39, 44, 49, 54, 59, 64, 69, 74, 79, 84, 89, 94, 99,
 };
 
-//const int DSDYSF::m_fichInterleave[100] = {
-//        0,  20, 40, 60, 80,
-//        1,  21, 41, 61, 81,
-//        2,  22, 42, 62, 82,
-//        3,  23, 43, 63, 83,
-//        4,  24, 44, 64, 84,
-//        5,  25, 45, 65, 85,
-//        6,  26, 46, 66, 86,
-//        7,  27, 47, 67, 87,
-//        8,  28, 48, 68, 88,
-//        9,  29, 49, 69, 89,
-//        10, 30, 50, 70, 90,
-//        11, 31, 51, 71, 91,
-//        12, 32, 52, 72, 92,
-//        13, 33, 53, 73, 93,
-//        14, 34, 54, 74, 94,
-//        15, 35, 55, 75, 95,
-//        16, 36, 56, 76, 96,
-//        17, 37, 57, 77, 97,
-//        18, 38, 58, 78, 98,
-//        19, 39, 59, 79, 99,
-//};
-
 DSDYSF::DSDYSF(DSDDecoder *dsdDecoder) :
         m_dsdDecoder(dsdDecoder),
         m_symbolIndex(0),
-        m_viterbiFICH(2, Viterbi::Poly25y, true)
+        m_viterbiFICH(2, Viterbi::Poly25y, true),
+        m_crc(DSDcc::CRC::PolyCCITT16, 16, 0x0, 0xffff)
 {
 }
 
@@ -97,27 +73,33 @@ void DSDYSF::processFICH(int symbolIndex, unsigned char dibit)
     {
         m_viterbiFICH.decodeFromSymbols(m_fichGolay, m_fichRaw, 100, 0);
         int i = 0;
+        bool golayOK = true;
 
         for (; i < 4; i++)
         {
             if (m_golay_24_12.decode(&m_fichGolay[24*i]))
             {
-                memcpy(&m_fich[12*i], &m_fichGolay[24*i], 12);
+                memcpy(&m_fichBits[12*i], &m_fichGolay[24*i], 12);
             }
             else
             {
-                std::cerr << "DSDYSF::processFICH: Golay KO #" << i << std::endl;
-                break;
+//                std::cerr << "DSDYSF::processFICH: Golay KO #" << i << std::endl;
+//                break;
+                golayOK = false;
+                memcpy(&m_fichBits[12*i], &m_fichGolay[24*i], 12);
             }
         }
 
         if (i == 4) // decoding OK
         {
-            std::cerr << "DSDYSF::processFICH: Golay OK" << std::endl;
+            if (!golayOK) {
+                std::cerr << "DSDYSF::processFICH: Golay KO" << std::endl;
+            }
 
-            if (checkCRC16(m_fich, 32))
+            if (checkCRC16(m_fichBits, 4))
             {
-                std::cerr << "DSDYSF::processFICH: CRC OK" << std::endl;
+                memcpy(&m_fich, m_fichBits, 32);
+                std::cerr << "DSDYSF::processFICH: CRC OK: " << m_fich << std::endl;
             }
             else
             {
@@ -127,14 +109,14 @@ void DSDYSF::processFICH(int symbolIndex, unsigned char dibit)
     }
 }
 
-bool DSDYSF::checkCRC16(unsigned char *bits, int nbBits)
+bool DSDYSF::checkCRC16_old(unsigned char *bits, int nbBits)
 {
     memcpy(m_bitWork, bits, nbBits);
     memset(&m_bitWork[nbBits], 0, 16);
 
     for (int i = 0; i < nbBits; i++)
     {
-        if (m_bitWork[i] == 1) // divide by X^7+X^3+1 (10001001)
+        if (m_bitWork[i] == 1) // divide by X^16+X^12+X^5+1 which is the CRC16-CCITT
         {
             m_bitWork[i]     = 0; // X^16 16-16 = +0
             m_bitWork[i+4]  ^= 1; // X^12 16-12 = +4
@@ -151,6 +133,32 @@ bool DSDYSF::checkCRC16(unsigned char *bits, int nbBits)
     {
         return false;
     }
+}
+
+bool DSDYSF::checkCRC16(unsigned char *bits, unsigned long nbBytes)
+{
+    unsigned char bytes[22];
+
+//    std::cerr << "DSDYSF::checkCRC16: value: ";
+
+    for (int i = 0; i < nbBytes+2; i++)
+    {
+        bytes[i] = (bits[8*i+0]<<7)
+                + (bits[8*i+1]<<6)
+                + (bits[8*i+2]<<5)
+                + (bits[8*i+3]<<4)
+                + (bits[8*i+4]<<3)
+                + (bits[8*i+5]<<2)
+                + (bits[8*i+6]<<1)
+                + (bits[8*i+7]<<0);
+//        std::cerr << std::hex << (int) bytes[i] << " ";
+    }
+
+    unsigned int crc = (bytes[nbBytes]<<8) + bytes[nbBytes+1];
+
+//    std::cerr << "crc: " << std::hex << crc << std::endl;
+
+    return m_crc.crctablefast(bytes, nbBytes) == crc;
 }
 
 
