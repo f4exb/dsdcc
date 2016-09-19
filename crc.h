@@ -25,13 +25,13 @@ namespace DSDcc
 class CRC
 {
 public:
-    CRC(unsigned long _polynom,
-            int _order,
-            unsigned long _crcinit,
-            unsigned long _crcxor,
-            int _direct = 1,
-            int _refin = 0,
-            int _refout = 0);
+    CRC(unsigned long polynomial,
+            int order,
+            unsigned long crcinit,
+            unsigned long crcxor,
+            int direct = 1,
+            int refin = 0,
+            int refout = 0);
 
     ~CRC();
 
@@ -59,32 +59,32 @@ public:
     {
         return m_refout;
     }
-    unsigned long getCRCInitDirect()
+    unsigned long getCRCInitDirect() const
     {
         return m_crcinit_direct;
     }
-    unsigned long getCRCInitNonDirect()
+    unsigned long getCRCInitNonDirect() const
     {
         return m_crcinit_nondirect;
     }
 
     /** normal lookup table algorithm with augmented zero bytes.
-    * only usable with polynom orders of 8, 16, 24 or 32.
+    * only usable with polynomial orders of 8, 16, 24 or 32.
     */
     unsigned long crctable(unsigned char* p, unsigned long len);
 
     /** fast lookup table algorithm without augmented zero bytes, e.g. used in pkzip.
-    * only usable with polynom orders of 8, 16, 24 or 32.
+    * only usable with polynomial orders of 8, 16, 24 or 32.
     */
     unsigned long crctablefast(unsigned char* p, unsigned long len);
 
     /** bit by bit algorithm with augmented zero bytes.
-    * does not use lookup table, suited for polynom orders between 1...32.
+    * does not use lookup table, suited for polynomial orders between 1...32.
     */
     unsigned long crcbitbybit(unsigned char* p, unsigned long len);
 
     /** fast bit by bit algorithm without augmented zero bytes.
-    * does not use lookup table, suited for polynom orders between 1...32.
+    * does not use lookup table, suited for polynomial orders between 1...32.
     */
     unsigned long crcbitbybitfast(unsigned char* p, unsigned long len);
 
@@ -95,8 +95,8 @@ private:
     void generate_crc_table();
     void init();
 
-    int           m_order;   //!< CRC order (# bits)
-    unsigned long m_poly; //!< Polynomial in hex
+    int           m_order;   //!< CRC order (# bits) or polynomial order
+    unsigned long m_poly;    //!< Polynomial in binary form with implicit order ex: X^16+X^12+X^5+1 -> (1)0001 0000 0010 0001 = 0x1021
     int           m_direct;  //!< algorithm: 1 = direct, no augmented zero bits
     unsigned long m_crcinit; //!< Shift register is initialized with this value
     unsigned long m_crcxor;  //!< At the end bits are XORed with this value

@@ -66,7 +66,7 @@ int main(int argc, char *argv[])
     DSDcc::CRC crc110(DSDcc::CRC::PolyCCITT16, 16, 0x0, 0xffff, 1, 1, 0);
     DSDcc::CRC crc111(DSDcc::CRC::PolyCCITT16, 16, 0x0, 0xffff, 1, 1, 1);
 
-    std::cout << "All cases for YSF" << std::endl;
+    std::cout << std::endl << "All cases for YSF" << std::endl;
 
     testYSF(crc000, bytes01, "0x60, 0x36, 0x02, 0x00 000", 0xb74a);
     testYSF(crc001, bytes01, "0x60, 0x36, 0x02, 0x00 001", 0x52ed);
@@ -78,7 +78,7 @@ int main(int argc, char *argv[])
     testYSF(crc110, bytes01, "0x60, 0x36, 0x02, 0x00 110", 0x3ba0);
     testYSF(crc111, bytes01, "0x60, 0x36, 0x02, 0x00 111", 0x5dc);
 
-    std::cout << "Final for YSF" << std::endl;
+    std::cout << std::endl << "Final for YSF" << std::endl;
 
     DSDcc::CRC crcYSF(DSDcc::CRC::PolyCCITT16, 16, 0x0, 0xffff); // default flags
 

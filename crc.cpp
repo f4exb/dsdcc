@@ -23,20 +23,20 @@ namespace DSDcc
 
 const unsigned long CRC::PolyCCITT16 = 0x1021;
 
-CRC::CRC(unsigned long _polynom,
-            int _order,
-            unsigned long _crcinit,
-            unsigned long _crcxor,
-            int _direct,
-            int _refin,
-            int _refout) :
-        m_order(_order),
-        m_poly(_polynom),
-        m_direct(_direct),
-        m_crcinit(_crcinit),
-        m_crcxor(_crcxor),
-        m_refin(_refin),
-        m_refout(_refout)
+CRC::CRC(unsigned long polynomial,
+            int order,
+            unsigned long crcinit,
+            unsigned long crcxor,
+            int direct,
+            int refin,
+            int refout) :
+        m_order(order),
+        m_poly(polynomial),
+        m_direct(direct),
+        m_crcinit(crcinit),
+        m_crcxor(crcxor),
+        m_refin(refin),
+        m_refout(refout)
 {
     m_crcmask = ((((unsigned long) 1 << (m_order - 1)) - 1) << 1) | 1;
     m_crchighbit = (unsigned long) 1 << (m_order - 1);
