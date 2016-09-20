@@ -23,6 +23,7 @@
 #include "viterbi5.h"
 #include "fec.h"
 #include "crc.h"
+#include "pn.h"
 
 namespace DSDcc
 {
@@ -176,22 +177,41 @@ public:
 private:
 
     void processFICH(int symbolIndex, unsigned char dibit);
-    bool checkCRC16(unsigned char *bits, unsigned long nbBytes);
+    void processHeader(int symbolIndex, unsigned char dibit);
+    bool checkCRC16(unsigned char *bits, unsigned long nbBytes, unsigned char *xoredBytes = 0);
 
     DSDDecoder *m_dsdDecoder;
     int m_symbolIndex;                //!< Current symbol index
+
     unsigned char m_fichRaw[100];     //!< FICH dibits after de-interleave + Viterbi stuff symbols
     unsigned char m_fichGolay[100];   //!< FICH Golay encoded bits + 4 stuff bits + Viterbi stuff bits
     unsigned char m_fichBits[48];     //!< Final FICH + CRC16
-    unsigned char m_fichCRC[16];      //!< Calculated CRC
     FICH          m_fich;             //!< Validated FICH
     FICHError     m_fichError;        //!< FICH decoding error status
+
+    unsigned char m_dch1Raw[180];     //!< DCH1 dibits after de-interleave
+    unsigned char m_dch1Bits[180];    //!< DCH1 bits after de-convolution
+
+    unsigned char m_dch2Raw[180];     //!< DCH2 dibits after de-interleave
+    unsigned char m_dch2Bits[180];    //!< DCH2 bits after de-convolution
+
     Viterbi5 m_viterbiFICH;
     Golay_24_12 m_golay_24_12;
     CRC m_crc;
+    PN_9_5 m_pn;
     unsigned char m_bitWork[48];
 
+    char m_dest[10+1];     //!< Destination callsign from CSD1
+    char m_src[10+1];      //!< Source callsign from CSD1
+    char m_downlink[10+1]; //!< Downlink callsign from CSD2
+    char m_uplink[10+1];   //!< Uplink callsign from CSD2
+    char m_rem1[5+1];      //!< Callsign supplementary information #1 from CSD3
+    char m_rem2[5+1];      //!< Callsign supplementary information #2 from CSD3
+    char m_rem3[5+1];      //!< Callsign supplementary information #3 from CSD3
+    char m_rem4[5+1];      //!< Callsign supplementary information #4 from CSD3
+
     static const int m_fichInterleave[100]; //!< FICH symbols interleaving matrix
+    static const int m_dchInterleave[180];  //!< DCH symbols interleaving matrix
 };
 
 } // namespace DSDcc
