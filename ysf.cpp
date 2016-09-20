@@ -32,7 +32,8 @@ DSDYSF::DSDYSF(DSDDecoder *dsdDecoder) :
         m_dsdDecoder(dsdDecoder),
         m_symbolIndex(0),
         m_viterbiFICH(2, Viterbi::Poly25y, true),
-        m_crc(DSDcc::CRC::PolyCCITT16, 16, 0x0, 0xffff)
+        m_crc(DSDcc::CRC::PolyCCITT16, 16, 0x0, 0xffff),
+		m_fichError(FICHNoError)
 {
 }
 
@@ -83,6 +84,7 @@ void DSDYSF::processFICH(int symbolIndex, unsigned char dibit)
             else
             {
                 std::cerr << "DSDYSF::processFICH: Golay KO #" << i << std::endl;
+                m_fichError = FICHErrorGolay;
                 break;
             }
         }
@@ -92,39 +94,15 @@ void DSDYSF::processFICH(int symbolIndex, unsigned char dibit)
             if (checkCRC16(m_fichBits, 4))
             {
                 memcpy(&m_fich, m_fichBits, 32);
-                std::cerr << "DSDYSF::processFICH: CRC OK: " << m_fich << std::endl;
+//                std::cerr << "DSDYSF::processFICH: CRC OK: " << m_fich << std::endl;
+                m_fichError = FICHNoError;
             }
             else
             {
                 std::cerr << "DSDYSF::processFICH: CRC KO" << std::endl;
+                m_fichError = FICHErrorCRC;
             }
         }
-    }
-}
-
-bool DSDYSF::checkCRC16_old(unsigned char *bits, int nbBits)
-{
-    memcpy(m_bitWork, bits, nbBits);
-    memset(&m_bitWork[nbBits], 0, 16);
-
-    for (int i = 0; i < nbBits; i++)
-    {
-        if (m_bitWork[i] == 1) // divide by X^16+X^12+X^5+1 which is the CRC16-CCITT
-        {
-            m_bitWork[i]     = 0; // X^16 16-16 = +0
-            m_bitWork[i+4]  ^= 1; // X^12 16-12 = +4
-            m_bitWork[i+11] ^= 1; // X^5  16-5  = +11
-            m_bitWork[i+16] ^= 1; // 1    16-0  = +16
-        }
-    }
-
-    if (memcmp(&bits[nbBits], &m_bitWork[nbBits], 16) == 0) // CRC OK
-    {
-        return true;
-    }
-    else
-    {
-        return false;
     }
 }
 

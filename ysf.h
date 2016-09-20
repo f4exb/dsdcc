@@ -32,13 +32,6 @@ class DSDDecoder;
 class DSDYSF
 {
 public:
-    DSDYSF(DSDDecoder *dsdDecoder);
-    ~DSDYSF();
-
-    void init();
-    void process();
-
-private:
     typedef enum
     {
         FIHeader,
@@ -70,6 +63,13 @@ private:
         DTVoiceData2,
         DTVoiceFullRate
     } DataType;
+
+    typedef enum
+    {
+    	FICHNoError,
+		FICHErrorGolay,
+		FICHErrorCRC
+    } FICHError;
 
     struct FICH
     {
@@ -164,8 +164,18 @@ private:
         }
     };
 
+    DSDYSF(DSDDecoder *dsdDecoder);
+    ~DSDYSF();
+
+    void init();
+    void process();
+
+    const FICH& getFICH() const { return m_fich; }
+    FICHError getFICHError() const { return m_fichError; }
+
+private:
+
     void processFICH(int symbolIndex, unsigned char dibit);
-    bool checkCRC16_old(unsigned char *bits, int nbBits);
     bool checkCRC16(unsigned char *bits, unsigned long nbBytes);
 
     DSDDecoder *m_dsdDecoder;
@@ -175,12 +185,13 @@ private:
     unsigned char m_fichBits[48];     //!< Final FICH + CRC16
     unsigned char m_fichCRC[16];      //!< Calculated CRC
     FICH          m_fich;             //!< Validated FICH
+    FICHError     m_fichError;        //!< FICH decoding error status
     Viterbi5 m_viterbiFICH;
     Golay_24_12 m_golay_24_12;
     CRC m_crc;
     unsigned char m_bitWork[48];
 
-    static const int m_fichInterleave[100]; //!<
+    static const int m_fichInterleave[100]; //!< FICH symbols interleaving matrix
 };
 
 } // namespace DSDcc
