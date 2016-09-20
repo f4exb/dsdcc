@@ -306,7 +306,7 @@ void Viterbi5::doMetrics(
     if (m1 < m2)
     {
         m_pathMemory5[n] = 10; // upper path (S10)
-        tempMetric[3] = m1;
+        tempMetric[5] = m1;
     }
     else
     {

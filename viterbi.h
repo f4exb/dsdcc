@@ -28,7 +28,7 @@ class Viterbi
 {
 public:
     Viterbi(int k, int n, const unsigned int *polys, bool msbFirst = true);
-    ~Viterbi();
+    virtual ~Viterbi();
 
     /** Convolutionally encode data into binary symbols */
     void encodeToSymbols(
@@ -47,7 +47,7 @@ public:
     );
 
     /* Viterbi decoder */
-    void decodeFromSymbols(
+    virtual void decodeFromSymbols(
         unsigned char *dataBits,    //!< Decoded output data bits
         const unsigned char *symbols,     //!< Input symbols
         unsigned int nbSymbols,     //!< Number of imput symbols
@@ -55,7 +55,7 @@ public:
     );
 
     /* Viterbi decoder */
-    void decodeFromBits(
+    virtual void decodeFromBits(
         unsigned char *dataBits,    //!< Decoded output data bits
         const unsigned char *bits,  //!< Input bits
         unsigned int nbBits,        //!< Number of imput bits

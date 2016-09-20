@@ -28,10 +28,10 @@ class Viterbi3 : public Viterbi
 {
 public:
     Viterbi3(int n, const unsigned int *polys, bool msbFirst = true);
-    ~Viterbi3();
+    virtual ~Viterbi3();
 
     /* Viterbi decoder */
-    void decodeFromSymbols(
+    virtual void decodeFromSymbols(
             unsigned char *dataBits,      //!< Decoded output data bits
             const unsigned char *symbols, //!< Input symbols
             unsigned int nbSymbols,       //!< Number of imput symbols
@@ -39,7 +39,7 @@ public:
     );
 
     /* Viterbi decoder */
-    void decodeFromBits(
+    virtual void decodeFromBits(
         unsigned char *dataBits,    //!< Decoded output data bits
         const unsigned char *bits,  //!< Input bits
         unsigned int nbBits,        //!< Number of imput bits
