@@ -260,12 +260,12 @@ void Viterbi5::doMetrics(
 
     if (m1 < m2)
     {
-        m_pathMemory2[n] = 4; // upper path (S0)
+        m_pathMemory2[n] = 4; // upper path (S4)
         tempMetric[2] = m1;
     }
     else
     {
-        m_pathMemory2[n] = 5; // lower path (S1)
+        m_pathMemory2[n] = 5; // lower path (S5)
         tempMetric[2] = m2;
     }
 
@@ -275,12 +275,12 @@ void Viterbi5::doMetrics(
 
     if (m1 < m2)
     {
-        m_pathMemory3[n] = 6; // upper path (S2)
+        m_pathMemory3[n] = 6; // upper path (S6)
         tempMetric[3] = m1;
     }
     else
     {
-        m_pathMemory3[n] = 7; // lower path (S3)
+        m_pathMemory3[n] = 7; // lower path (S7)
         tempMetric[3] = m2;
     }; // end else - if
 
@@ -290,12 +290,12 @@ void Viterbi5::doMetrics(
 
     if (m1 < m2)
     {
-        m_pathMemory4[n] = 8; // upper path (S2)
+        m_pathMemory4[n] = 8; // upper path (S8)
         tempMetric[4] = m1;
     }
     else
     {
-        m_pathMemory4[n] = 9; // lower path (S3)
+        m_pathMemory4[n] = 9; // lower path (S9)
         tempMetric[4] = m2;
     }; // end else - if
 
@@ -305,12 +305,12 @@ void Viterbi5::doMetrics(
 
     if (m1 < m2)
     {
-        m_pathMemory5[n] = 10; // upper path (S2)
+        m_pathMemory5[n] = 10; // upper path (S10)
         tempMetric[3] = m1;
     }
     else
     {
-        m_pathMemory5[n] = 11; // lower path (S3)
+        m_pathMemory5[n] = 11; // lower path (S11)
         tempMetric[5] = m2;
     }; // end else - if
 
@@ -320,12 +320,12 @@ void Viterbi5::doMetrics(
 
     if (m1 < m2)
     {
-        m_pathMemory6[n] = 12; // upper path (S2)
+        m_pathMemory6[n] = 12; // upper path (S12)
         tempMetric[6] = m1;
     }
     else
     {
-        m_pathMemory6[n] = 13; // lower path (S3)
+        m_pathMemory6[n] = 13; // lower path (S13)
         tempMetric[6] = m2;
     }; // end else - if
 
@@ -335,12 +335,12 @@ void Viterbi5::doMetrics(
 
     if (m1 < m2)
     {
-        m_pathMemory7[n] = 14; // upper path (S2)
+        m_pathMemory7[n] = 14; // upper path (S14)
         tempMetric[7] = m1;
     }
     else
     {
-        m_pathMemory7[n] = 15; // lower path (S3)
+        m_pathMemory7[n] = 15; // lower path (S15)
         tempMetric[7] = m2;
     }; // end else - if
 
@@ -363,7 +363,7 @@ void Viterbi5::doMetrics(
 
     // Pres. state = S9, Prev. state = S2 & S3
     m1 = metric[5] + m_pathMetric[2];
-    m2 = metric[6] + m_pathMetric[3];
+    m2 = metric[7] + m_pathMetric[3];
 
     if (m1 < m2)
     {
@@ -514,7 +514,6 @@ void Viterbi5::traceBack (
 
     for (int loop = nbSymbols - 1; loop >= 0; loop--)
     {
-        // TODO: store directly the integer state value in path memory
         switch (state)
         {
         case 0: // if state S0
@@ -596,7 +595,6 @@ void Viterbi5::traceBack (
             state = m_pathMemory15[loop];
             out[loop] = 1;
             break;
-
         }; // end switch
     }; // end for
 }
