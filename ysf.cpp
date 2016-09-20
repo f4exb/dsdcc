@@ -73,7 +73,6 @@ void DSDYSF::processFICH(int symbolIndex, unsigned char dibit)
     {
         m_viterbiFICH.decodeFromSymbols(m_fichGolay, m_fichRaw, 100, 0);
         int i = 0;
-        bool golayOK = true;
 
         for (; i < 4; i++)
         {
@@ -83,19 +82,13 @@ void DSDYSF::processFICH(int symbolIndex, unsigned char dibit)
             }
             else
             {
-//                std::cerr << "DSDYSF::processFICH: Golay KO #" << i << std::endl;
-//                break;
-                golayOK = false;
-                memcpy(&m_fichBits[12*i], &m_fichGolay[24*i], 12);
+                std::cerr << "DSDYSF::processFICH: Golay KO #" << i << std::endl;
+                break;
             }
         }
 
         if (i == 4) // decoding OK
         {
-//            if (!golayOK) {
-//                std::cerr << "DSDYSF::processFICH: Golay KO" << std::endl;
-//            }
-
             if (checkCRC16(m_fichBits, 4))
             {
                 memcpy(&m_fich, m_fichBits, 32);
