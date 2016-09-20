@@ -92,9 +92,9 @@ void DSDYSF::processFICH(int symbolIndex, unsigned char dibit)
 
         if (i == 4) // decoding OK
         {
-            if (!golayOK) {
-                std::cerr << "DSDYSF::processFICH: Golay KO" << std::endl;
-            }
+//            if (!golayOK) {
+//                std::cerr << "DSDYSF::processFICH: Golay KO" << std::endl;
+//            }
 
             if (checkCRC16(m_fichBits, 4))
             {
