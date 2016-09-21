@@ -40,6 +40,47 @@ const int DSDYSF::m_dchInterleave[180] = {
         8,  17,  26,  35,  44,  53,  62,  71,  80,  89,  98, 107, 116, 125, 134, 143, 152, 161, 170, 179
 };
 
+/*
+ * DMR AMBE interleave schedule
+ */
+// bit 1
+const int DSDYSF::rW[36] = {
+  0, 1, 0, 1, 0, 1,
+  0, 1, 0, 1, 0, 1,
+  0, 1, 0, 1, 0, 1,
+  0, 1, 0, 1, 0, 2,
+  0, 2, 0, 2, 0, 2,
+  0, 2, 0, 2, 0, 2
+};
+
+const int DSDYSF::rX[36] = {
+  23, 10, 22, 9, 21, 8,
+  20, 7, 19, 6, 18, 5,
+  17, 4, 16, 3, 15, 2,
+  14, 1, 13, 0, 12, 10,
+  11, 9, 10, 8, 9, 7,
+  8, 6, 7, 5, 6, 4
+};
+
+// bit 0
+const int DSDYSF::rY[36] = {
+  0, 2, 0, 2, 0, 2,
+  0, 2, 0, 3, 0, 3,
+  1, 3, 1, 3, 1, 3,
+  1, 3, 1, 3, 1, 3,
+  1, 3, 1, 3, 1, 3,
+  1, 3, 1, 3, 1, 3
+};
+
+const int DSDYSF::rZ[36] = {
+  5, 3, 4, 2, 3, 1,
+  2, 0, 1, 13, 0, 12,
+  22, 11, 21, 10, 20, 9,
+  19, 8, 18, 7, 17, 6,
+  16, 5, 15, 4, 14, 3,
+  13, 2, 12, 1, 11, 0
+};
+
 DSDYSF::DSDYSF(DSDDecoder *dsdDecoder) :
         m_dsdDecoder(dsdDecoder),
         m_symbolIndex(0),
@@ -48,6 +89,10 @@ DSDYSF::DSDYSF(DSDDecoder *dsdDecoder) :
         m_pn(0x1c9),
 		m_fichError(FICHNoError)
 {
+    w = 0;
+    x = 0;
+    y = 0;
+    z = 0;
 }
 
 DSDYSF::~DSDYSF()
@@ -79,6 +124,9 @@ void DSDYSF::process() // just pass the frames for now
             {
                 switch (m_fich.getDataType())
                 {
+                case DTVoiceData1:
+                    processVD1(m_symbolIndex - 100, dibit);
+                    break;
                 case DTVoiceData2:
                     processVD2(m_symbolIndex - 100, dibit);
                     break;
@@ -194,18 +242,7 @@ void DSDYSF::processHeader(int symbolIndex, unsigned char dibit)
 
         if (checkCRC16(m_dch1Bits, 20, bytes)) // CSD1
         {
-            if (m_fich.getCallMode() == CMRadioID)
-            {
-
-            }
-            else
-            {
-                memcpy(m_dest, bytes, 10);
-                m_dest[10] = '\0';
-                memcpy(m_src, bytes, 10);
-                m_src[10] = '\0';
-                std::cerr << "DSDYSF::processHeader: Dest: " << m_dest << " Src: " << m_src << std::endl;
-            }
+            processCSD1(bytes);
         }
         else
         {
@@ -214,16 +251,122 @@ void DSDYSF::processHeader(int symbolIndex, unsigned char dibit)
 
         if (checkCRC16(m_dch2Bits, 20, bytes)) // CSD2
         {
-            memcpy(m_downlink, bytes, 10);
-            m_downlink[10] = '\0';
-            memcpy(m_uplink, bytes, 10);
-            m_uplink[10] = '\0';
-            std::cerr << "DSDYSF::processHeader:  D/L: " << m_downlink << " U/L: " << m_uplink << std::endl;
+            processCSD2(bytes);
         }
         else
         {
             std::cerr << "DSDYSF::processHeader: DCH2 CRC KO" << std::endl;
         }
+    }
+}
+
+void DSDYSF::processCSD1(unsigned char *dchBytes)
+{
+    if (m_fich.getCallMode() == CMRadioID)
+    {
+//TODO
+    }
+    else
+    {
+        memcpy(m_dest, dchBytes, 10);
+        m_dest[10] = '\0';
+        memcpy(m_src, &dchBytes[10], 10);
+        m_src[10] = '\0';
+        std::cerr << "DSDYSF::processCSD1: Dest: " << m_dest << " Src: " << m_src << std::endl;
+    }
+}
+
+void DSDYSF::processCSD2(unsigned char *dchBytes)
+{
+    memcpy(m_downlink, dchBytes, 10);
+    m_downlink[10] = '\0';
+    memcpy(m_uplink, &dchBytes[10], 10);
+    m_uplink[10] = '\0';
+    std::cerr << "DSDYSF::processCSD2:  D/L: " << m_downlink << " U/L: " << m_uplink << std::endl;
+}
+
+void DSDYSF::processCSD3(unsigned char *dchBytes)
+{
+    memcpy(m_rem1, dchBytes, 5);
+    m_rem1[6] = '\0';
+    memcpy(m_rem2, &dchBytes[5], 5);
+    m_rem2[6] = '\0';
+    memcpy(m_rem3, &dchBytes[10], 5);
+    m_rem3[6] = '\0';
+    memcpy(m_rem3, &dchBytes[15], 5);
+    m_rem4[6] = '\0';
+    std::cerr << "DSDYSF::processCSD3: Rem1: " << m_rem1 << std::endl;
+    std::cerr << "DSDYSF::processCSD3: Rem2: " << m_rem2 << std::endl;
+    std::cerr << "DSDYSF::processCSD3: Rem3: " << m_rem3 << std::endl;
+    std::cerr << "DSDYSF::processCSD3: Rem4: " << m_rem4 << std::endl;
+}
+
+void DSDYSF::processVD1(int symbolIndex, unsigned char dibit)
+{
+    if (symbolIndex < 36)         // DCH(0)
+    {
+        m_dch1Raw[m_dchInterleave[symbolIndex]] = dibit;
+    }
+    else if (symbolIndex < 2*36)  // VCH(0)
+    {
+        processMBE(symbolIndex - 36, dibit);
+    }
+    else if (symbolIndex < 3*36)  // DCH(1)
+    {
+        m_dch1Raw[m_dchInterleave[symbolIndex - 36]] = dibit;
+    }
+    else if (symbolIndex < 4*36)  // VCH(1)
+    {
+        processMBE(symbolIndex - 3*36, dibit);
+    }
+    else if (symbolIndex < 5*36)  // DCH(2)
+    {
+        m_dch1Raw[m_dchInterleave[symbolIndex - 2*36]] = dibit;
+    }
+    else if (symbolIndex < 6*36)  // VCH(2)
+    {
+        processMBE(symbolIndex - 5*36, dibit);
+    }
+    else if (symbolIndex < 7*36)  // DCH(3)
+    {
+        m_dch1Raw[m_dchInterleave[symbolIndex - 3*36]] = dibit;
+    }
+    else if (symbolIndex < 8*36)  // VCH(3)
+    {
+        processMBE(symbolIndex - 7*36, dibit);
+    }
+    else if (symbolIndex < 9*36)  // DCH(4)
+    {
+        m_dch1Raw[m_dchInterleave[symbolIndex - 4*36]] = dibit;
+
+        if (symbolIndex == 9*36 - 1)
+        {
+            unsigned char bytes[22];
+
+            m_viterbiFICH.decodeFromSymbols(m_dch1Bits, m_dch1Raw, 180, 0);
+
+            if (checkCRC16(m_dch1Bits, 20, bytes)) // CSD
+            {
+                switch (m_fich.getFrameNumber())
+                {
+                case 0: // CSD1
+                    processCSD1(bytes);
+                    break;
+                case 1: // CSD2
+                    processCSD2(bytes);
+                    break;
+                case 2: // CSD3
+                    processCSD3(bytes);
+                    break;
+                default:
+                    break;
+                }
+            }
+        }
+    }
+    else if (symbolIndex < 10*36) // VCH(4)
+    {
+        processMBE(symbolIndex - 9*36, dibit);
     }
 }
 
@@ -235,7 +378,7 @@ void DSDYSF::processVD2(int symbolIndex, unsigned char dibit)
     }
     else if (symbolIndex < 20 + 52) // VCH(0) and VeCH(0)
     {
-
+        processVD2Voice(symbolIndex - 20, dibit);
     }
     else if (symbolIndex < 2*20 + 52) // DCH(1)
     {
@@ -243,7 +386,7 @@ void DSDYSF::processVD2(int symbolIndex, unsigned char dibit)
     }
     else if (symbolIndex < 2*20 + 2*52) // VCH(1) and VeCH(1)
     {
-
+        processVD2Voice(symbolIndex - (2*20 + 52), dibit);
     }
     else if (symbolIndex < 3*20 + 2*52) // DCH(2)
     {
@@ -251,7 +394,7 @@ void DSDYSF::processVD2(int symbolIndex, unsigned char dibit)
     }
     else if (symbolIndex < 3*20 + 3*52) // VCH(2) and VeCH(2)
     {
-
+        processVD2Voice(symbolIndex - (3*20 + 2*52), dibit);
     }
     else if (symbolIndex < 4*20 + 3*52) // DCH(3)
     {
@@ -259,7 +402,7 @@ void DSDYSF::processVD2(int symbolIndex, unsigned char dibit)
     }
     else if (symbolIndex < 4*20 + 4*52) // VCH(3) and VeCH(3)
     {
-
+        processVD2Voice(symbolIndex - (4*20 + 3*52), dibit);
     }
     else if (symbolIndex < 5*20 + 4*52) // DCH(4)
     {
@@ -319,8 +462,56 @@ void DSDYSF::processVD2(int symbolIndex, unsigned char dibit)
     }
     else if (symbolIndex < 5*20 + 5*52) // DCH(4)
     {
-
+        processVD2Voice(symbolIndex - (5*20 + 4*52), dibit);
     }
+}
+
+void DSDYSF::processVD2Voice(int mbeIndex, unsigned char dibit)
+{
+// TODO
+}
+
+void DSDYSF::processMBE(int mbeIndex, unsigned char dibit)
+{
+	if (mbeIndex == 0) // init
+	{
+	    w = rW;
+	    x = rX;
+	    y = rY;
+	    z = rZ;
+
+        memset((void *) m_dsdDecoder->m_mbeDVFrame1, 0, 9); // initialize DVSI frame
+	}
+
+	m_dsdDecoder->ambe_fr[*w][*x] = (1 & (dibit >> 1)); // bit 1
+	m_dsdDecoder->ambe_fr[*y][*z] = (1 & dibit);        // bit 0
+	w++;
+	x++;
+	y++;
+	z++;
+
+	storeSymbolDV(m_dsdDecoder->m_mbeDVFrame1, mbeIndex, dibit); // store dibit for DVSI hardware decoder
+
+	if (mbeIndex == 36-1) // finalize
+	{
+        m_dsdDecoder->m_mbeDecoder1.processFrame(0, m_dsdDecoder->ambe_fr, 0);
+        m_dsdDecoder->m_mbeDVReady1 = true; // Indicate that a DVSI frame is available
+	}
+}
+
+void DSDYSF::storeSymbolDV(unsigned char *mbeFrame, int dibitindex, unsigned char dibit, bool invertDibit)
+{
+    if (m_dsdDecoder->m_mbelibEnable)
+    {
+        return;
+    }
+
+    if (invertDibit)
+    {
+        dibit = DSDcc::DSDSymbol::invert_dibit(dibit);
+    }
+
+    mbeFrame[dibitindex/4] |= (dibit << (6 - 2*(dibitindex % 4)));
 }
 
 bool DSDYSF::checkCRC16(unsigned char *bits,  unsigned long nbBytes, unsigned char *xoredBytes)

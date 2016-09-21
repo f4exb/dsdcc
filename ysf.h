@@ -173,12 +173,25 @@ public:
 
     const FICH& getFICH() const { return m_fich; }
     FICHError getFICHError() const { return m_fichError; }
+    const char *getDest() const { return m_dest; }
+    const char *getSrc() const { return m_src; }
+    const char *getDownlink() const { return m_downlink; }
+    const char *getUplink() const { return m_uplink; }
+    const char *getRem4() const { return m_rem4; }
 
 private:
 
     void processFICH(int symbolIndex, unsigned char dibit);
     void processHeader(int symbolIndex, unsigned char dibit);
+    void processVD1(int symbolIndex, unsigned char dibit);
     void processVD2(int symbolIndex, unsigned char dibit);
+    void processVD2Voice(int mbeIndex, unsigned char dibit);
+    void processCSD1(unsigned char *dchBytes);
+    void processCSD2(unsigned char *dchBytes);
+    void processCSD3(unsigned char *dchBytes);
+    void processMBE(int mbeIndex, unsigned char dibit);
+    void storeSymbolDV(unsigned char *mbeFrame, int dibitindex, unsigned char dibit, bool invertDibit = false);
+
     bool checkCRC16(unsigned char *bits, unsigned long nbBytes, unsigned char *xoredBytes = 0);
 
     DSDDecoder *m_dsdDecoder;
@@ -210,6 +223,13 @@ private:
     char m_rem2[5+1];      //!< Callsign supplementary information #2 from CSD3
     char m_rem3[5+1];      //!< Callsign supplementary information #3 from CSD3
     char m_rem4[5+1];      //!< Callsign supplementary information #4 from CSD3
+
+    // AMBE interleave
+    const int *w, *x, *y, *z;
+    static const int rW[36];
+    static const int rX[36];
+    static const int rY[36];
+    static const int rZ[36];
 
     static const int m_fichInterleave[100]; //!< FICH symbols interleaving matrix
     static const int m_dchInterleave[180];  //!< DCH symbols interleaving matrix
