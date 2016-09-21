@@ -178,6 +178,7 @@ private:
 
     void processFICH(int symbolIndex, unsigned char dibit);
     void processHeader(int symbolIndex, unsigned char dibit);
+    void processVD2(int symbolIndex, unsigned char dibit);
     bool checkCRC16(unsigned char *bits, unsigned long nbBytes, unsigned char *xoredBytes = 0);
 
     DSDDecoder *m_dsdDecoder;

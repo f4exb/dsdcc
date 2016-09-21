@@ -75,6 +75,18 @@ void DSDYSF::process() // just pass the frames for now
         case FITerminator:
             processHeader(m_symbolIndex - 100, dibit);
             break;
+        case FICommunication:
+            {
+                switch (m_fich.getDataType())
+                {
+                case DTVoiceData2:
+                    processVD2(m_symbolIndex - 100, dibit);
+                    break;
+                default:
+                    break;
+                }
+            }
+            break;
         default:
             break;
         }
@@ -212,6 +224,102 @@ void DSDYSF::processHeader(int symbolIndex, unsigned char dibit)
         {
             std::cerr << "DSDYSF::processHeader: DCH2 CRC KO" << std::endl;
         }
+    }
+}
+
+void DSDYSF::processVD2(int symbolIndex, unsigned char dibit)
+{
+    if (symbolIndex < 20) // DCH(0) - reuse FICH buffer
+    {
+        m_fichRaw[m_fichInterleave[symbolIndex]] = dibit;
+    }
+    else if (symbolIndex < 20 + 52) // VCH(0) and VeCH(0)
+    {
+
+    }
+    else if (symbolIndex < 2*20 + 52) // DCH(1)
+    {
+        m_fichRaw[m_fichInterleave[symbolIndex - 52]] = dibit;
+    }
+    else if (symbolIndex < 2*20 + 2*52) // VCH(1) and VeCH(1)
+    {
+
+    }
+    else if (symbolIndex < 3*20 + 2*52) // DCH(2)
+    {
+        m_fichRaw[m_fichInterleave[symbolIndex - 2*52]] = dibit;
+    }
+    else if (symbolIndex < 3*20 + 3*52) // VCH(2) and VeCH(2)
+    {
+
+    }
+    else if (symbolIndex < 4*20 + 3*52) // DCH(3)
+    {
+        m_fichRaw[m_fichInterleave[symbolIndex - 3*52]] = dibit;
+    }
+    else if (symbolIndex < 4*20 + 4*52) // VCH(3) and VeCH(3)
+    {
+
+    }
+    else if (symbolIndex < 5*20 + 4*52) // DCH(4)
+    {
+        m_fichRaw[m_fichInterleave[symbolIndex - 4*52]] = dibit;
+
+        if (symbolIndex == (5*20 + 4*52) - 1) // Final DCH
+        {
+            unsigned char bytes[12];
+
+            m_viterbiFICH.decodeFromSymbols(m_fichGolay, m_fichRaw, 100, 0); // reuse FICH
+
+            if (checkCRC16(m_fichGolay, 10, bytes))
+            {
+                switch (m_fich.getFrameNumber())
+                {
+                case 0:
+                    memcpy(m_dest, bytes, 10);
+                    m_dest[10] = '\0';
+                    std::cerr << "DSDYSF::processVD2: Dest: " << m_dest << std::endl;
+                    break;
+                case 1:
+                    memcpy(m_src, bytes, 10);
+                    m_src[10] = '\0';
+                    std::cerr << "DSDYSF::processVD2:  Src: " << m_dest << std::endl;
+                    break;
+                case 2:
+                    memcpy(m_downlink, bytes, 10);
+                    m_downlink[10] = '\0';
+                    std::cerr << "DSDYSF::processVD2:  D/L: " << m_downlink << std::endl;
+                    break;
+                case 3:
+                    memcpy(m_uplink, bytes, 10);
+                    m_uplink[10] = '\0';
+                    std::cerr << "DSDYSF::processVD2:  U/L: " << m_uplink << std::endl;
+                    break;
+                case 4:
+                    memcpy(m_rem1, bytes, 5);
+                    m_rem1[6] = '\0';
+                    memcpy(m_rem2, &bytes[5], 5);
+                    m_rem2[6] = '\0';
+                    std::cerr << "DSDYSF::processVD2: Rem1: " << m_rem1 << std::endl;
+                    std::cerr << "DSDYSF::processVD2: Rem2: " << m_rem2 << std::endl;
+                    break;
+                case 5:
+                    memcpy(m_rem3, bytes, 5);
+                    m_rem3[6] = '\0';
+                    memcpy(m_rem4, &bytes[5], 5);
+                    m_rem4[6] = '\0';
+                    std::cerr << "DSDYSF::processVD2: Rem3: " << m_rem3 << std::endl;
+                    std::cerr << "DSDYSF::processVD2: Rem4: " << m_rem4 << std::endl;
+                    break;
+                default:
+                    break;
+                }
+            }
+        }
+    }
+    else if (symbolIndex < 5*20 + 5*52) // DCH(4)
+    {
+
     }
 }
 
