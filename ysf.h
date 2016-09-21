@@ -178,6 +178,9 @@ public:
     const char *getDownlink() const { return m_downlink; }
     const char *getUplink() const { return m_uplink; }
     const char *getRem4() const { return m_rem4; }
+    bool radioIdMode() const { return m_fich.getCallMode() == CMRadioID; }
+    const char *getDestId() const { return m_destId; }
+    const char *getSrcId() const { return m_srcId; }
 
 private:
 
@@ -188,7 +191,8 @@ private:
     void processVD2Voice(int mbeIndex, unsigned char dibit);
     void processCSD1(unsigned char *dchBytes);
     void processCSD2(unsigned char *dchBytes);
-    void processCSD3(unsigned char *dchBytes);
+    void processCSD3_1(unsigned char *dchBytes);
+    void processCSD3_2(unsigned char *dchBytes);
     void processMBE(int mbeIndex, unsigned char dibit);
     void storeSymbolDV(unsigned char *mbeFrame, int dibitindex, unsigned char dibit, bool invertDibit = false);
 
@@ -223,6 +227,8 @@ private:
     char m_rem2[5+1];      //!< Callsign supplementary information #2 from CSD3
     char m_rem3[5+1];      //!< Callsign supplementary information #3 from CSD3
     char m_rem4[5+1];      //!< Callsign supplementary information #4 from CSD3
+    char m_destId[5+1];    //!< Destination radio ID
+    char m_srcId[5+1];     //!< Source radio ID
 
     // AMBE interleave
     const int *w, *x, *y, *z;

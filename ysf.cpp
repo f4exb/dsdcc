@@ -264,7 +264,10 @@ void DSDYSF::processCSD1(unsigned char *dchBytes)
 {
     if (m_fich.getCallMode() == CMRadioID)
     {
-//TODO
+        memcpy(m_destId, dchBytes, 5);
+        m_destId[5] = '\0';
+        memcpy(m_srcId, &dchBytes[5], 5);
+        m_destId[5] = '\0';
     }
     else
     {
@@ -272,7 +275,7 @@ void DSDYSF::processCSD1(unsigned char *dchBytes)
         m_dest[10] = '\0';
         memcpy(m_src, &dchBytes[10], 10);
         m_src[10] = '\0';
-        std::cerr << "DSDYSF::processCSD1: Dest: " << m_dest << " Src: " << m_src << std::endl;
+//        std::cerr << "DSDYSF::processCSD1: Dest: " << m_dest << " Src: " << m_src << std::endl;
     }
 }
 
@@ -282,23 +285,27 @@ void DSDYSF::processCSD2(unsigned char *dchBytes)
     m_downlink[10] = '\0';
     memcpy(m_uplink, &dchBytes[10], 10);
     m_uplink[10] = '\0';
-    std::cerr << "DSDYSF::processCSD2:  D/L: " << m_downlink << " U/L: " << m_uplink << std::endl;
+//    std::cerr << "DSDYSF::processCSD2:  D/L: " << m_downlink << " U/L: " << m_uplink << std::endl;
 }
 
-void DSDYSF::processCSD3(unsigned char *dchBytes)
+void DSDYSF::processCSD3_1(unsigned char *dchBytes)
 {
     memcpy(m_rem1, dchBytes, 5);
     m_rem1[6] = '\0';
     memcpy(m_rem2, &dchBytes[5], 5);
     m_rem2[6] = '\0';
-    memcpy(m_rem3, &dchBytes[10], 5);
+    std::cerr << "DSDYSF::processCSD3_1: Rem1: " << m_rem1 << std::endl;
+    std::cerr << "DSDYSF::processCSD3_1: Rem2: " << m_rem2 << std::endl;
+}
+
+void DSDYSF::processCSD3_2(unsigned char *dchBytes)
+{
+    memcpy(m_rem3, dchBytes, 5);
     m_rem3[6] = '\0';
-    memcpy(m_rem3, &dchBytes[15], 5);
+    memcpy(m_rem4, &dchBytes[5], 5);
     m_rem4[6] = '\0';
-    std::cerr << "DSDYSF::processCSD3: Rem1: " << m_rem1 << std::endl;
-    std::cerr << "DSDYSF::processCSD3: Rem2: " << m_rem2 << std::endl;
-    std::cerr << "DSDYSF::processCSD3: Rem3: " << m_rem3 << std::endl;
-    std::cerr << "DSDYSF::processCSD3: Rem4: " << m_rem4 << std::endl;
+    std::cerr << "DSDYSF::processCSD3_2: Rem3: " << m_rem3 << std::endl;
+    std::cerr << "DSDYSF::processCSD3_2: Rem4: " << m_rem4 << std::endl;
 }
 
 void DSDYSF::processVD1(int symbolIndex, unsigned char dibit)
@@ -356,7 +363,8 @@ void DSDYSF::processVD1(int symbolIndex, unsigned char dibit)
                     processCSD2(bytes);
                     break;
                 case 2: // CSD3
-                    processCSD3(bytes);
+                    processCSD3_1(bytes);
+                    processCSD3_2(&bytes[10]);
                     break;
                 default:
                     break;
@@ -421,38 +429,28 @@ void DSDYSF::processVD2(int symbolIndex, unsigned char dibit)
                 case 0:
                     memcpy(m_dest, bytes, 10);
                     m_dest[10] = '\0';
-                    std::cerr << "DSDYSF::processVD2: Dest: " << m_dest << std::endl;
+//                    std::cerr << "DSDYSF::processVD2: Dest: " << m_dest << std::endl;
                     break;
                 case 1:
                     memcpy(m_src, bytes, 10);
                     m_src[10] = '\0';
-                    std::cerr << "DSDYSF::processVD2:  Src: " << m_dest << std::endl;
+//                    std::cerr << "DSDYSF::processVD2:  Src: " << m_src << std::endl;
                     break;
                 case 2:
                     memcpy(m_downlink, bytes, 10);
                     m_downlink[10] = '\0';
-                    std::cerr << "DSDYSF::processVD2:  D/L: " << m_downlink << std::endl;
+//                    std::cerr << "DSDYSF::processVD2:  D/L: " << m_downlink << std::endl;
                     break;
                 case 3:
                     memcpy(m_uplink, bytes, 10);
                     m_uplink[10] = '\0';
-                    std::cerr << "DSDYSF::processVD2:  U/L: " << m_uplink << std::endl;
+//                    std::cerr << "DSDYSF::processVD2:  U/L: " << m_uplink << std::endl;
                     break;
                 case 4:
-                    memcpy(m_rem1, bytes, 5);
-                    m_rem1[6] = '\0';
-                    memcpy(m_rem2, &bytes[5], 5);
-                    m_rem2[6] = '\0';
-                    std::cerr << "DSDYSF::processVD2: Rem1: " << m_rem1 << std::endl;
-                    std::cerr << "DSDYSF::processVD2: Rem2: " << m_rem2 << std::endl;
+                    processCSD3_1(bytes);
                     break;
                 case 5:
-                    memcpy(m_rem3, bytes, 5);
-                    m_rem3[6] = '\0';
-                    memcpy(m_rem4, &bytes[5], 5);
-                    m_rem4[6] = '\0';
-                    std::cerr << "DSDYSF::processVD2: Rem3: " << m_rem3 << std::endl;
-                    std::cerr << "DSDYSF::processVD2: Rem4: " << m_rem4 << std::endl;
+                    processCSD3_2(bytes);
                     break;
                 default:
                     break;
