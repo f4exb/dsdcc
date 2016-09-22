@@ -240,9 +240,10 @@ private:
     static const int rY[36];
     static const int rZ[36];
 
-    static const int m_fichInterleave[100]; //!< FICH symbols interleaving matrix
-    static const int m_dchInterleave[180];  //!< DCH symbols interleaving matrix
-    static const int m_vd2Interleave[104];  //!< V/D type 2 interleaving matrix
+    static const int m_fichInterleave[100];   //!< FICH symbols interleaving matrix
+    static const int m_dchInterleave[180];    //!< DCH symbols interleaving matrix
+    static const int m_vd2Interleave[104];    //!< V/D type 2 interleaving matrix
+    static const int m_vd2DVSIInterleave[49]; //!< V/D type 2 interleaving matrix for DVSI AMBE3000 chip use
 };
 
 } // namespace DSDcc

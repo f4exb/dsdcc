@@ -69,6 +69,15 @@ const int DSDYSF::m_vd2Interleave[104] = {
         25,  51,  77, 103
 };
 
+/**
+ * https://github.com/HB9UF/gr-ysf/issues/12
+ */
+const int DSDYSF::m_vd2DVSIInterleave[49] = {
+		0, 3, 6,  9, 12, 15, 18, 21, 24, 27, 30, 33, 36, 39, 41, 43, 45, 47,
+		1, 4, 7, 10, 13, 16, 19, 22, 25, 28, 31, 34, 37, 40, 42, 44, 46, 48,
+		2, 5, 8, 11, 14, 17, 20, 23, 26, 29, 32, 35, 38
+};
+
 /*
  * DMR AMBE interleave schedule
  */
@@ -154,9 +163,11 @@ void DSDYSF::process() // just pass the frames for now
                 switch (m_fich.getDataType())
                 {
                 case DTVoiceData1:
+                    m_dsdDecoder->m_mbeRate = DSDDecoder::DSDMBERate3600x2450;
                     processVD1(m_symbolIndex - 100, dibit);
                     break;
                 case DTVoiceData2:
+                    m_dsdDecoder->m_mbeRate = DSDDecoder::DSDMBERate2450;
                     processVD2(m_symbolIndex - 100, dibit);
                     break;
                 default:
@@ -516,6 +527,8 @@ void DSDYSF::processVD2Voice(int mbeIndex, unsigned char dibit)
     if (mbeIndex == 52 - 1) // final
     {
         int nbOnes;
+        unsigned int mbeIndex;
+        unsigned int bit;
 
         if (m_vd2BitsRaw[103] != 0) {
             std::cerr << "DSDYSF::processVD2Voice: error bit 103" << std::endl;
@@ -528,19 +541,18 @@ void DSDYSF::processVD2Voice(int mbeIndex, unsigned char dibit)
                 if (i%3 == 2)
                 {
                     nbOnes = m_vd2BitsRaw[i-2] + m_vd2BitsRaw[i-1] + m_vd2BitsRaw[i];
-                    m_vd2MBEBits[i/3] = nbOnes > 1 ? 1 : 0;
+                    bit = nbOnes > 1 ? 1 : 0;
+                    m_vd2MBEBits[i/3] = bit;
+                    mbeIndex = m_vd2DVSIInterleave[i/3];
+                    m_dsdDecoder->m_mbeDVFrame1[mbeIndex/8] += bit<<(7-(mbeIndex%8));
                 }
             }
             else if (i < 103)
             {
                 m_vd2MBEBits[i-81+27] = m_vd2BitsRaw[i];
+                mbeIndex = m_vd2DVSIInterleave[i-81+27];
+                m_dsdDecoder->m_mbeDVFrame1[mbeIndex/8] += (m_vd2BitsRaw[i])<<(7-(mbeIndex%8));
             }
-        }
-
-
-        for (int i = 0; i < 49; i++)
-        {
-            m_dsdDecoder->m_mbeDVFrame1[i/8] += m_vd2MBEBits[i]<<(7-(i%8));
         }
 
         m_dsdDecoder->m_mbeDecoder1.processData(0, (char *) m_vd2MBEBits);

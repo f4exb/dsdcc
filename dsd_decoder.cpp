@@ -826,7 +826,7 @@ int DSDDecoder::getFrameSync()
                 }
 
                 m_lastSyncType = DSDSyncYSF;
-                m_mbeRate = DSDMBERate3600x2450;
+                m_mbeRate = DSDMBERateNone; // choice is done inside the YSF decoder between the 3 possible modes
                 return (int) DSDSyncYSF;
             }
         }

@@ -141,9 +141,12 @@ public:
     {
         DSDMBERateNone,
         DSDMBERate3600x2400, //!< D-Star
-        DSDMBERate3600x2450, //!< DMR, dPMR and the likes
+        DSDMBERate3600x2450, //!< DMR, dPMR, YSF V/D type 1
         DSDMBERate7200x4400,
-        DSDMBERate7100x4400
+        DSDMBERate7100x4400,
+        DSDMBERate2400,
+        DSDMBERate2450,      //!< YSF V/D type 2 (does not use FEC in AMBE codec)
+        DSDMBERate4400
     } DSDMBERate;
 
     DSDDecoder();
