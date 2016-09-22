@@ -36,6 +36,7 @@ public:
 
     void initMbeParms();
     void processFrame(char imbe_fr[8][23], char ambe_fr[4][24], char imbe7100_fr[7][24]);
+    void processData(char imbe_data[88], char ambe_data[49]);
 
     short *getAudio(int& nbSamples)
     {

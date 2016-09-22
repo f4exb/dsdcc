@@ -213,6 +213,9 @@ private:
     unsigned char m_dch2Raw[180];     //!< DCH2 dibits after de-interleave
     unsigned char m_dch2Bits[180];    //!< DCH2 bits after de-convolution
 
+    unsigned char m_vd2BitsRaw[104];  //!< V/D type 2 VCH+VeCH after de-interleave and de-whitening
+    unsigned char m_vd2MBEBits[72];
+
     Viterbi5 m_viterbiFICH;
     Golay_24_12 m_golay_24_12;
     CRC m_crc;
@@ -239,6 +242,7 @@ private:
 
     static const int m_fichInterleave[100]; //!< FICH symbols interleaving matrix
     static const int m_dchInterleave[180];  //!< DCH symbols interleaving matrix
+    static const int m_vd2Interleave[104];  //!< V/D type 2 interleaving matrix
 };
 
 } // namespace DSDcc

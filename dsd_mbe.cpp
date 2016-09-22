@@ -116,6 +116,44 @@ void DSDMBEDecoder::processFrame(char imbe_fr[8][23], char ambe_fr[4][24], char 
 #endif
 }
 
+void DSDMBEDecoder::processData(char imbe_data[88], char ambe_data[49])
+{
+    if (!m_dsdDecoder->m_mbelibEnable) {
+        return;
+    }
+#ifdef DSD_USE_MBELIB
+    if (m_dsdDecoder->m_mbeRate == DSDDecoder::DSDMBERate7200x4400)
+    {
+        mbe_processImbe4400Dataf(m_audio_out_temp_buf, &m_errs,
+                &m_errs2, m_err_str, imbe_data, m_cur_mp,
+                m_prev_mp, m_prev_mp_enhanced, m_dsdDecoder->m_opts.uvquality);
+    }
+    else if (m_dsdDecoder->m_mbeRate == DSDDecoder::DSDMBERate3600x2400)
+    {
+        mbe_processAmbe2400Dataf(m_audio_out_temp_buf, &m_errs,
+                &m_errs2, m_err_str, ambe_data, m_cur_mp,
+                m_prev_mp, m_prev_mp_enhanced, m_dsdDecoder->m_opts.uvquality);
+    }
+    else if (m_dsdDecoder->m_mbeRate == DSDDecoder::DSDMBERate3600x2450)
+    {
+        mbe_processAmbe2450Dataf(m_audio_out_temp_buf, &m_errs,
+                &m_errs2, m_err_str, ambe_data, m_cur_mp,
+                m_prev_mp, m_prev_mp_enhanced, m_dsdDecoder->m_opts.uvquality);
+    }
+    else
+    {
+        return;
+    }
+
+    if (m_dsdDecoder->m_opts.errorbars == 1)
+    {
+        m_dsdDecoder->getLogger().log("%s", m_err_str);
+    }
+
+    processAudio();
+#endif
+}
+
 void DSDMBEDecoder::processAudio()
 {
     int i, n;

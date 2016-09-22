@@ -40,6 +40,35 @@ const int DSDYSF::m_dchInterleave[180] = {
         8,  17,  26,  35,  44,  53,  62,  71,  80,  89,  98, 107, 116, 125, 134, 143, 152, 161, 170, 179
 };
 
+const int DSDYSF::m_vd2Interleave[104] = {
+         0,  26,  52,  78,
+         1,  27,  53,  79,
+         2,  28,  54,  80,
+         3,  29,  55,  81,
+         4,  30,  56,  82,
+         5,  31,  57,  83,
+         6,  32,  58,  84,
+         7,  33,  59,  85,
+         8,  34,  60,  86,
+         9,  35,  61,  87,
+        10,  36,  62,  88,
+        11,  37,  63,  89,
+        12,  38,  64,  90,
+        13,  39,  65,  91,
+        14,  40,  66,  92,
+        15,  41,  67,  93,
+        16,  42,  68,  94,
+        17,  43,  69,  95,
+        18,  44,  70,  96,
+        19,  45,  71,  97,
+        20,  46,  72,  98,
+        21,  47,  73,  99,
+        22,  48,  74, 100,
+        23,  49,  75, 101,
+        24,  50,  76, 102,
+        25,  51,  77, 103
+};
+
 /*
  * DMR AMBE interleave schedule
  */
@@ -294,8 +323,8 @@ void DSDYSF::processCSD3_1(unsigned char *dchBytes)
     m_rem1[6] = '\0';
     memcpy(m_rem2, &dchBytes[5], 5);
     m_rem2[6] = '\0';
-    std::cerr << "DSDYSF::processCSD3_1: Rem1: " << m_rem1 << std::endl;
-    std::cerr << "DSDYSF::processCSD3_1: Rem2: " << m_rem2 << std::endl;
+//    std::cerr << "DSDYSF::processCSD3_1: Rem1: " << m_rem1 << std::endl;
+//    std::cerr << "DSDYSF::processCSD3_1: Rem2: " << m_rem2 << std::endl;
 }
 
 void DSDYSF::processCSD3_2(unsigned char *dchBytes)
@@ -304,8 +333,8 @@ void DSDYSF::processCSD3_2(unsigned char *dchBytes)
     m_rem3[6] = '\0';
     memcpy(m_rem4, &dchBytes[5], 5);
     m_rem4[6] = '\0';
-    std::cerr << "DSDYSF::processCSD3_2: Rem3: " << m_rem3 << std::endl;
-    std::cerr << "DSDYSF::processCSD3_2: Rem4: " << m_rem4 << std::endl;
+//    std::cerr << "DSDYSF::processCSD3_2: Rem3: " << m_rem3 << std::endl;
+//    std::cerr << "DSDYSF::processCSD3_2: Rem4: " << m_rem4 << std::endl;
 }
 
 void DSDYSF::processVD1(int symbolIndex, unsigned char dibit)
@@ -466,7 +495,57 @@ void DSDYSF::processVD2(int symbolIndex, unsigned char dibit)
 
 void DSDYSF::processVD2Voice(int mbeIndex, unsigned char dibit)
 {
-// TODO
+    if (mbeIndex == 0) // init
+    {
+        w = rW;
+        x = rX;
+        y = rY;
+        z = rZ;
+
+        memset((void *) m_dsdDecoder->m_mbeDVFrame1, 0, 9); // initialize DVSI frame
+        memset(m_vd2BitsRaw, 0, 104);
+        memset(m_vd2MBEBits, 0, 72);
+    }
+
+    // de-interleave and de-whiten in one shot
+    unsigned int msbI = m_vd2Interleave[2*mbeIndex];
+    unsigned int lsbI = m_vd2Interleave[2*mbeIndex+1];
+    m_vd2BitsRaw[msbI] = ((dibit>>1) & 1) ^ m_pn.getBit(msbI);
+    m_vd2BitsRaw[lsbI] = (dibit & 1) ^ m_pn.getBit(lsbI);
+
+    if (mbeIndex == 52 - 1) // final
+    {
+        int nbOnes;
+
+        if (m_vd2BitsRaw[103] != 0) {
+            std::cerr << "DSDYSF::processVD2Voice: error bit 103" << std::endl;
+        }
+
+        for (int i = 0; i < 103; i++)
+        {
+            if (i < 81)
+            {
+                if (i%3 == 2)
+                {
+                    nbOnes = m_vd2BitsRaw[i-2] + m_vd2BitsRaw[i-1] + m_vd2BitsRaw[i];
+                    m_vd2MBEBits[i/3] = nbOnes > 1 ? 1 : 0;
+                }
+            }
+            else if (i < 103)
+            {
+                m_vd2MBEBits[i-81+27] = m_vd2BitsRaw[i];
+            }
+        }
+
+
+        for (int i = 0; i < 49; i++)
+        {
+            m_dsdDecoder->m_mbeDVFrame1[i/8] += m_vd2MBEBits[i]<<(7-(i%8));
+        }
+
+        m_dsdDecoder->m_mbeDecoder1.processData(0, (char *) m_vd2MBEBits);
+        m_dsdDecoder->m_mbeDVReady1 = true; // Indicate that a DVSI frame is available
+    }
 }
 
 void DSDYSF::processMBE(int mbeIndex, unsigned char dibit)
