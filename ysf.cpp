@@ -79,9 +79,10 @@ const int DSDYSF::m_vd2DVSIInterleave[49] = {
 };
 
 /*
- * DMR AMBE interleave schedule
+ * AMBE 3600x2450 interleave schedule
  */
 // bit 1
+// frame index
 const int DSDYSF::rW[36] = {
   0, 1, 0, 1, 0, 1,
   0, 1, 0, 1, 0, 1,
@@ -91,6 +92,7 @@ const int DSDYSF::rW[36] = {
   0, 2, 0, 2, 0, 2
 };
 
+// bit index
 const int DSDYSF::rX[36] = {
   23, 10, 22, 9, 21, 8,
   20, 7, 19, 6, 18, 5,
@@ -101,6 +103,7 @@ const int DSDYSF::rX[36] = {
 };
 
 // bit 0
+// frame index
 const int DSDYSF::rY[36] = {
   0, 2, 0, 2, 0, 2,
   0, 2, 0, 3, 0, 3,
@@ -110,6 +113,7 @@ const int DSDYSF::rY[36] = {
   1, 3, 1, 3, 1, 3
 };
 
+// bit index
 const int DSDYSF::rZ[36] = {
   5, 3, 4, 2, 3, 1,
   2, 0, 1, 13, 0, 12,
@@ -117,6 +121,92 @@ const int DSDYSF::rZ[36] = {
   19, 8, 18, 7, 17, 6,
   16, 5, 15, 4, 14, 3,
   13, 2, 12, 1, 11, 0
+};
+
+/*
+ * IMBE 7200x4400 interleave schedule
+ */
+//const uint8_t permutation[144] = {
+//      0,   7,  12,  19,  24,  31,  36,  43,  48,  55,  60,  67, // [  0 -  11] yellow message
+//     72,  79,  84,  91,  96, 103, 108, 115, 120, 127, 132,      // [ 12 -  22] yellow FEC
+//    139,   1,   6,  13,  18,  25,  30,  37,  42,  49,  54,  61, // [ 23 -  34] orange message
+//     66,  73,  78,  85,  90,  97, 102, 109, 114, 121, 126,      // [ 35 -  45] orange FEC
+//    133, 138,   2,   9,  14,  21,  26,  33,  38,  45,  50,  57, // [ 46 -  57] red message
+//     62,  69,  74,  81,  86,  93,  98, 105, 110, 117, 122,      // [ 58 -  68] red FEC
+//    129, 134, 141,   3,   8,  15,  20,  27,  32,  39,  44,  51, // [ 69 -  80] pink message
+//     56,  63,  68,  75,  80,  87,  92,  99, 104, 111, 116,      // [ 81 -  91] pink FEC
+//    123, 128, 135, 140,   4,  11,  16,  23,  28,  35,  40,      // [ 92 - 102] dark blue message
+//     47,  52,  59,  64,                                         // [103 - 106] dark blue FEC
+//     71,  76,  83,  88,  95, 100, 107, 112, 119, 124, 131,      // [107 - 117] light blue message
+//    136, 143,   5,  10,                                         // [118 - 121] light blue FEC
+//     17,  22,  29,  34,  41,  46,  53,  58,  65,  70,  77,      // [122 - 132] green message
+//     82,  89,  94, 101,                                         // [133 - 136] green FEC
+//    106, 113, 118, 125, 130, 137, 142,                          // [137 - 143] unprotected
+//};
+// bit 1
+// frame index
+const int DSDYSF::sW[72] = {
+		0, 0, 1, 1, 2, 2,
+		3, 3, 4, 5, 5, 6,
+		0, 0, 1, 1, 2, 2,
+		3, 3, 4, 5, 5, 6,
+		0, 0, 1, 1, 2, 2,
+		3, 3, 4, 5, 6, 6,
+		0, 0, 1, 1, 2, 2,
+		3, 3, 4, 5, 6, 6,
+		0, 0, 1, 1, 2, 2,
+		3, 3, 4, 5, 6, 6,
+		0, 0, 1, 1, 2, 2,
+		3, 3, 4, 5, 6, 7
+};
+
+// bit index
+const int DSDYSF::sX[72] = {
+		0, 12,  1, 13,  2, 14,
+		3, 15,  4,  1, 13, 10,
+		1, 13,  2, 14,  3, 15,
+		4, 16,  5,  2, 14, 11,
+		2, 14,  3, 15,  4, 16,
+		5, 17,  6,  3,  0, 12,
+		3, 15,  4, 16,  5, 17,
+		6, 18,  7,  4,  1, 13,
+		4, 16,  5, 17,  6, 18,
+		7, 19,  8,  5,  2, 14,
+		5, 17,  6, 18,  7, 19,
+		8, 20,  9,  6,  3,  0
+};
+
+// bit 0
+// frame index
+const int DSDYSF::sY[72] = {
+		0, 0, 1, 1, 2, 2,
+		3, 3, 4, 5, 6, 7,
+		0, 0, 1, 1, 2, 2,
+		3, 3, 4, 5, 6, 7,
+		0, 0, 1, 1, 2, 3,
+		3, 4, 4, 5, 6, 7,
+		0, 0, 1, 1, 2, 2,
+		3, 4, 4, 5, 6, 7,
+		0, 1, 1, 2, 2, 3,
+		3, 4, 5, 5, 6, 7,
+		0, 0, 1, 2, 2, 3,
+		3, 4, 4, 5, 6, 7
+};
+
+// bit index
+const int DSDYSF::sZ[72] = {
+		 7, 19,  8, 20,  9, 21,
+		10, 22, 11,  8,  5,  2,
+		 6, 18,  7, 19,  8, 20,
+		 9, 21, 10,  7,  4,  1,
+		 9, 21, 10, 22, 11,  0,
+		12,  1, 13, 10,  7,  4,
+		 8, 20,  9, 21, 10, 22,
+		11,  0, 12,  9,  6,  3,
+		11,  0, 12,  1, 13,  2,
+		14,  3,  0, 12,  9,  6,
+		10, 22, 11,  0, 12,  1,
+		13,  2, 14, 11,  8,  5
 };
 
 DSDYSF::DSDYSF(DSDDecoder *dsdDecoder) :
@@ -356,7 +446,7 @@ void DSDYSF::processVD1(int symbolIndex, unsigned char dibit)
     }
     else if (symbolIndex < 2*36)  // VCH(0)
     {
-        processMBE(symbolIndex - 36, dibit);
+        processAMBE(symbolIndex - 36, dibit);
     }
     else if (symbolIndex < 3*36)  // DCH(1)
     {
@@ -364,7 +454,7 @@ void DSDYSF::processVD1(int symbolIndex, unsigned char dibit)
     }
     else if (symbolIndex < 4*36)  // VCH(1)
     {
-        processMBE(symbolIndex - 3*36, dibit);
+        processAMBE(symbolIndex - 3*36, dibit);
     }
     else if (symbolIndex < 5*36)  // DCH(2)
     {
@@ -372,7 +462,7 @@ void DSDYSF::processVD1(int symbolIndex, unsigned char dibit)
     }
     else if (symbolIndex < 6*36)  // VCH(2)
     {
-        processMBE(symbolIndex - 5*36, dibit);
+        processAMBE(symbolIndex - 5*36, dibit);
     }
     else if (symbolIndex < 7*36)  // DCH(3)
     {
@@ -380,7 +470,7 @@ void DSDYSF::processVD1(int symbolIndex, unsigned char dibit)
     }
     else if (symbolIndex < 8*36)  // VCH(3)
     {
-        processMBE(symbolIndex - 7*36, dibit);
+        processAMBE(symbolIndex - 7*36, dibit);
     }
     else if (symbolIndex < 9*36)  // DCH(4)
     {
@@ -414,7 +504,7 @@ void DSDYSF::processVD1(int symbolIndex, unsigned char dibit)
     }
     else if (symbolIndex < 10*36) // VCH(4)
     {
-        processMBE(symbolIndex - 9*36, dibit);
+        processAMBE(symbolIndex - 9*36, dibit);
     }
 }
 
@@ -560,7 +650,7 @@ void DSDYSF::processVD2Voice(int mbeIndex, unsigned char dibit)
     }
 }
 
-void DSDYSF::processMBE(int mbeIndex, unsigned char dibit)
+void DSDYSF::processAMBE(int mbeIndex, unsigned char dibit)
 {
 	if (mbeIndex == 0) // init
 	{
@@ -584,6 +674,34 @@ void DSDYSF::processMBE(int mbeIndex, unsigned char dibit)
 	if (mbeIndex == 36-1) // finalize
 	{
         m_dsdDecoder->m_mbeDecoder1.processFrame(0, m_dsdDecoder->ambe_fr, 0);
+        m_dsdDecoder->m_mbeDVReady1 = true; // Indicate that a DVSI frame is available
+	}
+}
+
+void DSDYSF::processIMBE(int mbeIndex, unsigned char dibit)
+{
+	if (mbeIndex == 0) // init
+	{
+	    w = sW;
+	    x = sX;
+	    y = sY;
+	    z = sZ;
+
+        memset((void *) m_dsdDecoder->m_mbeDVFrame1, 0, 18); // initialize DVSI frame
+	}
+
+	m_dsdDecoder->imbe_fr[*w][*x] = (1 & (dibit >> 1)); // bit 1
+	m_dsdDecoder->imbe_fr[*y][*z] = (1 & dibit);        // bit 0
+	w++;
+	x++;
+	y++;
+	z++;
+
+	storeSymbolDV(m_dsdDecoder->m_mbeDVFrame1, mbeIndex, dibit); // store dibit for DVSI hardware decoder
+
+	if (mbeIndex == 72-1) // finalize
+	{
+        m_dsdDecoder->m_mbeDecoder1.processFrame(m_dsdDecoder->imbe_fr, 0, 0);
         m_dsdDecoder->m_mbeDVReady1 = true; // Indicate that a DVSI frame is available
 	}
 }

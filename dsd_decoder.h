@@ -326,15 +326,16 @@ private:
     DSDSymbol m_dsdSymbol;
     // MBE decoder
     char ambe_fr[4][24];
+    char imbe_fr[8][23];
     bool m_mbelibEnable;
     DSDMBERate m_mbeRate;
     DSDMBEDecoder m_mbeDecoder1; //!< AMBE decoder for TDMA unique or first slot
     DSDMBEDecoder m_mbeDecoder2; //!< AMBE decoder for TDMA second slot
     // DVSI AMBE3000 serial device support
-    unsigned char m_mbeDVFrame1[9]; //!< AMBE encoded frame for TDMA unique or first slot
-    bool m_mbeDVReady1;             //!< AMBE encoded frame ready status for TDMA unique or first slot
-    unsigned char m_mbeDVFrame2[9]; //!< AMBE encoded frame for TDMA second slot
-    bool m_mbeDVReady2;             //!< AMBE encoded frame ready status for TDMA second slot
+    unsigned char m_mbeDVFrame1[18]; //!< AMBE/IMBE encoded frame for TDMA unique or first slot
+    bool m_mbeDVReady1;              //!< AMBE/IMBE encoded frame ready status for TDMA unique or first slot
+    unsigned char m_mbeDVFrame2[9];  //!< AMBE encoded frame for TDMA second slot
+    bool m_mbeDVReady2;              //!< AMBE encoded frame ready status for TDMA second slot
     // Voice announcements
     bool m_voice1On;
     bool m_voice2On;
