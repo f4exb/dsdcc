@@ -357,7 +357,6 @@ int main(int argc, char **argv)
 #ifdef DSD_USE_SERIALDV
     SerialDV::DVController dvController;
     short dvAudioSamples[SerialDV::MBE_AUDIO_BLOCK_SIZE * 8];
-    unsigned char dvMbeSamples[SerialDV::MBE_FRAME_LENGTH_BYTES];
 
     if (!dvSerialDevice.empty())
     {

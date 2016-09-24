@@ -16,6 +16,7 @@
 
 #include "ysf.h"
 #include "dsd_decoder.h"
+#include "mbefec.h"
 
 namespace DSDcc
 {
@@ -125,88 +126,42 @@ const int DSDYSF::rZ[36] = {
 
 /*
  * IMBE 7200x4400 interleave schedule
+ *
+ * this is the reverse of the original Sylvain Munaut's matrix because we are de-scrambling on the fly:
+ *         const uint8_t permutation[144] = {
+ *            0,   7,  12,  19,  24,  31,  36,  43,  48,  55,  60,  67, // [  0 -  11] yellow message
+ *           72,  79,  84,  91,  96, 103, 108, 115, 120, 127, 132,      // [ 12 -  22] yellow FEC
+ *          139,   1,   6,  13,  18,  25,  30,  37,  42,  49,  54,  61, // [ 23 -  34] orange message
+ *           66,  73,  78,  85,  90,  97, 102, 109, 114, 121, 126,      // [ 35 -  45] orange FEC
+ *          133, 138,   2,   9,  14,  21,  26,  33,  38,  45,  50,  57, // [ 46 -  57] red message
+ *           62,  69,  74,  81,  86,  93,  98, 105, 110, 117, 122,      // [ 58 -  68] red FEC
+ *          129, 134, 141,   3,   8,  15,  20,  27,  32,  39,  44,  51, // [ 69 -  80] pink message
+ *           56,  63,  68,  75,  80,  87,  92,  99, 104, 111, 116,      // [ 81 -  91] pink FEC
+ *          123, 128, 135, 140,   4,  11,  16,  23,  28,  35,  40,      // [ 92 - 102] dark blue message
+ *           47,  52,  59,  64,                                         // [103 - 106] dark blue FEC
+ *           71,  76,  83,  88,  95, 100, 107, 112, 119, 124, 131,      // [107 - 117] light blue message
+ *          136, 143,   5,  10,                                         // [118 - 121] light blue FEC
+ *           17,  22,  29,  34,  41,  46,  53,  58,  65,  70,  77,      // [122 - 132] green message
+ *           82,  89,  94, 101,                                         // [133 - 136] green FEC
+ *          106, 113, 118, 125, 130, 137, 142,                          // [137 - 143] unprotected
+ *      };
+ *
+ * the interleaving logic is more obvious on the reversed matrix:
+ *
  */
-//const uint8_t permutation[144] = {
-//      0,   7,  12,  19,  24,  31,  36,  43,  48,  55,  60,  67, // [  0 -  11] yellow message
-//     72,  79,  84,  91,  96, 103, 108, 115, 120, 127, 132,      // [ 12 -  22] yellow FEC
-//    139,   1,   6,  13,  18,  25,  30,  37,  42,  49,  54,  61, // [ 23 -  34] orange message
-//     66,  73,  78,  85,  90,  97, 102, 109, 114, 121, 126,      // [ 35 -  45] orange FEC
-//    133, 138,   2,   9,  14,  21,  26,  33,  38,  45,  50,  57, // [ 46 -  57] red message
-//     62,  69,  74,  81,  86,  93,  98, 105, 110, 117, 122,      // [ 58 -  68] red FEC
-//    129, 134, 141,   3,   8,  15,  20,  27,  32,  39,  44,  51, // [ 69 -  80] pink message
-//     56,  63,  68,  75,  80,  87,  92,  99, 104, 111, 116,      // [ 81 -  91] pink FEC
-//    123, 128, 135, 140,   4,  11,  16,  23,  28,  35,  40,      // [ 92 - 102] dark blue message
-//     47,  52,  59,  64,                                         // [103 - 106] dark blue FEC
-//     71,  76,  83,  88,  95, 100, 107, 112, 119, 124, 131,      // [107 - 117] light blue message
-//    136, 143,   5,  10,                                         // [118 - 121] light blue FEC
-//     17,  22,  29,  34,  41,  46,  53,  58,  65,  70,  77,      // [122 - 132] green message
-//     82,  89,  94, 101,                                         // [133 - 136] green FEC
-//    106, 113, 118, 125, 130, 137, 142,                          // [137 - 143] unprotected
-//};
-// bit 1
-// frame index
-const int DSDYSF::sW[72] = {
-		0, 0, 1, 1, 2, 2,
-		3, 3, 4, 5, 5, 6,
-		0, 0, 1, 1, 2, 2,
-		3, 3, 4, 5, 5, 6,
-		0, 0, 1, 1, 2, 2,
-		3, 3, 4, 5, 6, 6,
-		0, 0, 1, 1, 2, 2,
-		3, 3, 4, 5, 6, 6,
-		0, 0, 1, 1, 2, 2,
-		3, 3, 4, 5, 6, 6,
-		0, 0, 1, 1, 2, 2,
-		3, 3, 4, 5, 6, 7
-};
-
-// bit index
-const int DSDYSF::sX[72] = {
-		0, 12,  1, 13,  2, 14,
-		3, 15,  4,  1, 13, 10,
-		1, 13,  2, 14,  3, 15,
-		4, 16,  5,  2, 14, 11,
-		2, 14,  3, 15,  4, 16,
-		5, 17,  6,  3,  0, 12,
-		3, 15,  4, 16,  5, 17,
-		6, 18,  7,  4,  1, 13,
-		4, 16,  5, 17,  6, 18,
-		7, 19,  8,  5,  2, 14,
-		5, 17,  6, 18,  7, 19,
-		8, 20,  9,  6,  3,  0
-};
-
-// bit 0
-// frame index
-const int DSDYSF::sY[72] = {
-		0, 0, 1, 1, 2, 2,
-		3, 3, 4, 5, 6, 7,
-		0, 0, 1, 1, 2, 2,
-		3, 3, 4, 5, 6, 7,
-		0, 0, 1, 1, 2, 3,
-		3, 4, 4, 5, 6, 7,
-		0, 0, 1, 1, 2, 2,
-		3, 4, 4, 5, 6, 7,
-		0, 1, 1, 2, 2, 3,
-		3, 4, 5, 5, 6, 7,
-		0, 0, 1, 2, 2, 3,
-		3, 4, 4, 5, 6, 7
-};
-
-// bit index
-const int DSDYSF::sZ[72] = {
-		 7, 19,  8, 20,  9, 21,
-		10, 22, 11,  8,  5,  2,
-		 6, 18,  7, 19,  8, 20,
-		 9, 21, 10,  7,  4,  1,
-		 9, 21, 10, 22, 11,  0,
-		12,  1, 13, 10,  7,  4,
-		 8, 20,  9, 21, 10, 22,
-		11,  0, 12,  9,  6,  3,
-		11,  0, 12,  1, 13,  2,
-		14,  3,  0, 12,  9,  6,
-		10, 22, 11,  0, 12,  1,
-		13,  2, 14, 11,  8,  5
+const int DSDYSF::m_vfrInterleave[144] = {
+         0,  24,  48,  72,  96, 120,  25,   1,  73,  49, 121,  97,
+         2,  26,  50,  74,  98, 122,  27,   3,  75,  51, 123,  99,
+         4,  28,  52,  76, 100, 124,  29,   5,  77,  53, 125, 101,
+         6,  30,  54,  78, 102, 126,  31,   7,  79,  55, 127, 103,
+         8,  32,  56,  80, 104, 128,  33,   9,  81,  57, 129, 105,
+        10,  34,  58,  82, 106, 130,  35,  11,  83,  59, 131, 107,
+        12,  36,  60,  84, 108, 132,  37,  13,  85,  61, 133, 109,
+        14,  38,  62,  86, 110, 134,  39,  15,  87,  63, 135, 111,
+        16,  40,  64,  88, 112, 136,  41,  17,  89,  65, 137, 113,
+        18,  42,  66,  90, 114, 138,  43,  19,  91,  67, 139, 115,
+        20,  44,  68,  92, 116, 140,  45,  21,  93,  69, 141, 117,
+        22,  46,  70,  94, 118, 142,  47,  23,  95,  71, 143, 119
 };
 
 DSDYSF::DSDYSF(DSDDecoder *dsdDecoder) :
@@ -221,6 +176,7 @@ DSDYSF::DSDYSF(DSDDecoder *dsdDecoder) :
     x = 0;
     y = 0;
     z = 0;
+    m_vfrStart = false;
 }
 
 DSDYSF::~DSDYSF()
@@ -259,6 +215,10 @@ void DSDYSF::process() // just pass the frames for now
                 case DTVoiceData2:
                     m_dsdDecoder->m_mbeRate = DSDDecoder::DSDMBERate2450;
                     processVD2(m_symbolIndex - 100, dibit);
+                    break;
+                case DTVoiceFullRate:
+                    m_dsdDecoder->m_mbeRate = DSDDecoder::DSDMBERate4400;
+                    processVFR(m_symbolIndex - 100, dibit);
                     break;
                 default:
                     break;
@@ -387,6 +347,8 @@ void DSDYSF::processHeader(int symbolIndex, unsigned char dibit)
         {
             std::cerr << "DSDYSF::processHeader: DCH2 CRC KO" << std::endl;
         }
+
+        m_vfrStart = m_fich.getFrameInformation() == FIHeader;
     }
 }
 
@@ -650,6 +612,82 @@ void DSDYSF::processVD2Voice(int mbeIndex, unsigned char dibit)
     }
 }
 
+void DSDYSF::processVFR(int symbolIndex, unsigned char dibit)
+{
+    if (m_vfrStart)
+    {
+        processVFRSubHeader(symbolIndex, dibit);
+    }
+    else
+    {
+        processVFRFullIMBE(symbolIndex, dibit);
+    }
+}
+
+void DSDYSF::processVFRSubHeader(int symbolIndex, unsigned char dibit)
+{
+    if (symbolIndex < 5*36)
+    {
+        m_dch1Raw[m_dchInterleave[symbolIndex]] = dibit;
+
+        if (symbolIndex == 5*36 - 1)
+        {
+//            std::cerr << "DSDYSF::processVFRSubHeader: CSD3" << std::endl;
+
+            unsigned char bytes[22];
+
+            m_viterbiFICH.decodeFromSymbols(m_dch1Bits, m_dch1Raw, 180, 0);
+
+            if (checkCRC16(m_dch1Bits, 20, bytes)) // CSD3
+            {
+                processCSD3_1(bytes);
+                processCSD3_2(&bytes[10]);
+            }
+        }
+    }
+    else if (symbolIndex < 6*36)
+    {
+        // reserved
+    }
+    else if (symbolIndex < 6*36 + 72) // VCH-3
+    {
+        procesVFRFrame(symbolIndex - 6*36, dibit);
+    }
+    else if (symbolIndex < 6*36 + 2*72) // VCH-4
+    {
+        procesVFRFrame(symbolIndex - (6*36 + 72), dibit);
+
+        if (symbolIndex == 6*36 + 2*72 - 1)
+        {
+            m_vfrStart = false;
+        }
+    }
+}
+
+void DSDYSF::processVFRFullIMBE(int symbolIndex, unsigned char dibit)
+{
+    if (symbolIndex < 72) // VCH-0
+    {
+        procesVFRFrame(symbolIndex, dibit);
+    }
+    else if (symbolIndex < 2*72) // VCH-1
+    {
+        procesVFRFrame(symbolIndex - 72, dibit);
+    }
+    else if (symbolIndex < 3*72) // VCH-2
+    {
+        procesVFRFrame(symbolIndex - 2*72, dibit);
+    }
+    else if (symbolIndex < 4*72) // VCH-3
+    {
+        procesVFRFrame(symbolIndex - 3*72, dibit);
+    }
+    else if (symbolIndex < 5*72) // VCH-4
+    {
+        procesVFRFrame(symbolIndex - 4*72, dibit);
+    }
+}
+
 void DSDYSF::processAMBE(int mbeIndex, unsigned char dibit)
 {
 	if (mbeIndex == 0) // init
@@ -678,30 +716,65 @@ void DSDYSF::processAMBE(int mbeIndex, unsigned char dibit)
 	}
 }
 
-void DSDYSF::processIMBE(int mbeIndex, unsigned char dibit)
+void DSDYSF::procesVFRFrame(int mbeIndex, unsigned char dibit)
 {
 	if (mbeIndex == 0) // init
 	{
-	    w = sW;
-	    x = sX;
-	    y = sY;
-	    z = sZ;
-
         memset((void *) m_dsdDecoder->m_mbeDVFrame1, 0, 18); // initialize DVSI frame
 	}
 
-	m_dsdDecoder->imbe_fr[*w][*x] = (1 & (dibit >> 1)); // bit 1
-	m_dsdDecoder->imbe_fr[*y][*z] = (1 & dibit);        // bit 0
-	w++;
-	x++;
-	y++;
-	z++;
-
-	storeSymbolDV(m_dsdDecoder->m_mbeDVFrame1, mbeIndex, dibit); // store dibit for DVSI hardware decoder
+	m_vfrBitsRaw[m_vfrInterleave[2*mbeIndex]]     = (1 & (dibit >> 1)); // bit 1
+	m_vfrBitsRaw[m_vfrInterleave[2*mbeIndex + 1]] = (1 & dibit);        // bit 0
 
 	if (mbeIndex == 72-1) // finalize
 	{
-        m_dsdDecoder->m_mbeDecoder1.processFrame(m_dsdDecoder->imbe_fr, 0, 0);
+	    int errs;
+        uint16_t seed = 0;
+
+        for (uint16_t i = 0; i < 12; i++)
+        {
+            seed = (seed << 1) | m_vfrBitsRaw[i];
+        }
+
+        scrambleVFR(m_vfrBitsRaw+23, m_vfrBitsRaw+23, 144-23-7, seed, 4);
+
+        // u0
+        errs = GolayMBE::mbe_golay2312(m_vfrBitsRaw, m_vfrBits);
+//        memcpy(m_vfrBits, m_vfrBitsRaw, 12);
+
+        // u1
+        errs = GolayMBE::mbe_golay2312(&m_vfrBitsRaw[23], &m_vfrBits[12]);
+//        memcpy(&m_vfrBits[12], &m_vfrBitsRaw[23], 12);
+
+        // u2
+        errs = GolayMBE::mbe_golay2312(&m_vfrBitsRaw[46], &m_vfrBits[24]);
+//        memcpy(&m_vfrBits[24], &m_vfrBitsRaw[46], 12);
+
+        // u3
+        errs = GolayMBE::mbe_golay2312(&m_vfrBitsRaw[69], &m_vfrBits[36]);
+//        memcpy(&m_vfrBits[36], &m_vfrBitsRaw[69], 12);
+
+        // u4
+        errs = HammingMBE::mbe_hamming1511(&m_vfrBitsRaw[92], &m_vfrBits[48]);
+//        memcpy(&m_vfrBits[48], &m_vfrBitsRaw[92], 11);
+
+        // u5
+        errs = HammingMBE::mbe_hamming1511(&m_vfrBitsRaw[107], &m_vfrBits[59]);
+//        memcpy(&m_vfrBits[59], &m_vfrBitsRaw[107], 11);
+
+        // u6
+        errs = HammingMBE::mbe_hamming1511(&m_vfrBitsRaw[122], &m_vfrBits[70]);
+//        memcpy(&m_vfrBits[70], &m_vfrBitsRaw[122], 11);
+
+        // u7
+        memcpy(&m_vfrBits[81], &m_vfrBitsRaw[137], 7);
+
+        for (int i = 0; i < 88; i++)
+        {
+            m_dsdDecoder->m_mbeDVFrame1[i/8] += m_vfrBits[i]<<(7-(i%8));
+        }
+
+        m_dsdDecoder->m_mbeDecoder1.processData((char *) m_vfrBits, 0);
         m_dsdDecoder->m_mbeDVReady1 = true; // Indicate that a DVSI frame is available
 	}
 }
@@ -751,5 +824,15 @@ bool DSDYSF::checkCRC16(unsigned char *bits,  unsigned long nbBytes, unsigned ch
     return m_crc.crctablefast(bytes, nbBytes) == crc;
 }
 
+void DSDYSF::scrambleVFR(uint8_t out[], uint8_t in[], uint16_t n, uint32_t seed, uint8_t shift)
+{
+    uint32_t v = seed << shift;
+
+    for (uint16_t i=0; i<n; i++)
+    {
+        v = ((v * 173) + 13849) & 0xffff;
+        out[i] = in[i] ^ (v >> 15);
+    }
+}
 
 } // namespace DSDcc

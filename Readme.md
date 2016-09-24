@@ -29,12 +29,14 @@ If you still want `mbelib` support you have to use the `-DUSE_MBELIB=ON` directi
 
 <h1>Supported formats</h1>
 
-These are only a subset of the ones covered by the original DSD project. Migration from original DSD is not easy and will be done little by little and also depends on the test material available. For now we have:
+These are a subset of the ones covered by the original DSD project plus other formats. A large part of the code was rewritten more noticeably the symbol timing and the DMR processing improving a lot from the original DSD. For now we have:
 
-  - DMR/MOTOTRBO: European two slot TDMA standard. MOTOTRBO is a popular implementation of this standard.
+  - DMR/MOTOTRBO: ETSI two slot TDMA standard. MOTOTRBO is a popular implementation of this standard.
   - D-Star: developed and promoted by Icom for Amateur Radio customers.
-
-Next we might want to add YSF (Yaesu Sound Fusion a.k.a. C4FM) as a newly supported format to cover all AMBE codec based commercial formats used at present by Amateur Radio. YSF is not supported by the original DSD but there is a GNUradio [gr-ysf](http://hb9uf.github.io/gr-ysf/) module available.
+  - dPMR: ETSI narrowband FDMA standard. This is somehow similar to NXDN 2400 Baud rate mode.
+  - Yaesu System Fusion (abbreviated YSF): developed and promoted by Yaesu for Amateur Radio customers partly inspired by [gr-ysf](http://hb9uf.github.io/gr-ysf/). Voice full rate with SerialDV is not supported.
+  
+Next we may like to add NXDN exploiting similarities with the already implemented dPMR.  
 
 <h1>Source code</h1>
 

@@ -1,7 +1,7 @@
 #CXXFLAGS=-g
 CXXFLAGS=-O3
 
-all: qr golay20 golay23 golay24 hamming7 hamming12 hamming16 viterbi viterbi35 crc pn
+all: qr golay20 golay23 golay24 hamming7 hamming12 hamming15 hamming16 viterbi viterbi35 crc pn
 
 crc: crc.o crc.cpp
 	g++ -o crc crc.o crc.cpp
@@ -20,6 +20,9 @@ hamming7: fec.o hamming7.cpp
 
 hamming12: fec.o hamming12.cpp
 	g++ -o hamming12 fec.o hamming12.cpp
+
+hamming15: fec.o hamming15.cpp
+	g++ -o hamming15 fec.o hamming15.cpp
 
 hamming16: fec.o hamming16.cpp
 	g++ -o hamming16 fec.o hamming16.cpp
@@ -58,5 +61,5 @@ descramble.o: ../descramble.h ../descramble.cpp
 	g++ $(CXXFLAGS) -c -o descramble.o -I.. ../descramble.cpp
 
 clean:
-	rm -f *.o qr golay20 golay23 golay24 hamming7 hamming12 hamming16 viterbi viterbi35 crc
+	rm -f *.o qr golay20 golay23 golay24 hamming7 hamming12 hamming15 hamming16 viterbi viterbi35 crc
 	

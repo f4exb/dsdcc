@@ -189,15 +189,19 @@ private:
     void processVD1(int symbolIndex, unsigned char dibit);
     void processVD2(int symbolIndex, unsigned char dibit);
     void processVD2Voice(int mbeIndex, unsigned char dibit);
+    void processVFR(int symbolIndex, unsigned char dibit);
+    void processVFRSubHeader(int symbolIndex, unsigned char dibit);
+    void processVFRFullIMBE(int symbolIndex, unsigned char dibit);
     void processCSD1(unsigned char *dchBytes);
     void processCSD2(unsigned char *dchBytes);
     void processCSD3_1(unsigned char *dchBytes);
     void processCSD3_2(unsigned char *dchBytes);
     void processAMBE(int mbeIndex, unsigned char dibit);
-    void processIMBE(int mbeIndex, unsigned char dibit);
+    void procesVFRFrame(int mbeIndex, unsigned char dibit);
     void storeSymbolDV(unsigned char *mbeFrame, int dibitindex, unsigned char dibit, bool invertDibit = false);
 
     bool checkCRC16(unsigned char *bits, unsigned long nbBytes, unsigned char *xoredBytes = 0);
+    void scrambleVFR(uint8_t out[], uint8_t in[], uint16_t n, uint32_t seed, uint8_t shift);
 
     DSDDecoder *m_dsdDecoder;
     int m_symbolIndex;                //!< Current symbol index
@@ -216,6 +220,10 @@ private:
 
     unsigned char m_vd2BitsRaw[104];  //!< V/D type 2 VCH+VeCH after de-interleave and de-whitening
     unsigned char m_vd2MBEBits[72];
+
+    unsigned char m_vfrBitsRaw[144];  //!< VFR bits after de-interleave and de-scarambling
+    unsigned char m_vfrBits[88];      //!< VFR bits after FEC
+    bool m_vfrStart;
 
     Viterbi5 m_viterbiFICH;
     Golay_24_12 m_golay_24_12;
@@ -241,16 +249,11 @@ private:
     static const int rY[36];
     static const int rZ[36];
 
-    // IMBE interleave
-    static const int sW[72];
-    static const int sX[72];
-    static const int sY[72];
-    static const int sZ[72];
-
     static const int m_fichInterleave[100];   //!< FICH symbols interleaving matrix
     static const int m_dchInterleave[180];    //!< DCH symbols interleaving matrix
     static const int m_vd2Interleave[104];    //!< V/D type 2 interleaving matrix
     static const int m_vd2DVSIInterleave[49]; //!< V/D type 2 interleaving matrix for DVSI AMBE3000 chip use
+    static const int m_vfrInterleave[144];    //!< VFR interleaving matrix
 };
 
 } // namespace DSDcc

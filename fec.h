@@ -52,6 +52,22 @@ private:
     static const unsigned char m_H[12*4]; //!< Parity check matrix of bits
 };
 
+class Hamming_15_11
+{
+public:
+    Hamming_15_11();
+    ~Hamming_15_11();
+
+    void init();
+    void encode(unsigned char *origBits, unsigned char *encodedBits);
+    bool decode(unsigned char *rxBits, unsigned char *decodedBits, int nbCodewords);
+
+private:
+    unsigned char m_corr[16];              //!< single bit error correction by syndrome index
+    static const unsigned char m_G[15*11]; //!< Generator matrix of bits
+    static const unsigned char m_H[15*4];  //!< Parity check matrix of bits
+};
+
 class Hamming_16_11_4
 {
 public:

@@ -81,6 +81,48 @@ void Hamming_12_8::init()
 
 // ========================================================================================
 
+const unsigned char Hamming_15_11::m_G[15*11] = {
+        1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   1, 0, 0, 1,
+        0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,   1, 1, 0, 1,
+        0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0,   1, 1, 1, 1,
+        0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0,   1, 1, 1, 0,
+        0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0,   0, 1, 1, 1,
+        0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0,   1, 0, 1, 0,
+        0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0,   0, 1, 0, 1,
+        0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0,   1, 0, 1, 1,
+        0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0,   1, 1, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0,   0, 1, 1, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,   0, 0, 1, 1,
+};
+
+
+const unsigned char Hamming_15_11::m_H[15*4] = {
+        1, 1, 1, 1, 0, 1, 0, 1, 1, 0, 0,   1, 0, 0, 0,
+        0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 0,   0, 1, 0, 0,
+        0, 0, 1, 1, 1, 1, 0, 1, 0, 1, 1,   0, 0, 1, 0,
+        1, 1, 1, 0, 1, 0, 1, 1, 0, 0, 1,   0, 0, 0, 1,
+//      0  1  2  3  4  5  6  7  8  9 10  <- correctable bit positions
+};
+
+void Hamming_15_11::init()
+{
+    // correctable bit positions given syndrome bits as index (see above)
+    memset(m_corr, 0xFF, 16); // initialize with all invalid positions
+    m_corr[0b1001] = 0;
+    m_corr[0b1101] = 1;
+    m_corr[0b1111] = 2;
+    m_corr[0b1110] = 3;
+    m_corr[0b0111] = 4;
+    m_corr[0b1010] = 5;
+    m_corr[0b0101] = 6;
+    m_corr[0b1011] = 7;
+    m_corr[0b1100] = 8;
+    m_corr[0b0110] = 9;
+    m_corr[0b0011] = 10;
+}
+
+// ========================================================================================
+
 const unsigned char Hamming_16_11_4::m_G[16*11] = {
         1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   1, 0, 0, 1, 1,
         0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,   1, 1, 0, 1, 0,
@@ -452,6 +494,91 @@ bool Hamming_16_11_4::decode(unsigned char *rxBits, unsigned char *decodedBits, 
         if (decodedBits)
         {
             memcpy(&decodedBits[11*ic], &rxBits[16*ic], 11);
+        }
+    }
+
+    return correctable;
+}
+
+// ========================================================================================
+
+Hamming_15_11::Hamming_15_11()
+{
+    init();
+}
+
+Hamming_15_11::~Hamming_15_11()
+{
+}
+
+// Not very efficient but encode is used for unit testing only
+void Hamming_15_11::encode(unsigned char *origBits, unsigned char *encodedBits)
+{
+    memset(encodedBits, 0, 15);
+
+    for (int i = 0; i < 11; i++)
+    {
+        for (int j = 0; j < 15; j++)
+        {
+            encodedBits[j] += origBits[i] * m_G[15*i + j];
+        }
+    }
+
+    for (int i = 0; i < 15; i++)
+    {
+        encodedBits[i] %= 2;
+    }
+}
+
+bool Hamming_15_11::decode(unsigned char *rxBits, unsigned char *decodedBits, int nbCodewords)
+{
+    bool correctable = true;
+
+    for (int ic = 0; ic < nbCodewords; ic++)
+    {
+        // calculate syndrome
+
+        bool error = false;
+        int syndromeI = 0; // syndrome index
+
+        for (int is = 0; is < 4; is++)
+        {
+            syndromeI += (((rxBits[15*ic +  0] * m_H[15*is +  0])
+                         + (rxBits[15*ic +  1] * m_H[15*is +  1])
+                         + (rxBits[15*ic +  2] * m_H[15*is +  2])
+                         + (rxBits[15*ic +  3] * m_H[15*is +  3])
+                         + (rxBits[15*ic +  4] * m_H[15*is +  4])
+                         + (rxBits[15*ic +  5] * m_H[15*is +  5])
+                         + (rxBits[15*ic +  6] * m_H[15*is +  6])
+                         + (rxBits[15*ic +  7] * m_H[15*is +  7])
+                         + (rxBits[15*ic +  8] * m_H[15*is +  8])
+                         + (rxBits[15*ic +  9] * m_H[15*is +  9])
+                         + (rxBits[15*ic + 10] * m_H[15*is + 10])
+                         + (rxBits[15*ic + 11] * m_H[15*is + 11])
+                         + (rxBits[15*ic + 12] * m_H[15*is + 12])
+                         + (rxBits[15*ic + 13] * m_H[15*is + 13])
+                         + (rxBits[15*ic + 14] * m_H[15*is + 14])) % 2) << (3-is);
+        }
+
+        // correct bit
+
+        if (syndromeI > 0) // single bit error correction
+        {
+            if (m_corr[syndromeI] == 0xFF) // uncorrectable error
+            {
+                correctable = false;
+                break;
+            }
+            else
+            {
+                rxBits[m_corr[syndromeI]] ^= 1; // flip bit
+            }
+        }
+
+        // move information bits
+        if (decodedBits)
+        {
+            memcpy(&decodedBits[11*ic], &rxBits[15*ic], 11);
         }
     }
 
