@@ -434,7 +434,7 @@ void DSDDstar::processSlowDataGroup()
         break;
     case DStarSlowDataText:
         m_slowData.text[20] = '\0';
-        std::cerr << "DSDDstar::processSlowDataGroup: DStarSlowDataText: " << m_slowData.text << std::endl;
+//        std::cerr << "DSDDstar::processSlowDataGroup: DStarSlowDataText: " << m_slowData.text << std::endl;
         break;
     default:
         break;

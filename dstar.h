@@ -40,6 +40,7 @@ public:
    const std::string& getRpt2() const { return m_header.m_rpt2; }
    const std::string& getYourSign() const { return m_header.m_yourSign; }
    const std::string& getMySign() const { return m_header.m_mySign; }
+   const char *getInfoText() const { return m_slowData.text; }
 
 private:
    typedef enum
