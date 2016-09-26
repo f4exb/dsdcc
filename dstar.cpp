@@ -183,6 +183,7 @@ void DSDDstar::initDataFrame()
 
 void DSDDstar::reset_header_strings()
 {
+    std::cerr << "DSDDstar::reset_header_strings" << std::endl;
     m_header.clear();
 }
 
@@ -302,17 +303,61 @@ void DSDDstar::processSlowData(bool firstFrame)
         {
             m_slowData.currentDataType = DStarSlowDataNone;
         }
-        else if (dataType == 6)
+        else if (dataType == 6) // filler
         {
             m_slowData.currentDataType = DStarSlowDataFiller;
             m_slowData.counter = 2;
+        }
+        else if (dataType == 4) // text
+        {
+            m_slowData.textFrameIndex = m_slowData.counter % 4;
+            m_slowData.counter = 5;
+            m_slowData.currentDataType = (DStarSlowDataType) dataType;
         }
         else
         {
             m_slowData.currentDataType = (DStarSlowDataType) dataType;
         }
 
-        std::cerr << "DSDDstar::processSlowData: " << dataType << ":" << m_slowData.counter << std::endl;
+        if (firstFrame)
+        {
+            // unconditionnaly reset counters for elements that are always contained in the same 20 frame sequence
+            m_slowData.radioHeaderIndex = 0;
+
+            // initializations based on data type
+            switch (m_slowData.currentDataType)
+            {
+            case DStarSlowDataHeader:
+                if (!m_slowData.gpsStart)
+                {
+                    m_slowData.gpsNMEA[m_slowData.gpsIndex] = '\0';
+                    std::cerr << "DSDDstar::processSlowData: DStarSlowDataGPS: "
+                            << "(" << m_slowData.gpsIndex << ") " << m_slowData.gpsNMEA << std::endl;
+                }
+                m_slowData.gpsStart = true;
+                break;
+            case DStarSlowDataText:
+                if (!m_slowData.gpsStart)
+                {
+                    m_slowData.gpsNMEA[m_slowData.gpsIndex] = '\0';
+                    std::cerr << "DSDDstar::processSlowData: DStarSlowDataGPS: "
+                            << "(" << m_slowData.gpsIndex << ") " << m_slowData.gpsNMEA << std::endl;
+                }
+                m_slowData.gpsStart = true;
+                break;
+            case DStarSlowDataGPS:
+                if (m_slowData.gpsStart)
+                {
+                    m_slowData.gpsIndex = 0;
+                    m_slowData.gpsStart = false;
+                }
+                break;
+            default:
+                break;
+            }
+        }
+
+//        std::cerr << "DSDDstar::processSlowData: " << dataType << ":" << m_slowData.counter << std::endl;
     }
     else
     {
@@ -349,6 +394,16 @@ void DSDDstar::processSlowDataByte(unsigned char byte)
             m_slowData.radioHeaderIndex++;
         }
         break;
+    case DStarSlowDataText:
+        m_slowData.text[5*m_slowData.textFrameIndex + 5 -m_slowData.counter] = byte;
+        break;
+    case DStarSlowDataGPS:
+        if ((byte == 0x0a) || (byte == 0x0d)) {
+            byte = (unsigned char) '_';
+        }
+        m_slowData.gpsNMEA[m_slowData.gpsIndex] = byte;
+        m_slowData.gpsIndex++;
+        break;
     default:
         break;
     }
@@ -361,16 +416,25 @@ void DSDDstar::processSlowDataGroup()
     case DStarSlowDataHeader:
         if (m_slowData.radioHeaderIndex == 41) // last byte
         {
-        	if (m_crc.check_crc((unsigned char *) m_slowData.radioHeaderIndex, 41))
+            if (m_crc.check_crc((unsigned char *) m_slowData.radioHeader, 41))
         	{
+//                std::cerr << "DSDDstar::processSlowDataGroup: DStarSlowDataHeader OK" << std::endl;
                 m_header.setRpt2((const char *) &m_slowData.radioHeader[3], false);
                 m_header.setRpt1((const char *) &m_slowData.radioHeader[11], false);
                 m_header.setYourSign((const char *) &m_slowData.radioHeader[19], false);
                 m_header.setMySign((const char *) &m_slowData.radioHeader[27], (const char *) &m_slowData.radioHeader[35], false);
         	}
+//            else
+//            {
+//                std::cerr << "DSDDstar::processSlowDataGroup: DStarSlowDataHeader KO" << std::endl;
+//            }
 
-            m_slowData.radioHeaderIndex = 0;
+            m_slowData.radioHeaderIndex = 0; // this is normally done on the first frame though
         }
+        break;
+    case DStarSlowDataText:
+        m_slowData.text[20] = '\0';
+        std::cerr << "DSDDstar::processSlowDataGroup: DStarSlowDataText: " << m_slowData.text << std::endl;
         break;
     default:
         break;
@@ -383,6 +447,7 @@ void DSDDstar::processSync()
     {
         m_dsdDecoder->m_voice1On = false;
         reset_header_strings();
+        m_slowData.init();
         m_dsdDecoder->resetFrameSync(); // end
         return;
     }
@@ -408,6 +473,7 @@ void DSDDstar::processSync()
 
             m_dsdDecoder->m_voice1On = false;
             reset_header_strings();
+            m_slowData.init();
             m_dsdDecoder->resetFrameSync(); // end
             return;
         }

@@ -118,7 +118,7 @@ private:
        DStarSlowData1,
        DStarSlowData2,
        DStarSlowDataGPS,
-       DStarSlowData4,
+       DStarSlowDataText,
        DStarSlowDataHeader,
        DStarSlowDataFiller,
        DStarSlowDataNone,
@@ -130,12 +130,24 @@ private:
        {
            counter = 0;
            radioHeaderIndex = 0;
+           textFrameIndex = 0;
+           memset(radioHeader, 0, 41);
+           memset(text, 0x20, 20);
+           text[20] = '\0';
+           memset(gpsNMEA, 0, 256);
+           gpsIndex = 0;
+           gpsStart = true;
            currentDataType = DStarSlowDataNone;
        }
 
        int counter;
        char radioHeader[41];
        int radioHeaderIndex;
+       char text[20+1];
+       int textFrameIndex;
+       char gpsNMEA[256];
+       int gpsIndex;
+       bool gpsStart;
        DStarSlowDataType currentDataType;
    };
 
