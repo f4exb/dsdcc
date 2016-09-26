@@ -283,4 +283,60 @@ unsigned long CRC::crcbitbybitfast(unsigned char* p, unsigned long len)
     return (crc);
 }
 
+// ====================================================================
+
+DStarCRC::DStarCRC() : crc(0)
+{}
+
+DStarCRC::~DStarCRC()
+{}
+
+void DStarCRC::fcsbit(unsigned char tbyte)
+{
+	  crc ^= tbyte;
+
+	  if (crc & 1)
+	  {
+		    crc = (crc >> 1) ^ 0x8408;  // X-modem CRC poly
+	  }
+	  else
+	  {
+		    crc = crc >> 1;
+	  }
+}
+
+
+void DStarCRC::compute_crc(unsigned char *array, int size_buffer)
+{
+	crc = 0xffff;
+
+	for (int n = 0; n < (size_buffer - 2); n++)
+	{
+		for (int m = 0; m < 8; m++)
+		{    //each bit must be calculated separatly
+			fcsbit(bitRead(array[n], m));
+		}
+	}
+
+	crc ^= 0xffff;
+}
+
+
+bool DStarCRC::check_crc(unsigned char *array, int size_buffer)
+{
+
+	compute_crc(array, size_buffer);
+
+	unsigned int crc_decoded = (array[size_buffer - 1] << 8) + array[size_buffer - 2]; //inversion msb lsb
+
+	if (crc_decoded == crc)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
 } // namespace DSDcc

@@ -19,6 +19,7 @@
 
 #include <string>
 #include "viterbi3.h"
+#include "crc.h"
 
 namespace DSDcc
 {
@@ -56,32 +57,47 @@ private:
            m_rpt2.clear();
            m_yourSign.clear();
            m_mySign.clear();
+           m_rpt1FromHD = false;
+           m_rpt2FromHD = false;
+           m_yourSignFromHD = false;
+           m_mySignFromHD = false;
        }
 
-       void setRpt1(const char *rpt1, bool force = true) {
-           if ((m_rpt1.size() == 0) || force) {
+       void setRpt1(const char *rpt1, bool fromHD)
+       {
+           if (!m_rpt1FromHD || fromHD)
+           {
                m_rpt1 = std::string(rpt1, 8);
+               m_rpt1FromHD = fromHD;
            }
        }
 
-       void setRpt2(const char *rpt2, bool force = true) {
-           if ((m_rpt2.size() == 0) || force) {
+       void setRpt2(const char *rpt2, bool fromHD)
+       {
+           if (!m_rpt2FromHD || fromHD)
+           {
                m_rpt2 = std::string(rpt2, 8);
+               m_rpt2FromHD = fromHD;
            }
        }
 
-       void setYourSign(const char *yourSign, bool force = true) {
-           if ((m_yourSign.size() == 0) || force) {
+       void setYourSign(const char *yourSign, bool fromHD)
+       {
+           if (!m_yourSignFromHD || fromHD)
+           {
                m_yourSign = std::string(yourSign, 8);
+               m_yourSignFromHD = fromHD;
            }
        }
 
-       void setMySign(const char *mySign, const char *mySignInfo, bool force = true) {
-           if ((m_mySign.size() == 0) || force)
+       void setMySign(const char *mySign, const char *mySignInfo, bool fromHD)
+       {
+           if (!m_mySignFromHD || fromHD)
            {
                m_mySign = std::string(mySign, 8);
                m_mySign += '/';
                m_mySign += std::string(mySignInfo, 4);
+               m_mySignFromHD = fromHD;
            }
        }
 
@@ -89,6 +105,10 @@ private:
        std::string m_rpt2;
        std::string m_yourSign;
        std::string m_mySign;
+       bool m_rpt1FromHD;
+       bool m_rpt2FromHD;
+       bool m_yourSignFromHD;
+       bool m_mySignFromHD;
    };
 
 
@@ -140,6 +160,7 @@ private:
    int m_symbolIndex;    //!< Current symbol index in non HD sequence
    int m_symbolIndexHD;  //!< Current symbol index in HD sequence
    Viterbi3 m_viterbi;
+   DStarCRC m_crc;
 
    // DSTAR
    unsigned char nullBytes[4];

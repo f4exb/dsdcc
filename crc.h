@@ -110,6 +110,27 @@ private:
     unsigned long m_crctab[256];
 };
 
+/* D-Star specific CRC16 calculation. It is so weird that I just copied it from:
+ *     https://github.com/f4goh/DSTAR
+ * Many thanks to Anthony, F4GOH!
+ */
+class DStarCRC
+{
+public:
+	DStarCRC();
+	~DStarCRC();
+
+	bool check_crc(unsigned char *array, int size_buffer);
+
+private:
+	unsigned char bitRead(unsigned char value, unsigned int bit) { return (((value) >> (bit)) & 0x01); }
+	void fcsbit(unsigned char tbyte);
+	void compute_crc(unsigned char *array, int size_buffer);
+
+	unsigned int crc;
+};
+
+
 } // namespace DSDcc
 
 #endif /* CRC_H_ */

@@ -361,7 +361,14 @@ void DSDDstar::processSlowDataGroup()
     case DStarSlowDataHeader:
         if (m_slowData.radioHeaderIndex == 41) // last byte
         {
-            std::cerr << "DSDDstar::processSlowDataGroup: DStarSlowDataHeader" << std::endl;
+        	if (m_crc.check_crc((unsigned char *) m_slowData.radioHeaderIndex, 41))
+        	{
+                m_header.setRpt2((const char *) &m_slowData.radioHeader[3], false);
+                m_header.setRpt1((const char *) &m_slowData.radioHeader[11], false);
+                m_header.setYourSign((const char *) &m_slowData.radioHeader[19], false);
+                m_header.setMySign((const char *) &m_slowData.radioHeader[27], (const char *) &m_slowData.radioHeader[35], false);
+        	}
+
             m_slowData.radioHeaderIndex = 0;
         }
         break;
@@ -461,19 +468,18 @@ void DSDDstar::dstar_header_decode()
         }
     }
 
-    // print header - TODO: store it in the state object for access from caller
     m_dsdDecoder->getLogger().log("\nDSTAR HEADER: ");
 
-    m_header.setRpt2((const char *) &radioheader[3]);
+    m_header.setRpt2((const char *) &radioheader[3], true);
     m_dsdDecoder->getLogger().log("RPT 2: %s ", m_header.m_rpt2.c_str());
 
-    m_header.setRpt1((const char *) &radioheader[11]);
+    m_header.setRpt1((const char *) &radioheader[11], true);
     m_dsdDecoder->getLogger().log("RPT 1: %s ", m_header.m_rpt1.c_str());
 
-    m_header.setYourSign((const char *) &radioheader[19]);
+    m_header.setYourSign((const char *) &radioheader[19], true);
     m_dsdDecoder->getLogger().log("YOUR: %s ", m_header.m_yourSign.c_str());
 
-    m_header.setMySign((const char *) &radioheader[27], (const char *) &radioheader[35]);
+    m_header.setMySign((const char *) &radioheader[27], (const char *) &radioheader[35], true);
     m_dsdDecoder->getLogger().log("MY: %s\n", m_header.m_mySign.c_str());
 }
 
