@@ -138,6 +138,7 @@ DSDDstar::DSDDstar(DSDDecoder *dsdDecoder) :
 		m_viterbi(2, Viterbi::Poly23a, false)
 {
     reset_header_strings();
+    m_slowData.init();
 }
 
 DSDDstar::~DSDDstar()
@@ -164,7 +165,6 @@ void DSDDstar::init(bool header)
         m_dsdDecoder->getLogger().log( "e:"); // print this only for voice/data frames
     }
 
-    bitbuffer = 0;
     m_symbolIndex = 0;
     m_symbolIndexHD = 0;
 }
@@ -183,10 +183,7 @@ void DSDDstar::initDataFrame()
 
 void DSDDstar::reset_header_strings()
 {
-    m_rpt1.clear();
-    m_rpt2.clear();
-    m_yourSign.clear();
-    m_mySign.clear();
+    m_header.clear();
 }
 
 void DSDDstar::process()
@@ -208,12 +205,6 @@ void DSDDstar::process()
 void DSDDstar::processVoice()
 {
     unsigned char bit = m_dsdDecoder->m_dsdSymbol.getDibit(); // get bit from symbol and store it in cache
-
-    bitbuffer <<= 1;
-
-    if (bit == 1) {
-        bitbuffer |= 0x01;
-    }
 
     if (m_symbolIndex == 0) {
         initVoiceFrame();
@@ -240,8 +231,8 @@ void DSDDstar::processVoice()
 
         if (m_voiceFrameCount < 20)
         {
-            m_voiceFrameCount++;
             m_frameType = DStarDataFrame;
+            m_voiceFrameCount++;
         }
         else
         {
@@ -258,28 +249,37 @@ void DSDDstar::processData()
 {
     int bit = m_dsdDecoder->m_dsdSymbol.getDibit(); // get dibit from symbol
 
-    bitbuffer <<= 1;
-
-    if (bit == 1) {
-        bitbuffer |= 0x01;
+    if (m_symbolIndex == 0)
+    {
+        memset(slowdata, 0, 4);
+        memset(nullBytes, 0, 4);
+        slowdataIx = 0;
     }
+    else if (m_symbolIndex%8 == 0)
+    {
+        slowdataIx++;
+    }
+
+    slowdata[slowdataIx] += bit<<(m_symbolIndex%8); // this is LSB first!
 
     if (m_symbolIndex == 24-1) // last bit in data frame
     {
 //        std::cerr << "DSDDstar::processData: " << m_voiceFrameCount << std::endl;
 
-        slowdata[0] = (bitbuffer >> 16) & 0x000000FF;
-        slowdata[1] = (bitbuffer >> 8) & 0x000000FF;
-        slowdata[2] = (bitbuffer) & 0x000000FF;
-        slowdata[3] = 0;
-
-        if ((m_voiceFrameCount > 1) && ((bitbuffer & 0x00FFFFFF) != 0x000000))
+        if ((m_voiceFrameCount > 0) && (memcmp(slowdata, nullBytes, 4) != 0))
         {
             slowdata[0] ^= 0x70;
             slowdata[1] ^= 0x4f;
             slowdata[2] ^= 0x93;
+//            std::cerr << "DSDDstar::processData:"
+//                    << " " << std::hex << (int) (slowdata[0])
+//                    << " " << std::hex << (int) (slowdata[1])
+//                    << " " << std::hex << (int) (slowdata[2])
+//                    << " (" << m_voiceFrameCount << ")" << std::endl;
+            processSlowData(m_voiceFrameCount == 1);
             //printf("unscrambled- %s",slowdata);
         }
+
 
         m_symbolIndex = 0;
         m_frameType = DStarVoiceFrame;
@@ -287,6 +287,86 @@ void DSDDstar::processData()
     else
     {
         m_symbolIndex++;
+    }
+}
+
+void DSDDstar::processSlowData(bool firstFrame)
+{
+    // byte 0
+    if (firstFrame || (m_slowData.counter == 0))
+    {
+        int dataType = (slowdata[0] >> 4) & 0xF;
+        m_slowData.counter = slowdata[0] & 0xF;
+
+        if (dataType > 6)
+        {
+            m_slowData.currentDataType = DStarSlowDataNone;
+        }
+        else if (dataType == 6)
+        {
+            m_slowData.currentDataType = DStarSlowDataFiller;
+            m_slowData.counter = 2;
+        }
+        else
+        {
+            m_slowData.currentDataType = (DStarSlowDataType) dataType;
+        }
+
+        std::cerr << "DSDDstar::processSlowData: " << dataType << ":" << m_slowData.counter << std::endl;
+    }
+    else
+    {
+        if (m_slowData.counter > 0)
+        {
+            processSlowDataByte(slowdata[0]);
+            m_slowData.counter--;
+        }
+    }
+    // byte 1
+    if (m_slowData.counter > 0)
+    {
+        processSlowDataByte(slowdata[1]);
+        m_slowData.counter--;
+    }
+    // byte 2
+    if (m_slowData.counter > 0)
+    {
+        processSlowDataByte(slowdata[2]);
+        m_slowData.counter--;
+    }
+
+    processSlowDataGroup();
+}
+
+void DSDDstar::processSlowDataByte(unsigned char byte)
+{
+    switch (m_slowData.currentDataType)
+    {
+    case DStarSlowDataHeader:
+        if (m_slowData.radioHeaderIndex < 41)
+        {
+            m_slowData.radioHeader[m_slowData.radioHeaderIndex] = byte;
+            m_slowData.radioHeaderIndex++;
+        }
+        break;
+    default:
+        break;
+    }
+}
+
+void DSDDstar::processSlowDataGroup()
+{
+    switch (m_slowData.currentDataType)
+    {
+    case DStarSlowDataHeader:
+        if (m_slowData.radioHeaderIndex == 41) // last byte
+        {
+            std::cerr << "DSDDstar::processSlowDataGroup: DStarSlowDataHeader" << std::endl;
+            m_slowData.radioHeaderIndex = 0;
+        }
+        break;
+    default:
+        break;
     }
 }
 
@@ -383,16 +463,18 @@ void DSDDstar::dstar_header_decode()
 
     // print header - TODO: store it in the state object for access from caller
     m_dsdDecoder->getLogger().log("\nDSTAR HEADER: ");
-    m_rpt2 = std::string((const char *) &radioheader[3], 8);
-    m_dsdDecoder->getLogger().log("RPT 2: %s ", m_rpt2.c_str());
-    m_rpt1 = std::string((const char *) &radioheader[11], 8);
-    m_dsdDecoder->getLogger().log("RPT 1: %s ", m_rpt1.c_str());
-    m_yourSign = std::string((const char *) &radioheader[19], 8);
-    m_dsdDecoder->getLogger().log("YOUR: %s ", m_yourSign.c_str());
-    m_mySign = std::string((const char *) &radioheader[27], 8);
-    m_mySign += '/';
-    m_mySign += std::string((const char *) &radioheader[35], 4);
-    m_dsdDecoder->getLogger().log("MY: %s\n", m_mySign.c_str());
+
+    m_header.setRpt2((const char *) &radioheader[3]);
+    m_dsdDecoder->getLogger().log("RPT 2: %s ", m_header.m_rpt2.c_str());
+
+    m_header.setRpt1((const char *) &radioheader[11]);
+    m_dsdDecoder->getLogger().log("RPT 1: %s ", m_header.m_rpt1.c_str());
+
+    m_header.setYourSign((const char *) &radioheader[19]);
+    m_dsdDecoder->getLogger().log("YOUR: %s ", m_header.m_yourSign.c_str());
+
+    m_header.setMySign((const char *) &radioheader[27], (const char *) &radioheader[35]);
+    m_dsdDecoder->getLogger().log("MY: %s\n", m_header.m_mySign.c_str());
 }
 
 void DSDDstar::storeSymbolDV(int bitindex, unsigned char bit, bool lsbFirst)

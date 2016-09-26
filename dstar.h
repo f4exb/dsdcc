@@ -35,10 +35,10 @@ public:
    void process();
    void processHD();
 
-   const std::string& getRpt1() const { return m_rpt1; }
-   const std::string& getRpt2() const { return m_rpt2; }
-   const std::string& getYourSign() const { return m_yourSign; }
-   const std::string& getMySign() const { return m_mySign; }
+   const std::string& getRpt1() const { return m_header.m_rpt1; }
+   const std::string& getRpt2() const { return m_header.m_rpt2; }
+   const std::string& getYourSign() const { return m_header.m_yourSign; }
+   const std::string& getMySign() const { return m_header.m_mySign; }
 
 private:
    typedef enum
@@ -48,11 +48,85 @@ private:
        DStarSyncFrame
    } DStarFrameTYpe;
 
+   struct DStarHeader
+   {
+       void clear()
+       {
+           m_rpt1.clear();
+           m_rpt2.clear();
+           m_yourSign.clear();
+           m_mySign.clear();
+       }
+
+       void setRpt1(const char *rpt1, bool force = true) {
+           if ((m_rpt1.size() == 0) || force) {
+               m_rpt1 = std::string(rpt1, 8);
+           }
+       }
+
+       void setRpt2(const char *rpt2, bool force = true) {
+           if ((m_rpt2.size() == 0) || force) {
+               m_rpt2 = std::string(rpt2, 8);
+           }
+       }
+
+       void setYourSign(const char *yourSign, bool force = true) {
+           if ((m_yourSign.size() == 0) || force) {
+               m_yourSign = std::string(yourSign, 8);
+           }
+       }
+
+       void setMySign(const char *mySign, const char *mySignInfo, bool force = true) {
+           if ((m_mySign.size() == 0) || force)
+           {
+               m_mySign = std::string(mySign, 8);
+               m_mySign += '/';
+               m_mySign += std::string(mySignInfo, 4);
+           }
+       }
+
+       std::string m_rpt1;
+       std::string m_rpt2;
+       std::string m_yourSign;
+       std::string m_mySign;
+   };
+
+
+   typedef enum
+   {
+       DStarSlowData0,
+       DStarSlowData1,
+       DStarSlowData2,
+       DStarSlowDataGPS,
+       DStarSlowData4,
+       DStarSlowDataHeader,
+       DStarSlowDataFiller,
+       DStarSlowDataNone,
+   } DStarSlowDataType;
+
+   struct DStarSlowData
+   {
+       void init()
+       {
+           counter = 0;
+           radioHeaderIndex = 0;
+           currentDataType = DStarSlowDataNone;
+       }
+
+       int counter;
+       char radioHeader[41];
+       int radioHeaderIndex;
+       DStarSlowDataType currentDataType;
+   };
+
    void initVoiceFrame();
    void initDataFrame();
 
    void processVoice();
    void processData();
+   void processSlowData(bool firstFrame);
+   void processSlowDataByte(unsigned char byte);
+   void processSlowDataGroup();
    void processSync();
 
    void dstar_header_decode();
@@ -68,15 +142,15 @@ private:
    Viterbi3 m_viterbi;
 
    // DSTAR
+   unsigned char nullBytes[4];
    unsigned char slowdata[4];
-   unsigned int bitbuffer;
+   unsigned int slowdataIx;
    const int *w, *x;
 
    // DSTAR-HD
-   std::string m_rpt1;
-   std::string m_rpt2;
-   std::string m_yourSign;
-   std::string m_mySign;
+   DStarHeader m_header;
+
+   DStarSlowData m_slowData;
 
    // constants
    static const int dW[72];
