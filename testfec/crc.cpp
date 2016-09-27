@@ -108,5 +108,16 @@ int main(int argc, char *argv[])
     	std::cout << "Test DStar CRC KO" << std::endl;
     }
 
+    DSDcc::CRC dstarCRC2(DSDcc::CRC::PolyDStar16, 16, 0xffff, 0xffff, 1, 0, 0);
+
+    unsigned long crc2 = crc.crctablefast((unsigned char *)dstarHeader, 39UL);
+    unsigned long crc_decoded = (dstarHeader[40] << 8) + dstarHeader[39]; //inversion msb lsb
+
+    if (crc2 == crc_decoded) {
+    	std::cout << "Test DStar 2 CRC OK" << std::endl;
+    } else {
+    	std::cout << "Test DStar 2 CRC KO" << std::endl;
+    }
+
     return 0;
 }

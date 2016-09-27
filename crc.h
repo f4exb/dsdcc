@@ -89,6 +89,7 @@ public:
     unsigned long crcbitbybitfast(unsigned char* p, unsigned long len);
 
     static const unsigned long PolyCCITT16;
+    static const unsigned long PolyDStar16;
 
 private:
     unsigned long reflect(unsigned long crc, int bitnum);

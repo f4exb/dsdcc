@@ -22,6 +22,7 @@ namespace DSDcc
 {
 
 const unsigned long CRC::PolyCCITT16 = 0x1021;
+const unsigned long CRC::PolyDStar16 = 0x8408;
 
 CRC::CRC(unsigned long polynomial,
             int order,
