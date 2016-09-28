@@ -15,6 +15,8 @@
 ///////////////////////////////////////////////////////////////////////////////////
 
 #include <iostream>
+#include <math.h>
+
 #include "dsd_decoder.h"
 #include "descramble.h"
 #include "dstar.h"
@@ -135,7 +137,8 @@ DSDDstar::DSDDstar(DSDDecoder *dsdDecoder) :
 		m_dsdDecoder(dsdDecoder),
 		m_voiceFrameCount(0),
 		m_frameType(DStarVoiceFrame),
-		m_viterbi(2, Viterbi::Poly23a, false)
+		m_viterbi(2, Viterbi::Poly23a, false),
+		m_crc(CRC::PolyDStar16, 16, 0xffff, 0xffff, 1, 0, 0)
 {
     reset_header_strings();
     m_slowData.init();
@@ -330,18 +333,14 @@ void DSDDstar::processSlowData(bool firstFrame)
             case DStarSlowDataHeader:
                 if (!m_slowData.gpsStart)
                 {
-                    m_slowData.gpsNMEA[m_slowData.gpsIndex] = '\0';
-                    std::cerr << "DSDDstar::processSlowData: DStarSlowDataGPS: "
-                            << "(" << m_slowData.gpsIndex << ") " << m_slowData.gpsNMEA << std::endl;
+                    processDPRS();
                 }
                 m_slowData.gpsStart = true;
                 break;
             case DStarSlowDataText:
                 if (!m_slowData.gpsStart)
                 {
-                    m_slowData.gpsNMEA[m_slowData.gpsIndex] = '\0';
-                    std::cerr << "DSDDstar::processSlowData: DStarSlowDataGPS: "
-                            << "(" << m_slowData.gpsIndex << ") " << m_slowData.gpsNMEA << std::endl;
+                    processDPRS();
                 }
                 m_slowData.gpsStart = true;
                 break;
@@ -398,9 +397,6 @@ void DSDDstar::processSlowDataByte(unsigned char byte)
         m_slowData.text[5*m_slowData.textFrameIndex + 5 -m_slowData.counter] = byte;
         break;
     case DStarSlowDataGPS:
-        if ((byte == 0x0a) || (byte == 0x0d)) {
-            byte = (unsigned char) '_';
-        }
         m_slowData.gpsNMEA[m_slowData.gpsIndex] = byte;
         m_slowData.gpsIndex++;
         break;
@@ -416,7 +412,7 @@ void DSDDstar::processSlowDataGroup()
     case DStarSlowDataHeader:
         if (m_slowData.radioHeaderIndex == 41) // last byte
         {
-            if (m_crc.check_crc((unsigned char *) m_slowData.radioHeader, 41))
+            if (m_crcDStar.check_crc((unsigned char *) m_slowData.radioHeader, 41))
         	{
 //                std::cerr << "DSDDstar::processSlowDataGroup: DStarSlowDataHeader OK" << std::endl;
                 m_header.setRpt2((const char *) &m_slowData.radioHeader[3], false);
@@ -558,6 +554,80 @@ void DSDDstar::storeSymbolDV(int bitindex, unsigned char bit, bool lsbFirst)
     else
     {
         m_dsdDecoder->m_mbeDVFrame1[8 - (bitindex/8)] |= bit << (7 - (bitindex%8)); // store bits in order in DVSI frame MSB first
+    }
+}
+
+void DSDDstar::processDPRS()
+{
+    m_slowData.gpsNMEA[m_slowData.gpsIndex] = '\0';
+
+    if (memcmp(m_slowData.gpsNMEA, "$$CRC", 5) == 0)
+    {
+//        std::cerr << "DSDDstar::processDPRS: " << m_slowData.gpsNMEA << std::endl;
+        bool crcOK = m_crcDStar.check_crc(
+                (unsigned char *) &m_slowData.gpsNMEA[10],
+                (int) strlen(m_slowData.gpsNMEA)-10,
+                m_dprs.getCRC(&m_slowData.gpsNMEA[5]));
+
+        if (crcOK)
+        {
+            if (m_dprs.matchDSTAR(m_slowData.gpsNMEA))
+            {
+                m_dprs.m_locator.toCSting(m_slowData.locator);
+//                std::cerr << "DSDDstar::processDPRS: " << m_dprs.lat << ":" << m_dprs.lon << ":" <<  m_dprs.m_locator.toString() << std::endl;
+            }
+        }
+    }
+}
+
+unsigned int DSDDstar::DPRS::getCRC(const char *d)
+{
+    char crcStr[5];
+    memcpy(crcStr, d, 4);
+    crcStr[4] = '\0';
+
+    return (unsigned int) strtol(crcStr, 0, 16);
+}
+
+bool DSDDstar::DPRS::matchDSTAR(const char *d)
+{
+    const char *pch;
+    char latStr[7+1];
+    char lonStr[8+1];
+    char latH, lonH;
+    double x, min, deg;
+
+    pch = strstr (d, "DSTAR*:/");
+
+    if (pch)
+    {
+        pch += 15;
+
+        memcpy(latStr, pch, 7);
+        latStr[7] = '\0';
+        latH = pch[7];
+        x = atof(latStr);
+        x /= 100.0f;
+        min = modf(x, &deg);
+        m_lat = (deg + ((min*100.0f)/60.0f))*(latH == 'N' ? 1 : -1);
+
+        pch += 9;
+
+        memcpy(lonStr, pch, 8);
+        lonStr[8] = '\0';
+        lonH = pch[8];
+        x = atof(lonStr);
+        x /= 100.0f;
+        min = modf(x, &deg);
+        m_lon = (deg + ((min*100.0f)/60.0f))*(lonH == 'E' ? 1 : -1);
+
+        m_locator.setLatLon(m_lat, m_lon);
+
+        return true;
+    }
+    else
+    {
+        return false;
     }
 }
 

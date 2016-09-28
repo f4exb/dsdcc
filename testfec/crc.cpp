@@ -116,6 +116,13 @@ int main(int argc, char *argv[])
 			0x0d, 0x61, 0x31 // $$CRC3161
     };
 
+    //                                  1         2         3         4         5         6         7         8         9
+    //                        0....5....0....5....0....5....0....5....0....5....0....5....0....5....0....5....0....5....0....5....0
+    char dstarCRCGPS_2[98] = "$$CRC8C55,ALBERTO-9>API510,DSTAR*:/182454h4318.59N/00638.13E>/A=000000ICOM-ID5100 TX 10w ant.97cm";
+    dstarCRCGPS_2[97] = 0x0d;
+
+    unsigned int dstarCRCGPS_2_crc = 0x8c55;
+
     std::cout << std::endl;
 
     DSDcc::DStarCRC dStarCRC;
@@ -143,6 +150,12 @@ int main(int argc, char *argv[])
     	std::cout << "Test DStar $$CRC KO" << std::endl;
     }
 
+    if (dStarCRC.check_crc(dstarCRCGPS, 71, 0x3161)) {
+        std::cout << "Test DStar $$CRC with crc OK" << std::endl;
+    } else {
+        std::cout << "Test DStar $$CRC with crc KO" << std::endl;
+    }
+
     crc2 = crc.crctablefast((unsigned char *)dstarCRCGPS, 71);
     crc_decoded = (dstarCRCGPS[71+1] << 8) + dstarCRCGPS[71]; //inversion msb lsb
 
@@ -151,6 +164,14 @@ int main(int argc, char *argv[])
     } else {
     	std::cout << "Test DStar 2 $$CRC KO" << std::endl;
     }
+
+    if (dStarCRC.check_crc((unsigned char *) &dstarCRCGPS_2[10], ((int) strlen(dstarCRCGPS_2) - 11), dstarCRCGPS_2_crc)) {
+        std::cout << "Test DStar $$CRC_2 OK" << std::endl;
+    } else {
+        std::cout << "Test DStar $$CRC_2 KO" << std::endl;
+    }
+
+    std::cout << ((int) strlen(dstarCRCGPS_2) - 11) << std::endl;
 
     return 0;
 }

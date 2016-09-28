@@ -49,6 +49,7 @@ set(dsdcc_SOURCES
     crc.cpp
     pn.cpp
     mbefec.cpp
+    locator.cpp
 )
 
 set(dsdcc_HEADERS
@@ -76,6 +77,7 @@ set(dsdcc_HEADERS
     crc.h
     pn.h
     mbefec.h
+    locator.h
 )
 
 include_directories(

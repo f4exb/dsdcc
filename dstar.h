@@ -20,6 +20,7 @@
 #include <string>
 #include "viterbi3.h"
 #include "crc.h"
+#include "locator.h"
 
 namespace DSDcc
 {
@@ -41,6 +42,9 @@ public:
    const std::string& getYourSign() const { return m_header.m_yourSign; }
    const std::string& getMySign() const { return m_header.m_mySign; }
    const char *getInfoText() const { return m_slowData.text; }
+   const char *getLocator() const { return m_slowData.locator; }
+   int getBearing() const { return m_slowData.bearing; }
+   float getDistance() const { return m_slowData.distance; }
 
 private:
    typedef enum
@@ -138,18 +142,37 @@ private:
            memset(gpsNMEA, 0, 256);
            gpsIndex = 0;
            gpsStart = true;
+           memset(locator, 0x20, 6);
+           locator[6] = '\0';
+           bearing = 0;
+           distance = 0.0;
+
            currentDataType = DStarSlowDataNone;
        }
 
-       int counter;
-       char radioHeader[41];
-       int radioHeaderIndex;
-       char text[20+1];
-       int textFrameIndex;
-       char gpsNMEA[256];
-       int gpsIndex;
-       bool gpsStart;
+       int   counter;
+       char  radioHeader[41];
+       int   radioHeaderIndex;
+       char  text[20+1];
+       int   textFrameIndex;
+       char  gpsNMEA[256];
+       int   gpsIndex;
+       bool  gpsStart;
+       char  locator[6+1];
+       int   bearing;
+       float distance;
+
        DStarSlowDataType currentDataType;
+   };
+
+   struct DPRS
+   {
+       bool matchDSTAR(const char *d);
+       unsigned int getCRC(const char *d);
+
+       float m_lon;
+       float m_lat;
+       Locator m_locator;
    };
 
    void initVoiceFrame();
@@ -160,6 +183,7 @@ private:
    void processSlowData(bool firstFrame);
    void processSlowDataByte(unsigned char byte);
    void processSlowDataGroup();
+   void processDPRS();
    void processSync();
 
    void dstar_header_decode();
@@ -173,7 +197,8 @@ private:
    int m_symbolIndex;    //!< Current symbol index in non HD sequence
    int m_symbolIndexHD;  //!< Current symbol index in HD sequence
    Viterbi3 m_viterbi;
-   DStarCRC m_crc;
+   DStarCRC m_crcDStar;
+   CRC m_crc;
 
    // DSTAR
    unsigned char nullBytes[4];
@@ -185,6 +210,7 @@ private:
    DStarHeader m_header;
 
    DStarSlowData m_slowData;
+   DPRS m_dprs;
 
    // constants
    static const int dW[72];

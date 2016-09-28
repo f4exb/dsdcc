@@ -122,6 +122,7 @@ public:
 	~DStarCRC();
 
 	bool check_crc(unsigned char *array, int size_buffer);
+	bool check_crc(unsigned char *array, int size_buffer, unsigned int crcVlaue);
 
 private:
 	unsigned char bitRead(unsigned char value, unsigned int bit) { return (((value) >> (bit)) & 0x01); }

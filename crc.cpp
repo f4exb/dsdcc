@@ -340,4 +340,20 @@ bool DStarCRC::check_crc(unsigned char *array, int size_buffer)
 	}
 }
 
+
+bool DStarCRC::check_crc(unsigned char *array, int size_buffer, unsigned int crcValue)
+{
+
+    compute_crc(array, size_buffer+2); // size given is buffer size without CRC
+
+    if (crcValue == crc)
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
 } // namespace DSDcc
