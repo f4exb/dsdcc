@@ -19,6 +19,9 @@
 
  */
 
+#ifndef LOCATOR_H_
+#define LOCATOR_H_
+
 #include <string>
 
 class LocatorInvalidException
@@ -36,7 +39,7 @@ class Locator
     Locator();
     Locator(std::string locator_str);
     Locator(float lat, float lon);
-    std::string toString();
+    std::string toString() const;
     void toCSting(char *locator) const;
     float latitude() const { return m_lat; };
     float longitude() const { return m_lon; };
@@ -69,10 +72,12 @@ class LocPoint
     LocPoint(float lat, float lon) : m_locator(lat, lon) {};
     float latitude() const { return m_locator.latitude(); }
     float longitude() const { return m_locator.longitude(); }
-    float bearingTo(LocPoint& distant_point);
-    float distanceTo(LocPoint& distant_point);
+    float bearingTo(const LocPoint& distant_point);
+    float distanceTo(const LocPoint& distant_point);
     void setLatLon(float lat, float lon) { m_locator.setLatLon(lat, lon); }
+    const Locator& getLocator() { return m_locator; }
   protected:
     Locator m_locator;
 };
 
+#endif // define LOCATOR_H_

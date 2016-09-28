@@ -29,6 +29,7 @@
 #include "dpmr.h"
 #include "dstar.h"
 #include "nxdn.h"
+#include "locator.h"
 
 #define DSD_SQUELCH_TIMEOUT_SAMPLES 960 // 200ms timeout after return to sync search
 
@@ -260,6 +261,7 @@ public:
     void enableAudioOut(bool on);
     void enableScanResumeAfterTDULCFrames(int nbFrames);
     void setDataRate(DSDRate dataRate);
+    void setMyPoint(float lat, float lon) { m_myPoint.setLatLon(lat, lon); }
 
     // parameter getters:
 
@@ -348,6 +350,7 @@ private:
     DSDRate m_dataRate;
     DSDSyncType m_syncType;
     DSDSyncType m_lastSyncType;
+    LocPoint m_myPoint;
 };
 
 } // namespace dsdcc

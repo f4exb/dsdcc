@@ -105,7 +105,7 @@ void Locator::setIndexes()
     m_lon_index3 = int(lon_rem * 12.0);
 }
 
-std::string Locator::toString()
+std::string Locator::toString() const
 {
   std::string returned = "";
 
@@ -131,7 +131,7 @@ void Locator::toCSting(char *locator) const
 
 // LocPoint class
 
-float LocPoint::bearingTo(LocPoint& distant_point)
+float LocPoint::bearingTo(const LocPoint& distant_point)
 {
   double lat1 = m_locator.latitude() * (M_PI / 180.0);
   double lon1 = m_locator.longitude() * (M_PI / 180.0);
@@ -149,7 +149,7 @@ float LocPoint::bearingTo(LocPoint& distant_point)
     return 360.0 + (bear_rad * (180.0 / M_PI));
 }
 
-float LocPoint::distanceTo(LocPoint& distant_point)
+float LocPoint::distanceTo(const LocPoint& distant_point)
 {
   double lat1 = m_locator.latitude() * (M_PI / 180.0);
   double lon1 = m_locator.longitude() * (M_PI / 180.0);

@@ -172,7 +172,7 @@ private:
 
        float m_lon;
        float m_lat;
-       Locator m_locator;
+       LocPoint m_locPoint;
    };
 
    void initVoiceFrame();
