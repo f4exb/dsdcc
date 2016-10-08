@@ -195,6 +195,32 @@ void DSDYSF::process() // just pass the frames for now
     if (m_symbolIndex < 100)
     {
         processFICH(m_symbolIndex, dibit);
+
+        if (m_symbolIndex == 100 -1)
+        {
+            if (m_fich.getFrameInformation() == FICommunication)
+            {
+                switch (m_fich.getDataType())
+                {
+                case DTVoiceData1:
+                    m_dsdDecoder->m_voice1On = true;
+                    break;
+                case DTVoiceData2:
+                    m_dsdDecoder->m_voice1On = true;
+                    break;
+                case DTVoiceFullRate:
+                    m_dsdDecoder->m_voice1On = true;
+                    break;
+                default:
+                    m_dsdDecoder->m_voice1On = false;
+                    break;
+                }
+            }
+            else
+            {
+                m_dsdDecoder->m_voice1On = false;
+            }
+        }
     }
     else if (m_symbolIndex < 480 - 20) // frame is 480 dibits and sync is 20 dibits
     {
@@ -231,6 +257,7 @@ void DSDYSF::process() // just pass the frames for now
     }
     else
     {
+        m_dsdDecoder->m_voice1On = false;
         m_dsdDecoder->resetFrameSync(); // end
         return;
     }
