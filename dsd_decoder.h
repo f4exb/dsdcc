@@ -242,8 +242,6 @@ public:
     // Initializations:
     void setQuiet();
     void setVerbosity(int verbosity);
-    void showDatascope();
-    void setDatascopeFrameRate(int frameRate);
     void showErrorBars();
     void showSymbolTiming();
     void setP25DisplayOptions(DSDShowP25 mode, bool on);
@@ -254,9 +252,6 @@ public:
     void setUpsampling(int upsampling);
     void setStereo(bool on);
     void setInvertedXTDMA(bool on);
-    void setAutoDetectionThreshold(int threshold);
-    void setQPSKSymbolBufferSize(int size);
-    void setQPSKMinMaxBufferSize(int size);
     void enableCosineFiltering(bool on);
     void enableAudioOut(bool on);
     void enableScanResumeAfterTDULCFrames(int nbFrames);

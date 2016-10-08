@@ -35,8 +35,8 @@ These are a subset of the ones covered by the original DSD project plus other fo
   - D-Star: developed and promoted by Icom for Amateur Radio customers.
   - dPMR: ETSI narrowband FDMA standard. This is somehow similar to NXDN 2400 Baud rate mode.
   - Yaesu System Fusion (abbreviated YSF): developed and promoted by Yaesu for Amateur Radio customers partly inspired by [gr-ysf](http://hb9uf.github.io/gr-ysf/). Voice full rate with SerialDV is not supported.
-  
-Next we may like to add NXDN exploiting similarities with the already implemented dPMR.  
+
+Next we may like to add NXDN exploiting similarities with the already implemented dPMR.
 
 <h1>Source code</h1>
 
@@ -66,6 +66,8 @@ Then:
 
 A binary `dsdccx` is produced and gets installed in the `bin` subdirectory of your installation directory. A typical usage is to pipe in the input from a UDP source of discriminator output samples with `socat` and pipe out to `sox` `play` utility to produce some sound:
 `socat stdout udp-listen:9999 | /opt/install/dsdcc/bin/dsdccx -i - -fa -o - | play -q -t s16 -r 8k -c 1 -`
+
+You can also run the example files in the `samples` directory. Please refer to the readme in this directory for instructions.
 
 For more details refer to the online help with the `-h` option: `dsdccx -h`
 
@@ -101,7 +103,7 @@ You can look at the source of the `dsdccx` binary to get an idea. Basically it i
    a. Check if any audio output is available and possibly get its pointer and number of samples
    b. Push these samples to the audio device or the output file or stream
  7. With a DVSI AMBE3000 based serial device and SerialDV support:
-   a. use DSDcc::DVController helper class with the processDVSerial method 
+   a. use DSDcc::DVController helper class with the processDVSerial method
    b. Check if any audio output is available from the helper class and possibly get its pointer and number of samples
    c. Push these samples to the audio device or the output file or stream
  8. Go back to step #5 until a signal is received or some sort of logic brings the loop to an end

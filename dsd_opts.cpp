@@ -23,7 +23,6 @@ DSDOpts::DSDOpts()
 {
     onesymbol = 10;
     errorbars = 1;
-    datascope = 0;
     symboltiming = 0;
     verbose = 2;
     p25enc = 0;
@@ -44,9 +43,6 @@ DSDOpts::DSDOpts()
     frame_provoice = 0;
     uvquality = 3;
     inverted_x2tdma = 1; // most transmitter + scanner + sound card combinations show inverted signals for this
-    mod_threshold = 26;
-    ssize = 36;
-    msize = 15;
     delay = 0;
     use_cosine_filter = 1;
     unmute_encrypted_p25 = 0;

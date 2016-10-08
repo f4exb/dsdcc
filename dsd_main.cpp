@@ -30,6 +30,56 @@
 #endif
 int exitflag;
 
+class Mixer
+{
+public:
+    Mixer() : m_mix(0), m_mixSize(0), m_mixSizeMax(0) {}
+    ~Mixer() {
+        if (m_mix != 0) {
+            delete[] m_mix;
+        }
+    }
+    void mix(int size1, int size2, short *channel1, short *channel2);
+    short *getMix(int &mixSize) { mixSize = m_mixSize; return m_mix; }
+
+private:
+    short *m_mix;
+    unsigned int m_mixSize;
+    unsigned int m_mixSizeMax;
+};
+
+void Mixer::mix(int size1, int size2, short *channel1, short *channel2)
+{
+    int m_mixSize = std::max(size1, size2);
+    short mixedSample;
+
+    if (m_mixSize > m_mixSizeMax)
+    {
+        if (m_mix != 0)
+        {
+            delete[] m_mix;
+        }
+
+        m_mix = new short[m_mixSizeMax];
+        m_mixSizeMax = m_mixSize;
+    }
+
+    for (int i = 0; i < m_mixSize; i++)
+    {
+        if (i < size1) {
+            m_mix[i] = channel1[i];
+        } else {
+            m_mix[i] = 0;
+        }
+
+        if (i < size2) {
+            m_mix[i] = (m_mix[i]/2) + (channel2[i]/2);
+        } else {
+            m_mix[i] /= 2;
+        }
+    }
+}
+
 static void usage ();
 static void sigfun (int sig);
 
@@ -42,15 +92,13 @@ void usage()
     fprintf(stderr, "\n");
     fprintf(stderr, "Display Options:\n");
     fprintf(stderr, "  -e            Show Frame Info and errorbars (default)\n");
-    fprintf(stderr, "  -pe           Show P25 encryption sync bits\n");
-    fprintf(stderr, "  -pl           Show P25 link control bits\n");
-    fprintf(stderr, "  -ps           Show P25 status bits and low speed data\n");
-    fprintf(stderr, "  -pt           Show P25 talkgroup info\n");
+    fprintf(stderr, "  -pe           Show P25 encryption sync bits - not supported\n");
+    fprintf(stderr, "  -pl           Show P25 link control bits - not supported\n");
+    fprintf(stderr, "  -ps           Show P25 status bits and low speed data - not supported\n");
+    fprintf(stderr, "  -pt           Show P25 talkgroup info - not supported\n");
     fprintf(stderr, "  -q            Don't show Frame Info/errorbars\n");
-    fprintf(stderr, "  -s            Datascope (disables other display options)\n");
     fprintf(stderr, "  -t            Show symbol timing during sync\n");
     fprintf(stderr, "  -v <num>      Frame information Verbosity\n");
-    fprintf(stderr, "  -z <num>      Frame rate for datascope\n");
     fprintf(stderr, "\n");
     fprintf(stderr, "Input/Output options:\n");
     fprintf(stderr,
@@ -75,33 +123,29 @@ void usage()
             "  -R <num>      Resume scan after <num> TDULC frames or any PDU or TSDU\n");
     fprintf(stderr, "\n");
     fprintf(stderr, "Decoder options:\n");
-    fprintf(stderr, "  -d <num>      Set data rate:");
-    fprintf(stderr, "     0          2400 bauds");
-    fprintf(stderr, "     1          4800 bauds (default)");
-    fprintf(stderr, "     2          9800 bauds");
+    fprintf(stderr, "  -d <num>      Set data rate:\n");
+    fprintf(stderr, "     0          2400 bauds\n");
+    fprintf(stderr, "     1          4800 bauds (default)\n");
+    fprintf(stderr, "     2          9800 bauds\n");
     fprintf(stderr, "  -fa           Auto-detect frame type (default)\n");
     fprintf(stderr, "  -fr           Decode only DMR/MOTOTRBO\n");
     fprintf(stderr, "  -fd           Decode only D-STAR\n");
-    fprintf(stderr, "  -f1           Decode only P25 Phase 1\n");
-    fprintf(stderr, "  -fi           Decode only NXDN48 (6.25 kHz) / IDAS*\n");
-    fprintf(stderr, "  -fn           Decode only NXDN96 (12.5 kHz)\n");
-    fprintf(stderr, "  -fp           Decode only ProVoice\n");
-    fprintf(stderr, "  -fx           Decode only X2-TDMA\n");
     fprintf(stderr, "  -fm           Decode only DPMR Tier 1 or 2 (6.25 kHz)\n");
     fprintf(stderr, "  -fy           Decode only YSF\n");
-    fprintf(stderr, "  -l            Disable DMR/MOTOTRBO and NXDN input filtering\n");
-    fprintf(stderr, "  -pu           Unmute Encrypted P25\n");
+    fprintf(stderr, "  -fi           Decode only NXDN48 (6.25 kHz) / IDAS* - detection only\n");
+    fprintf(stderr, "  -fn           Decode only NXDN96 (12.5 kHz)  - detection only\n");
+    fprintf(stderr, "  -f1           Decode only P25 Phase 1 - not supported\n");
+    fprintf(stderr, "  -fp           Decode only ProVoice - not supported\n");
+    fprintf(stderr, "  -fx           Decode only X2-TDMA - not supported\n");
+    fprintf(stderr, "  -T <num>      TDMA slots processed:\n");
+    fprintf(stderr, "     0          none\n");
+    fprintf(stderr, "     1          slot #1 (default) use this one for FDMA\n");
+    fprintf(stderr, "     2          slot #2\n");
+    fprintf(stderr, "     3          slots #1+2 mixed\n");
+    fprintf(stderr, "  -l            Disable matched filter\n");
+    fprintf(stderr, "  -pu           Unmute Encrypted P25 - not supported\n");
     fprintf(stderr, "  -u <num>      Unvoiced speech quality (default=3)\n");
     fprintf(stderr, "\n");
-    fprintf(stderr, "Advanced decoder options:\n");
-    fprintf(stderr,
-            "  -A <num>      QPSK modulation auto detection threshold (default=26)\n");
-    fprintf(stderr,
-            "  -S <num>      Symbol buffer size for QPSK decision point tracking\n");
-    fprintf(stderr, "                 (default=36)\n");
-    fprintf(stderr,
-            "  -M <num>      Min/Max buffer size for QPSK decision point tracking\n");
-    fprintf(stderr, "                 (default=15)\n");
     exit(0);
 }
 
@@ -127,6 +171,8 @@ int main(int argc, char **argv)
     char serialDevice[16];
     std::string dvSerialDevice;
     int dvGain_dB = 0;
+    int slots = 1;
+    Mixer mixer;
 
     fprintf(stderr, "Digital Speech Decoder DSDcc\n");
 
@@ -134,7 +180,7 @@ int main(int argc, char **argv)
     signal(SIGINT, sigfun);
 
     while ((c = getopt(argc, argv,
-            "hep:qstv:z:i:o:g:nR:f:u:U:A:S:M:lL:D:d:")) != -1)
+            "hep:qtv:i:o:g:nR:f:u:U:lL:D:d:T:")) != -1)
     {
         opterr = 0;
         switch (c)
@@ -170,9 +216,6 @@ int main(int argc, char **argv)
         case 'q':
             dsdDecoder.setQuiet();
             break;
-        case 's':
-            dsdDecoder.showDatascope();
-            break;
         case 't':
             dsdDecoder.showSymbolTiming();
             break;
@@ -180,11 +223,6 @@ int main(int argc, char **argv)
             int verbosity;
             sscanf(optarg, "%d", &verbosity);
             dsdDecoder.setLogVerbosity(verbosity);
-            break;
-        case 'z':
-            int frameRate;
-            sscanf(optarg, "%d", &frameRate);
-            dsdDecoder.setDatascopeFrameRate(frameRate);
             break;
         case 'L':
             strncpy(log_file, (const char *) optarg, 1023);
@@ -229,6 +267,14 @@ int main(int argc, char **argv)
             if ((dataRateIndex >= 0) && (dataRateIndex <= 2))
             {
                 dsdDecoder.setDataRate((DSDcc::DSDDecoder::DSDRate) dataRateIndex);
+            }
+            break;
+        case 'T':
+            int tmpSlots;
+            sscanf(optarg, "%d", &tmpSlots);
+            if ((tmpSlots >= 0) && (tmpSlots <= 3))
+            {
+                slots = tmpSlots;
             }
             break;
         case 'f':
@@ -283,21 +329,6 @@ int main(int argc, char **argv)
             int upsampling;
             sscanf(optarg, "%d", &upsampling);
             dsdDecoder.setUpsampling(upsampling);
-            break;
-        case 'A':
-            int threshold;
-            sscanf(optarg, "%i", &threshold);
-            dsdDecoder.setAutoDetectionThreshold(threshold);
-            break;
-        case 'S':
-            int ssize;
-            sscanf(optarg, "%i", &ssize);
-            dsdDecoder.setQPSKSymbolBufferSize(ssize);
-            break;
-        case 'M':
-            int msize;
-            sscanf(optarg, "%i", &msize);
-            dsdDecoder.setQPSKMinMaxBufferSize(msize);
             break;
         case 'l':
             dsdDecoder.enableCosineFiltering(false);
@@ -371,8 +402,8 @@ int main(int argc, char **argv)
     while (exitflag == 0)
     {
         short sample;
-        int nbAudioSamples;
-        short *audioSamples;
+        int nbAudioSamples1, nbAudioSamples2;
+        short *audioSamples1, *audioSamples2;
 
         int result = read(in_file_fd, (void *) &sample, sizeof(short));
 
@@ -405,19 +436,60 @@ int main(int argc, char **argv)
         else
 #endif
         {
-            audioSamples = dsdDecoder.getAudio1(nbAudioSamples);
-
-            if (nbAudioSamples > 0)
+            if (slots & 1)
             {
-                result = write(out_file_fd, (const void *) audioSamples, sizeof(short) * nbAudioSamples);
+                audioSamples1 = dsdDecoder.getAudio1(nbAudioSamples1);
+            }
+
+            if (slots & 2)
+            {
+                audioSamples2 = dsdDecoder.getAudio2(nbAudioSamples2);
+            }
+
+            if ((nbAudioSamples1 > 0) && (nbAudioSamples2 == 0))
+            {
+                result = write(out_file_fd, (const void *) audioSamples1, sizeof(short) * nbAudioSamples1);
 
                 if (result == -1) {
                     fprintf(stderr, "Error writing to output\n");
-                } else if (result != sizeof(short) * nbAudioSamples) {
-                    fprintf(stderr, "Written %d out of %d audio samples\n", result/2, nbAudioSamples);
+                } else if (result != sizeof(short) * nbAudioSamples1) {
+                    fprintf(stderr, "Written %d out of %d audio samples\n", result/2, nbAudioSamples1);
                 }
 
                 dsdDecoder.resetAudio1();
+            }
+
+            if ((nbAudioSamples2 > 0) && (nbAudioSamples1 == 0))
+            {
+                result = write(out_file_fd, (const void *) audioSamples2, sizeof(short) * nbAudioSamples2);
+
+                if (result == -1) {
+                    fprintf(stderr, "Error writing to output\n");
+                } else if (result != sizeof(short) * nbAudioSamples2) {
+                    fprintf(stderr, "Written %d out of %d audio samples\n", result/2, nbAudioSamples2);
+                }
+
+                dsdDecoder.resetAudio2();
+            }
+
+            if ((nbAudioSamples1 > 0) && (nbAudioSamples2 > 0))
+            {
+                short *mix;
+                int mixSize;
+
+                mixer.mix(nbAudioSamples1, nbAudioSamples2, audioSamples1, audioSamples2);
+                mix = mixer.getMix(mixSize);
+
+                result = write(out_file_fd, (const void *) mix, sizeof(short) * mixSize);
+
+                if (result == -1) {
+                    fprintf(stderr, "Error writing to output\n");
+                } else if (result != sizeof(short) * mixSize) {
+                    fprintf(stderr, "Written %d out of %d audio samples\n", result/2, mixSize);
+                }
+
+                dsdDecoder.resetAudio1();
+                dsdDecoder.resetAudio2();
             }
         }
     }

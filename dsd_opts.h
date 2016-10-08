@@ -28,7 +28,6 @@ public:
 
     int onesymbol;
     int errorbars;
-    int datascope;
     int symboltiming;
     int verbose;
     int p25enc;
@@ -51,9 +50,6 @@ public:
     int frame_ysf;
     int uvquality;
     int inverted_x2tdma;
-    int mod_threshold;
-    int ssize;
-    int msize;
     int delay;
     int use_cosine_filter;
     int unmute_encrypted_p25;

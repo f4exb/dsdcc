@@ -90,41 +90,15 @@ void DSDDecoder::setVerbosity(int verbosity)
     m_dsdLogger.setVerbosity(verbosity);
 }
 
-void DSDDecoder::showDatascope()
-{
-    m_opts.errorbars = 0;
-    m_opts.p25enc = 0;
-    m_opts.p25lc = 0;
-    m_opts.p25status = 0;
-    m_opts.p25tg = 0;
-    m_opts.datascope = 1;
-    m_opts.symboltiming = 0;
-}
-
-void DSDDecoder::setDatascopeFrameRate(int frameRate)
-{
-    m_opts.errorbars = 0;
-    m_opts.p25enc = 0;
-    m_opts.p25lc = 0;
-    m_opts.p25status = 0;
-    m_opts.p25tg = 0;
-    m_opts.datascope = 1;
-    m_opts.symboltiming = 0;
-    m_opts.scoperate = frameRate;
-    m_dsdLogger.log("Setting datascope frame rate to %i frame per second.\n", frameRate);
-}
-
 void DSDDecoder::showErrorBars()
 {
     m_opts.errorbars = 1;
-    m_opts.datascope = 0;
 }
 
 void DSDDecoder::showSymbolTiming()
 {
     m_opts.symboltiming = 1;
     m_opts.errorbars = 1;
-    m_opts.datascope = 0;
 }
 
 void DSDDecoder::setP25DisplayOptions(DSDShowP25 mode, bool on)
@@ -319,38 +293,6 @@ void DSDDecoder::setInvertedXTDMA(bool on)
 {
     m_opts.inverted_x2tdma = (on ? 1 : 0);
     m_dsdLogger.log("Expecting %sinverted X2-TDMA signals.\n", (m_opts.inverted_x2tdma == 0 ? "non-" : ""));
-}
-
-void DSDDecoder::setAutoDetectionThreshold(int threshold)
-{
-    m_opts.mod_threshold = threshold;
-    m_dsdLogger.log("Setting C4FM/QPSK auto detection threshold to %i\n", m_opts.mod_threshold);
-}
-
-void DSDDecoder::setQPSKSymbolBufferSize(int size)
-{
-    m_opts.ssize = size;
-
-    if (m_opts.ssize > 128) {
-        m_opts.ssize = 128;
-    } else if (m_opts.ssize < 1) {
-        m_opts.ssize = 1;
-    }
-
-    m_dsdLogger.log("Setting QPSK symbol buffer to %i\n", m_opts.ssize);
-}
-
-void DSDDecoder::setQPSKMinMaxBufferSize(int size)
-{
-    m_opts.msize = size;
-
-    if (m_opts.msize > 1024) {
-        m_opts.msize = 1024;
-    } else if (m_opts.msize < 1) {
-        m_opts.msize = 1;
-    }
-
-    m_dsdLogger.log("Setting QPSK Min/Max buffer to %i\n", m_opts.msize);
 }
 
 void DSDDecoder::enableCosineFiltering(bool on)
