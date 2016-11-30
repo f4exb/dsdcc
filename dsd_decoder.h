@@ -22,8 +22,6 @@
 #include "dsd_logger.h"
 #include "dsd_symbol.h"
 #include "dsd_mbe.h"
-#include "dmr_voice.h"
-#include "dmr_data.h"
 #include "dmr.h"
 #include "ysf.h"
 #include "dpmr.h"
