@@ -389,12 +389,12 @@ void DSDDstar::processSlowDataByte(unsigned char byte)
     case DStarSlowDataHeader:
         if (m_slowData.radioHeaderIndex < 41)
         {
-            m_slowData.radioHeader[m_slowData.radioHeaderIndex] = byte;
+            m_slowData.radioHeader[m_slowData.radioHeaderIndex] = byte < 32 ? 46 : byte;
             m_slowData.radioHeaderIndex++;
         }
         break;
     case DStarSlowDataText:
-        m_slowData.text[5*m_slowData.textFrameIndex + 5 -m_slowData.counter] = byte;
+        m_slowData.text[5*m_slowData.textFrameIndex + 5 -m_slowData.counter] = byte < 32 ? 46 : byte;
         break;
     case DStarSlowDataGPS:
         m_slowData.gpsNMEA[m_slowData.gpsIndex] = byte;
@@ -482,6 +482,8 @@ void DSDDstar::processHD()
 {
     if (m_symbolIndexHD == 660-1)
     {
+        reset_header_strings();
+        m_slowData.init();
         dstar_header_decode();
         init(); // init for DSTAR
         m_frameType = DStarVoiceFrame; // we start on a voice frame
