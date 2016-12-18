@@ -389,12 +389,12 @@ void DSDDstar::processSlowDataByte(unsigned char byte)
     case DStarSlowDataHeader:
         if (m_slowData.radioHeaderIndex < 41)
         {
-            m_slowData.radioHeader[m_slowData.radioHeaderIndex] = byte < 32 ? 46 : byte;
+            m_slowData.radioHeader[m_slowData.radioHeaderIndex] = byte < 32 || byte > 127 ? 46 : byte;
             m_slowData.radioHeaderIndex++;
         }
         break;
     case DStarSlowDataText:
-        m_slowData.text[5*m_slowData.textFrameIndex + 5 -m_slowData.counter] = byte < 32 ? 46 : byte;
+        m_slowData.text[5*m_slowData.textFrameIndex + 5 -m_slowData.counter] = byte < 32 || byte > 127 ? 46 : byte;
         break;
     case DStarSlowDataGPS:
         m_slowData.gpsNMEA[m_slowData.gpsIndex] = byte;
