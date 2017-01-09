@@ -55,6 +55,8 @@ set(dsdcc_SOURCES
 set(dsdcc_HEADERS
     descramble.h
     dmr.h
+    dmr_voice.h
+    dmr_data.h
     dsd_decoder.h
     dsd_filters.h
     dsd_logger.h
