@@ -421,6 +421,7 @@ int main(int argc, char **argv)
             if (dsdDecoder.mbeDVReady1())
             {
                 dvController.decode(dvAudioSamples, (const unsigned char *) dsdDecoder.getMbeDVFrame1(), (SerialDV::DVRate) dsdDecoder.getMbeRate(), dvGain_dB);
+
                 if (dsdDecoder.upsampling())
                 {
                     upsamplingEngine.upsample(dsdDecoder.upsampling(), dvAudioSamples, &dvAudioSamples[SerialDV::MBE_AUDIO_BLOCK_SIZE], SerialDV::MBE_AUDIO_BLOCK_SIZE);
@@ -430,7 +431,25 @@ int main(int argc, char **argv)
                 {
                     result = write(out_file_fd, (const void *) dvAudioSamples, SerialDV::MBE_AUDIO_BLOCK_BYTES); // TODO: upsampling
                 }
+
                 dsdDecoder.resetMbeDV1();
+            }
+
+            if (dsdDecoder.mbeDVReady2())
+            {
+                dvController.decode(dvAudioSamples, (const unsigned char *) dsdDecoder.getMbeDVFrame2(), (SerialDV::DVRate) dsdDecoder.getMbeRate(), dvGain_dB);
+
+                if (dsdDecoder.upsampling())
+                {
+                    upsamplingEngine.upsample(dsdDecoder.upsampling(), dvAudioSamples, &dvAudioSamples[SerialDV::MBE_AUDIO_BLOCK_SIZE], SerialDV::MBE_AUDIO_BLOCK_SIZE);
+                    result = write(out_file_fd, (const void *) &dvAudioSamples[SerialDV::MBE_AUDIO_BLOCK_SIZE], SerialDV::MBE_AUDIO_BLOCK_BYTES * dsdDecoder.upsampling());
+                }
+                else
+                {
+                    result = write(out_file_fd, (const void *) dvAudioSamples, SerialDV::MBE_AUDIO_BLOCK_BYTES); // TODO: upsampling
+                }
+
+                dsdDecoder.resetMbeDV2();
             }
         }
         else
