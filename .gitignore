@@ -1,6 +1,6 @@
 .cproject
 .project
-build
+build*
 testfec/*.o
 testfec/qr
 testfec/golay20

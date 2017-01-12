@@ -19,14 +19,11 @@
 
 #include "dsd_filters.h"
 
-extern "C" {
-#include <mbelib.h>
-}
-
 namespace DSDcc
 {
 
 class DSDDecoder;
+struct DSDmbelibParms;
 
 class DSDMBEDecoder
 {
@@ -66,9 +63,7 @@ private:
     char ambe_d[49];
     float m_upsamplerLastValue;
 
-    mbe_parms *m_cur_mp;
-    mbe_parms *m_prev_mp;
-    mbe_parms *m_prev_mp_enhanced;
+    DSDmbelibParms *m_mbelibParms;
     int m_errs;
     int m_errs2;
     char m_err_str[64];

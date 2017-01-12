@@ -19,6 +19,10 @@
 #include "dsd_mbe.h"
 #include "dsd_decoder.h"
 
+#ifdef DSD_USE_MBELIB
+#include "dsd_mbelib.h"
+#endif
+
 namespace DSDcc
 {
 
@@ -26,10 +30,9 @@ DSDMBEDecoder::DSDMBEDecoder(DSDDecoder *dsdDecoder) :
         m_dsdDecoder(dsdDecoder),
         m_upsamplerLastValue(0.0f)
 {
-    m_cur_mp = (mbe_parms *) malloc(sizeof(mbe_parms));
-    m_prev_mp = (mbe_parms *) malloc(sizeof(mbe_parms));
-    m_prev_mp_enhanced = (mbe_parms *) malloc(sizeof(mbe_parms));
-
+#ifdef DSD_USE_MBELIB
+    m_mbelibParms = new DSDmbelibParms();
+#endif
     m_audio_out_temp_buf_p = m_audio_out_temp_buf;
     memset(m_audio_out_float_buf, 0, sizeof(float) * 1120);
     m_audio_out_float_buf_p = m_audio_out_float_buf;
@@ -55,14 +58,16 @@ DSDMBEDecoder::DSDMBEDecoder(DSDDecoder *dsdDecoder) :
 
 DSDMBEDecoder::~DSDMBEDecoder()
 {
-    free(m_prev_mp_enhanced);
-    free(m_prev_mp);
-    free(m_cur_mp);
+#ifdef DSD_USE_MBELIB
+    delete m_mbelibParms;
+#endif
 }
 
 void DSDMBEDecoder::initMbeParms()
 {
-	mbe_initMbeParms(m_cur_mp, m_prev_mp, m_prev_mp_enhanced);
+#ifdef DSD_USE_MBELIB
+	mbe_initMbeParms(m_mbelibParms->m_cur_mp, m_mbelibParms->m_prev_mp, m_mbelibParms->m_prev_mp_enhanced);
+#endif
 	m_errs = 0;
 	m_errs2 = 0;
 	m_err_str[0] = 0;
@@ -84,27 +89,27 @@ void DSDMBEDecoder::processFrame(char imbe_fr[8][23], char ambe_fr[4][24], char 
     if (m_dsdDecoder->m_mbeRate == DSDDecoder::DSDMBERate7200x4400)
     {
         mbe_processImbe7200x4400Framef(m_audio_out_temp_buf, &m_errs,
-                &m_errs2, m_err_str, imbe_fr, imbe_d, m_cur_mp,
-                m_prev_mp, m_prev_mp_enhanced, m_dsdDecoder->m_opts.uvquality);
+                &m_errs2, m_err_str, imbe_fr, imbe_d, m_mbelibParms->m_cur_mp,
+                m_mbelibParms->m_prev_mp, m_mbelibParms->m_prev_mp_enhanced, m_dsdDecoder->m_opts.uvquality);
     }
     else if (m_dsdDecoder->m_mbeRate == DSDDecoder::DSDMBERate7100x4400)
     {
         mbe_processImbe7100x4400Framef(m_audio_out_temp_buf, &m_errs,
                 &m_errs2, m_err_str, imbe7100_fr, imbe_d,
-                m_cur_mp, m_prev_mp, m_prev_mp_enhanced,
+                m_mbelibParms->m_cur_mp, m_mbelibParms->m_prev_mp, m_mbelibParms->m_prev_mp_enhanced,
                 m_dsdDecoder->m_opts.uvquality);
     }
     else if (m_dsdDecoder->m_mbeRate == DSDDecoder::DSDMBERate3600x2400)
     {
         mbe_processAmbe3600x2400Framef(m_audio_out_temp_buf, &m_errs,
-                &m_errs2, m_err_str, ambe_fr, ambe_d, m_cur_mp,
-                m_prev_mp, m_prev_mp_enhanced, m_dsdDecoder->m_opts.uvquality);
+                &m_errs2, m_err_str, ambe_fr, ambe_d,m_mbelibParms-> m_cur_mp,
+                m_mbelibParms->m_prev_mp, m_mbelibParms->m_prev_mp_enhanced, m_dsdDecoder->m_opts.uvquality);
     }
     else
     {
         mbe_processAmbe3600x2450Framef(m_audio_out_temp_buf, &m_errs,
-                &m_errs2, m_err_str, ambe_fr, ambe_d, m_cur_mp,
-                m_prev_mp, m_prev_mp_enhanced, m_dsdDecoder->m_opts.uvquality);
+                &m_errs2, m_err_str, ambe_fr, ambe_d, m_mbelibParms->m_cur_mp,
+                m_mbelibParms->m_prev_mp, m_mbelibParms->m_prev_mp_enhanced, m_dsdDecoder->m_opts.uvquality);
     }
 
     if (m_dsdDecoder->m_opts.errorbars == 1)
@@ -125,20 +130,20 @@ void DSDMBEDecoder::processData(char imbe_data[88], char ambe_data[49])
     if (m_dsdDecoder->m_mbeRate == DSDDecoder::DSDMBERate4400)
     {
         mbe_processImbe4400Dataf(m_audio_out_temp_buf, &m_errs,
-                &m_errs2, m_err_str, imbe_data, m_cur_mp,
-                m_prev_mp, m_prev_mp_enhanced, m_dsdDecoder->m_opts.uvquality);
+                &m_errs2, m_err_str, imbe_data, m_mbelibParms->m_cur_mp,
+                m_mbelibParms->m_prev_mp, m_mbelibParms->m_prev_mp_enhanced, m_dsdDecoder->m_opts.uvquality);
     }
     else if (m_dsdDecoder->m_mbeRate == DSDDecoder::DSDMBERate2400)
     {
         mbe_processAmbe2400Dataf(m_audio_out_temp_buf, &m_errs,
-                &m_errs2, m_err_str, ambe_data, m_cur_mp,
-                m_prev_mp, m_prev_mp_enhanced, m_dsdDecoder->m_opts.uvquality);
+                &m_errs2, m_err_str, ambe_data, m_mbelibParms->m_cur_mp,
+                m_mbelibParms->m_prev_mp, m_mbelibParms->m_prev_mp_enhanced, m_dsdDecoder->m_opts.uvquality);
     }
     else if (m_dsdDecoder->m_mbeRate == DSDDecoder::DSDMBERate2450)
     {
         mbe_processAmbe2450Dataf(m_audio_out_temp_buf, &m_errs,
-                &m_errs2, m_err_str, ambe_data, m_cur_mp,
-                m_prev_mp, m_prev_mp_enhanced, m_dsdDecoder->m_opts.uvquality);
+                &m_errs2, m_err_str, ambe_data, m_mbelibParms->m_cur_mp,
+                m_mbelibParms->m_prev_mp, m_mbelibParms->m_prev_mp_enhanced, m_dsdDecoder->m_opts.uvquality);
     }
     else
     {

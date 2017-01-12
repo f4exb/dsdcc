@@ -80,18 +80,41 @@ set(dsdcc_HEADERS
     locator.h
 )
 
+if (USE_MBELIB AND LIBMBE_FOUND)
+    set(dsdcc_HEADERS
+        ${dsdcc_HEADERS}
+        dsd_mbelib.h
+    )
+endif()
+
 include_directories(
     ${PROJECT_SOURCE_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}
-    ${LIBMBE_INCLUDE_DIR}
-    ${LIBSERIALDV_INCLUDE_DIR}
 )
+
+if (USE_MBELIB AND LIBMBE_FOUND)
+    include_directories(
+        ${LIBMBE_INCLUDE_DIR}
+    )
+endif()
+
+if (LIBSERIALDV_FOUND)
+    include_directories(
+        ${LIBSERIALDV_INCLUDE_DIR}
+    )
+endif()
 
 add_library(dsdcc SHARED
     ${dsdcc_SOURCES}
 )
 
-target_link_libraries(dsdcc ${LIBMBE_LIBRARY} ${LIBSERIALDV_LIBRARY})
+if (USE_MBELIB AND LIBMBE_FOUND)
+    target_link_libraries(dsdcc ${LIBMBE_LIBRARY})
+endif()
+
+if (LIBSERIALDV_FOUND)
+    target_link_libraries(dsdcc ${LIBSERIALDV_LIBRARY})
+endif()
 
 add_executable(dsdccx
     dsd_main.cpp
