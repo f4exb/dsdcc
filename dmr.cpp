@@ -1070,5 +1070,20 @@ void DSDDMR::textVoiceEmbeddedSignalling(DMRAddresses& addresses, char *slotText
     }
 }
 
+const char *DSDDMR::getSlot0Text() const
+{
+    return m_dsdDecoder->m_state.slot0light;
+}
+
+const char *DSDDMR::getSlot1Text() const
+{
+    return m_dsdDecoder->m_state.slot1light;
+}
+
+unsigned char DSDDMR::getColorCode() const
+{
+    return m_dsdDecoder->m_state.ccnum;
+}
+
 } // namespace DSDcc
 

@@ -218,10 +218,6 @@ public:
     const DSDStationType getStationType() const { return m_stationType; }
     const char *getFrameTypeText() const { return m_state.ftype; }
     const char *getFrameSubtypeText() const { return m_state.fsubtype; }
-//    const char *getModulationText() const { return m_modulation; }
-    const char *getSlot0Text() const { return m_state.slot0light; }
-    const char *getSlot1Text() const { return m_state.slot1light; }
-    unsigned char getColorCode() const { return m_state.ccnum; }
     int getInLevel() const { return m_dsdSymbol.getLevel(); }
     int getCarrierPos() const { return m_dsdSymbol.getCarrierPos(); }
     int getZeroCrossingPos() const { return m_dsdSymbol.getZeroCrossingPos(); }
@@ -232,6 +228,7 @@ public:
     bool getVoice2On() const { return m_voice2On; }
     void setTDMAStereo(bool tdmaStereo);
 
+    const DSDDMR& getDMRDecoder() const { return m_dsdDMR; }
     const DSDDstar& getDStarDecoder() const { return m_dsdDstar; }
     const DSDdPMR& getDPMRDecoder() const { return m_dsdDPMR; }
     const DSDYSF& getYSFDecoder() const { return m_dsdYSF; }

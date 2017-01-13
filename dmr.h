@@ -76,6 +76,10 @@ public:
     void initDataMS();
     void processDataMS();
 
+    const char *getSlot0Text() const;
+    const char *getSlot1Text() const;
+    unsigned char getColorCode() const;
+
 private:
     struct DMRAddresses
     {
