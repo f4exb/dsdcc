@@ -101,8 +101,7 @@ void usage()
     fprintf(stderr, "  -v <num>      Frame information Verbosity\n");
     fprintf(stderr, "\n");
     fprintf(stderr, "Input/Output options:\n");
-    fprintf(stderr,
-            "  -i <device>   Audio input device (default is /dev/audio, - for piped stdin)\n");
+    fprintf(stderr, "  -i <device>   Audio input device (default is /dev/audio, - for piped stdin)\n");
     fprintf(stderr, "  -o <device>   Audio output device (default is /dev/audio, - for stdout)\n");
     fprintf(stderr, "  -g <num>      Audio output gain (default = 0 = auto, disable = -1)\n");
     fprintf(stderr, "  -U <num>      Audio output upsampling\n");
@@ -112,11 +111,10 @@ void usage()
     fprintf(stderr, "  -n            Do not send synthesized speech to audio output device\n");
     fprintf(stderr, "  -L <filename> Log messages to file with file name <filename>. Default is stderr\n");
     fprintf(stderr, "                If file name is invalid messages will go to stderr\n");
-#ifdef DSD_USE_SERIALDV
-    fprintf(stderr, "  -D <device>   Use DVSI AMBE3000 based device for AMBE decoding (e.g. ThumbDV)\n");
-    fprintf(stderr, "                You must have compiled with serialDV support (see Readme.md)\n");
-    fprintf(stderr, "                Device name is the corresponding TTY USB device e.g /dev/ttyUSB0\n");
-#endif
+    fprintf(stderr, "  -M <filename> Log formatted messages to file with file name <filename>. Default is none\n");
+    fprintf(stderr, "                Formatted messages contain traffic information such as IDs and callsigns\n");
+    fprintf(stderr, "                Fields and their column position depend on the frame type\n");
+    fprintf(stderr, "  -m <float>    Formatted messages refresh rate in seconds. Default is 0.1\n");
     fprintf(stderr, "\n");
     fprintf(stderr, "Scanner control options:\n");
     fprintf(stderr,
@@ -145,6 +143,11 @@ void usage()
     fprintf(stderr, "  -l            Disable matched filter\n");
     fprintf(stderr, "  -pu           Unmute Encrypted P25 - not supported\n");
     fprintf(stderr, "  -u <num>      Unvoiced speech quality (default=3)\n");
+#ifdef DSD_USE_SERIALDV
+    fprintf(stderr, "  -D <device>   Use DVSI AMBE3000 based device for AMBE decoding (e.g. ThumbDV)\n");
+    fprintf(stderr, "                You must have compiled with serialDV support (see Readme.md)\n");
+    fprintf(stderr, "                Device name is the corresponding TTY USB device e.g /dev/ttyUSB0\n");
+#endif
     fprintf(stderr, "\n");
     exit(0);
 }
@@ -168,6 +171,11 @@ int main(int argc, char **argv)
     int  out_file_fd = -1;
     char log_file[1023];
     log_file[0] = '\0';
+    char formattext_file[1023];
+    formattext_file[0] = '\0';
+    FILE *formattext_fp = 0;
+    float formattext_refresh = 0.1f;
+    char formattext[100];
     char serialDevice[16];
     std::string dvSerialDevice;
     int dvGain_dB = 0;
@@ -180,7 +188,7 @@ int main(int argc, char **argv)
     signal(SIGINT, sigfun);
 
     while ((c = getopt(argc, argv,
-            "hep:qtv:i:o:g:nR:f:u:U:lL:D:d:T:")) != -1)
+            "hep:qtv:i:o:g:nR:f:u:U:lL:D:d:T:M:m:")) != -1)
     {
         opterr = 0;
         switch (c)
@@ -227,6 +235,15 @@ int main(int argc, char **argv)
         case 'L':
             strncpy(log_file, (const char *) optarg, 1023);
             log_file[1023] = '\0';
+            break;
+        case 'M':
+            strncpy(formattext_file, (const char *) optarg, 1023);
+            formattext_file[1023] = '\0';
+            break;
+        case 'm':
+            float rate;
+            sscanf(optarg, "%f", &rate);
+            formattext_refresh = rate;
             break;
         case 'i':
             strncpy(in_file, (const char *) optarg, 1023);
@@ -399,6 +416,25 @@ int main(int argc, char **argv)
     }
 #endif
 
+    int formattext_nsamples;
+
+    if (formattext_file[0] == 0)
+    {
+        formattext_nsamples = 0;
+    }
+    else
+    {
+        formattext_nsamples = 48000.0f * formattext_refresh;
+        formattext_fp = fopen(formattext_file, "w");
+
+        if (!formattext_fp)
+        {
+            formattext_nsamples = 0;
+        }
+    }
+
+    int formattext_sample_count = 0;
+
     while (exitflag == 0)
     {
         short sample;
@@ -511,6 +547,26 @@ int main(int argc, char **argv)
                 dsdDecoder.resetAudio2();
             }
         }
+
+        if (formattext_nsamples > 0)
+        {
+            if (formattext_sample_count < formattext_nsamples)
+            {
+                formattext_sample_count++;
+            }
+            else
+            {
+                dsdDecoder.formatStatusText(formattext);
+                fputs(formattext, formattext_fp);
+                putc('\n', formattext_fp);
+                formattext_sample_count = 0;
+            }
+        }
+    }
+
+    if (formattext_fp)
+    {
+        fclose(formattext_fp);
     }
 
     fprintf(stderr, "End of process\n");

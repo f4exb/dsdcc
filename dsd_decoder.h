@@ -227,6 +227,7 @@ public:
     bool getVoice1On() const { return m_voice1On; }
     bool getVoice2On() const { return m_voice2On; }
     void setTDMAStereo(bool tdmaStereo);
+    void formatStatusText(char *statusText);
 
     const DSDDMR& getDMRDecoder() const { return m_dsdDMR; }
     const DSDDstar& getDStarDecoder() const { return m_dsdDstar; }
@@ -293,6 +294,15 @@ public:
     static const unsigned char m_syncProVoiceEAInv[32];
 
 private:
+    typedef enum
+    {
+        signalFormatNone,
+        signalFormatDMR,
+        signalFormatDStar,
+        signalFormatDPMR,
+        signalFormatYSF
+    } SignalFormat;
+
     int getFrameSync();
     void resetFrameSync();
     void printFrameSync(const char *frametype, int offset);
@@ -341,6 +351,8 @@ private:
     DSDSyncType m_syncType;
     DSDSyncType m_lastSyncType;
     LocPoint m_myPoint;
+    // status text
+    SignalFormat m_signalFormat;
 };
 
 } // namespace dsdcc

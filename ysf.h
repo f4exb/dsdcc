@@ -182,6 +182,10 @@ public:
     const char *getDestId() const { return m_destId; }
     const char *getSrcId() const { return m_srcId; }
 
+    static const char *ysfChannelTypeText[4];
+    static const char *ysfDataTypeText[4];
+    static const char *ysfCallModeText[4];
+
 private:
 
     void processFICH(int symbolIndex, unsigned char dibit);

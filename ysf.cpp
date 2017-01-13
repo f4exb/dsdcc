@@ -164,6 +164,28 @@ const int DSDYSF::m_vfrInterleave[144] = {
         22,  46,  70,  94, 118, 142,  47,  23,  95,  71, 143, 119
 };
 
+const char * DSDYSF::ysfChannelTypeText[4] = {
+        "H", //!< Header Channel
+        "C", //!< Communications Channel
+        "T", //!< Termination Channel
+        "S"  //!< Test
+};
+
+const char * DSDYSF::ysfDataTypeText[4] = {
+        "V1", //!< Voice/Data type 1
+        "DF", //!< Data Full Rate
+        "V2", //!< Voice/Data type 2
+        "VF"  //!< Voice Full Rate
+};
+
+const char * DSDYSF::ysfCallModeText[4] = {
+        "GC", //!< Group CQ
+        "RI", //!< Radio ID
+        "RS", //!< Reserved
+        "IN"  //!< Individual
+};
+
+
 DSDYSF::DSDYSF(DSDDecoder *dsdDecoder) :
         m_dsdDecoder(dsdDecoder),
         m_symbolIndex(0),

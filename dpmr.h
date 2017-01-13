@@ -86,6 +86,8 @@ public:
     unsigned int getCalledId() const { return m_calledId; }
     unsigned int getOwnId() const { return m_ownId; }
 
+    static char dpmrFrameTypes[9][3];
+
 private:
     class LFSRGenerator
     {

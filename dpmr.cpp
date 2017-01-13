@@ -65,6 +65,19 @@ const int DSDdPMR::rZ[36] = {
 
 const unsigned char DSDdPMR::m_preamble[12] = {1, 1, 3, 3, 1, 1, 3, 3, 1, 1, 3, 3};
 
+char DSDdPMR::dpmrFrameTypes[][3] = {
+        "--", // 0: no frame sync
+        "XS", // 1: no frame - extensive search of FS2
+        "HD", // 2: header frame
+        "PY", // 3: payload super frame not categorized yet
+        "VO", // 4: voice super frame
+        "VD", // 5: voice and data superframe
+        "D1", // 6: data type 1 super frame
+        "D2", // 7: data type 2 super frame
+        "EN", // 8: end frame
+};
+
+
 DSDdPMR::DSDdPMR(DSDDecoder *dsdDecoder) :
         m_dsdDecoder(dsdDecoder),
         m_state(DPMRHeader),

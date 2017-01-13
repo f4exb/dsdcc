@@ -66,7 +66,8 @@ DSDDecoder::DSDDecoder() :
 		m_dsdNXDN(this),
         m_dataRate(DSDRate4800),
         m_syncType(DSDSyncNone),
-        m_lastSyncType(DSDSyncNone)
+        m_lastSyncType(DSDSyncNone),
+        m_signalFormat(signalFormatNone)
 {
     resetFrameSync();
     noCarrier();
@@ -1159,6 +1160,145 @@ void DSDDecoder::printFrameInfo()
     }
 
     m_dsdLogger.log("tg: %5i ", m_state.lasttg);
+}
+
+void DSDDecoder::formatStatusText(char *statusText)
+{
+    switch (getSyncType())
+    {
+    case DSDcc::DSDDecoder::DSDSyncDMRDataMS:
+    case DSDcc::DSDDecoder::DSDSyncDMRDataP:
+    case DSDcc::DSDDecoder::DSDSyncDMRVoiceMS:
+    case DSDcc::DSDDecoder::DSDSyncDMRVoiceP:
+        if (m_signalFormat != signalFormatDMR)
+        {
+            strcpy(statusText, "DMR      :Sta: __ S1: __________________________ S2: __________________________");
+        }
+
+        switch (getStationType())
+        {
+        case DSDcc::DSDDecoder::DSDBaseStation:
+            memcpy(&statusText[15], "BS ", 3);
+            break;
+        case DSDcc::DSDDecoder::DSDMobileStation:
+            memcpy(&statusText[15], "MS ", 3);
+            break;
+        default:
+            memcpy(&statusText[15], "NA ", 3);
+            break;
+        }
+
+        memcpy(&statusText[22], getDMRDecoder().getSlot0Text(), 26);
+        memcpy(&statusText[53], getDMRDecoder().getSlot1Text(), 26);
+        m_signalFormat = signalFormatDMR;
+        break;
+    case DSDcc::DSDDecoder::DSDSyncDStarHeaderN:
+    case DSDcc::DSDDecoder::DSDSyncDStarHeaderP:
+    case DSDcc::DSDDecoder::DSDSyncDStarN:
+    case DSDcc::DSDDecoder::DSDSyncDStarP:
+        if (m_signalFormat != signalFormatDStar)
+        {
+                                       //           1    1    2    2    3    3    4    4    5    5    6    6    7    7    8
+                                       // 0....5....0....5....0....5....0....5....0....5....0....5....0....5....0....5....0..
+            strcpy(statusText, "DStar    :________/____>________|________>________|____________________|______:___/_____._");
+                                       // MY            UR       RPT1     RPT2     Info                 Loc    Target
+        }
+
+        {
+            const std::string& rpt1 = getDStarDecoder().getRpt1();
+            const std::string& rpt2 = getDStarDecoder().getRpt2();
+            const std::string& mySign = getDStarDecoder().getMySign();
+            const std::string& yrSign = getDStarDecoder().getYourSign();
+
+            if (rpt1.length() > 0) { // 0 or 8
+                memcpy(&statusText[33], rpt1.c_str(), 8);
+            }
+            if (rpt2.length() > 0) { // 0 or 8
+                memcpy(&statusText[42], rpt2.c_str(), 8);
+            }
+            if (yrSign.length() > 0) { // 0 or 8
+                memcpy(&statusText[24], yrSign.c_str(), 8);
+            }
+            if (mySign.length() > 0) { // 0 or 13
+                memcpy(&statusText[10], mySign.c_str(), 13);
+            }
+            memcpy(&statusText[51], getDStarDecoder().getInfoText(), 20);
+            memcpy(&statusText[72], getDStarDecoder().getLocator(), 6);
+            sprintf(&statusText[79], "%03d/%07.1f",
+                    getDStarDecoder().getBearing(),
+                    getDStarDecoder().getDistance());
+        }
+
+        statusText[92] = '\0';
+        m_signalFormat = signalFormatDStar;
+        break;
+    case DSDcc::DSDDecoder::DSDSyncDPMR:
+        sprintf(statusText, "dPMR     :%s CC: %04d OI: %08d CI: %08d",
+                DSDcc::DSDdPMR::dpmrFrameTypes[(int) getDPMRDecoder().getFrameType()],
+                getDPMRDecoder().getColorCode(),
+                getDPMRDecoder().getOwnId(),
+                getDPMRDecoder().getCalledId());
+        m_signalFormat = signalFormatDPMR;
+        break;
+    case DSDcc::DSDDecoder::DSDSyncYSF:
+        //           1    1    2    2    3    3    4    4    5    5    6    6    7    7    8
+        // 0....5....0....5....0....5....0....5....0....5....0....5....0....5....0....5....0..
+        // C V2 RI 0:7 WL000|ssssssssss>dddddddddd |UUUUUUUUUU>DDDDDDDDDD|44444
+        if (getYSFDecoder().getFICHError() == DSDcc::DSDYSF::FICHNoError)
+        {
+            sprintf(statusText, "YSF      :%s ", DSDcc::DSDYSF::ysfChannelTypeText[(int) getYSFDecoder().getFICH().getFrameInformation()]);
+        }
+        else
+        {
+            sprintf(statusText, "YSF      :%d ", (int) getYSFDecoder().getFICHError());
+        }
+
+        sprintf(&statusText[12], "%s %s %d:%d %c%c",
+                DSDcc::DSDYSF::ysfDataTypeText[(int) getYSFDecoder().getFICH().getDataType()],
+                DSDcc::DSDYSF::ysfCallModeText[(int) getYSFDecoder().getFICH().getCallMode()],
+                getYSFDecoder().getFICH().getBlockTotal(),
+                getYSFDecoder().getFICH().getFrameTotal(),
+                (getYSFDecoder().getFICH().isNarrowMode() ? 'N' : 'W'),
+                (getYSFDecoder().getFICH().isInternetPath() ? 'I' : 'L'));
+
+        if (getYSFDecoder().getFICH().isSquelchCodeEnabled())
+        {
+            sprintf(&statusText[24], "%03d", getYSFDecoder().getFICH().getSquelchCode());
+        }
+        else
+        {
+            strcpy(&statusText[24], "---");
+        }
+
+        char dest[11];
+
+        if ( getYSFDecoder().radioIdMode())
+        {
+            sprintf(dest, "%-5s:%-5s",
+                    getYSFDecoder().getDestId(),
+                    getYSFDecoder().getSrcId());
+        }
+        else
+        {
+            sprintf(dest, "%-10s", getYSFDecoder().getDest());
+        }
+
+        sprintf(&statusText[27], "|%-10s>%s|%-10s>%-10s|%-5s",
+                getYSFDecoder().getSrc(),
+                dest,
+                getYSFDecoder().getUplink(),
+                getYSFDecoder().getDownlink(),
+                getYSFDecoder().getRem4());
+
+        m_signalFormat = signalFormatYSF;
+        break;
+    default:
+        m_signalFormat = signalFormatNone;
+        statusText[0] = '\0';
+        break;
+    }
+
+    statusText[92] = '\0'; // guard
 }
 
 int DSDDecoder::comp(const void *a, const void *b)
