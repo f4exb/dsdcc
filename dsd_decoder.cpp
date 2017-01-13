@@ -16,6 +16,7 @@
 
 #include <stdlib.h>
 #include <assert.h>
+#include <sys/time.h>
 #include "dsd_decoder.h"
 
 namespace DSDcc
@@ -1145,6 +1146,7 @@ void DSDDecoder::printFrameInfo()
 
     int level = m_dsdSymbol.getLevel();
 
+
     if (m_opts.verbose > 0)
     {
         m_dsdLogger.log("inlvl: %2i%% ", level);
@@ -1164,6 +1166,10 @@ void DSDDecoder::printFrameInfo()
 
 void DSDDecoder::formatStatusText(char *statusText)
 {
+	struct timeval tp;
+	gettimeofday(&tp, 0);
+	sprintf(statusText, "%d.%03d:", (uint32_t) tp.tv_sec, (uint32_t) tp.tv_usec / 1000);
+
     switch (getSyncType())
     {
     case DSDcc::DSDDecoder::DSDSyncDMRDataMS:
@@ -1172,24 +1178,28 @@ void DSDDecoder::formatStatusText(char *statusText)
     case DSDcc::DSDDecoder::DSDSyncDMRVoiceP:
         if (m_signalFormat != signalFormatDMR)
         {
-            strcpy(statusText, "DMR      :Sta: __ S1: __________________________ S2: __________________________");
+            strcpy(&statusText[15], "DMR>Sta: __ S1: __________________________ S2: __________________________");
+        }
+        else
+        {
+        	memcpy(&statusText[15], "DMR", 3);
         }
 
         switch (getStationType())
         {
         case DSDcc::DSDDecoder::DSDBaseStation:
-            memcpy(&statusText[15], "BS ", 3);
+            memcpy(&statusText[24], "BS ", 3);
             break;
         case DSDcc::DSDDecoder::DSDMobileStation:
-            memcpy(&statusText[15], "MS ", 3);
+            memcpy(&statusText[24], "MS ", 3);
             break;
         default:
-            memcpy(&statusText[15], "NA ", 3);
+            memcpy(&statusText[24], "NA ", 3);
             break;
         }
 
-        memcpy(&statusText[22], getDMRDecoder().getSlot0Text(), 26);
-        memcpy(&statusText[53], getDMRDecoder().getSlot1Text(), 26);
+        memcpy(&statusText[31], getDMRDecoder().getSlot0Text(), 26);
+        memcpy(&statusText[62], getDMRDecoder().getSlot1Text(), 26);
         m_signalFormat = signalFormatDMR;
         break;
     case DSDcc::DSDDecoder::DSDSyncDStarHeaderN:
@@ -1198,10 +1208,14 @@ void DSDDecoder::formatStatusText(char *statusText)
     case DSDcc::DSDDecoder::DSDSyncDStarP:
         if (m_signalFormat != signalFormatDStar)
         {
-                                       //           1    1    2    2    3    3    4    4    5    5    6    6    7    7    8
-                                       // 0....5....0....5....0....5....0....5....0....5....0....5....0....5....0....5....0..
-            strcpy(statusText, "DStar    :________/____>________|________>________|____________________|______:___/_____._");
-                                       // MY            UR       RPT1     RPT2     Info                 Loc    Target
+                                  // 1    2    2    3    3    4    4    5    5    6    6    7    7    8    8    9    9
+                                  // 5....0....5....0....5....0....5....0....5....0....5....0....5....0....5....0....5...
+            strcpy(&statusText[15], "DST>________/____>________|________>________|____________________|______:___/_____._");
+                                      // MY            UR       RPT1     RPT2     Info                 Loc    Target
+        }
+        else
+        {
+        	memcpy(&statusText[15], "DST", 3);
         }
 
         {
@@ -1211,29 +1225,29 @@ void DSDDecoder::formatStatusText(char *statusText)
             const std::string& yrSign = getDStarDecoder().getYourSign();
 
             if (rpt1.length() > 0) { // 0 or 8
-                memcpy(&statusText[33], rpt1.c_str(), 8);
+                memcpy(&statusText[42], rpt1.c_str(), 8);
             }
             if (rpt2.length() > 0) { // 0 or 8
-                memcpy(&statusText[42], rpt2.c_str(), 8);
+                memcpy(&statusText[51], rpt2.c_str(), 8);
             }
             if (yrSign.length() > 0) { // 0 or 8
-                memcpy(&statusText[24], yrSign.c_str(), 8);
+                memcpy(&statusText[33], yrSign.c_str(), 8);
             }
             if (mySign.length() > 0) { // 0 or 13
-                memcpy(&statusText[10], mySign.c_str(), 13);
+                memcpy(&statusText[19], mySign.c_str(), 13);
             }
-            memcpy(&statusText[51], getDStarDecoder().getInfoText(), 20);
-            memcpy(&statusText[72], getDStarDecoder().getLocator(), 6);
-            sprintf(&statusText[79], "%03d/%07.1f",
+            memcpy(&statusText[60], getDStarDecoder().getInfoText(), 20);
+            memcpy(&statusText[81], getDStarDecoder().getLocator(), 6);
+            sprintf(&statusText[88], "%03d/%07.1f",
                     getDStarDecoder().getBearing(),
                     getDStarDecoder().getDistance());
         }
 
-        statusText[92] = '\0';
+        statusText[101] = '\0';
         m_signalFormat = signalFormatDStar;
         break;
     case DSDcc::DSDDecoder::DSDSyncDPMR:
-        sprintf(statusText, "dPMR     :%s CC: %04d OI: %08d CI: %08d",
+        sprintf(&statusText[15], "DPM>%s CC: %04d OI: %08d CI: %08d",
                 DSDcc::DSDdPMR::dpmrFrameTypes[(int) getDPMRDecoder().getFrameType()],
                 getDPMRDecoder().getColorCode(),
                 getDPMRDecoder().getOwnId(),
@@ -1246,14 +1260,14 @@ void DSDDecoder::formatStatusText(char *statusText)
         // C V2 RI 0:7 WL000|ssssssssss>dddddddddd |UUUUUUUUUU>DDDDDDDDDD|44444
         if (getYSFDecoder().getFICHError() == DSDcc::DSDYSF::FICHNoError)
         {
-            sprintf(statusText, "YSF      :%s ", DSDcc::DSDYSF::ysfChannelTypeText[(int) getYSFDecoder().getFICH().getFrameInformation()]);
+            sprintf(&statusText[15], "YSF>%s ", DSDcc::DSDYSF::ysfChannelTypeText[(int) getYSFDecoder().getFICH().getFrameInformation()]);
         }
         else
         {
-            sprintf(statusText, "YSF      :%d ", (int) getYSFDecoder().getFICHError());
+            sprintf(&statusText[15], "YSF>%d ", (int) getYSFDecoder().getFICHError());
         }
 
-        sprintf(&statusText[12], "%s %s %d:%d %c%c",
+        sprintf(&statusText[21], "%s %s %d:%d %c%c",
                 DSDcc::DSDYSF::ysfDataTypeText[(int) getYSFDecoder().getFICH().getDataType()],
                 DSDcc::DSDYSF::ysfCallModeText[(int) getYSFDecoder().getFICH().getCallMode()],
                 getYSFDecoder().getFICH().getBlockTotal(),
@@ -1263,11 +1277,11 @@ void DSDDecoder::formatStatusText(char *statusText)
 
         if (getYSFDecoder().getFICH().isSquelchCodeEnabled())
         {
-            sprintf(&statusText[24], "%03d", getYSFDecoder().getFICH().getSquelchCode());
+            sprintf(&statusText[33], "%03d", getYSFDecoder().getFICH().getSquelchCode());
         }
         else
         {
-            strcpy(&statusText[24], "---");
+            strcpy(&statusText[33], "---");
         }
 
         char dest[11];
@@ -1283,7 +1297,7 @@ void DSDDecoder::formatStatusText(char *statusText)
             sprintf(dest, "%-10s", getYSFDecoder().getDest());
         }
 
-        sprintf(&statusText[27], "|%-10s>%s|%-10s>%-10s|%-5s",
+        sprintf(&statusText[36], "|%-10s>%s|%-10s>%-10s|%-5s",
                 getYSFDecoder().getSrc(),
                 dest,
                 getYSFDecoder().getUplink(),
@@ -1293,12 +1307,12 @@ void DSDDecoder::formatStatusText(char *statusText)
         m_signalFormat = signalFormatYSF;
         break;
     default:
+    	strcpy(&statusText[15], "XXX>");
         m_signalFormat = signalFormatNone;
-        statusText[0] = '\0';
         break;
     }
 
-    statusText[92] = '\0'; // guard
+    statusText[101] = '\0'; // guard
 }
 
 int DSDDecoder::comp(const void *a, const void *b)

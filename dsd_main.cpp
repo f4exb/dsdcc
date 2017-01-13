@@ -175,7 +175,7 @@ int main(int argc, char **argv)
     formattext_file[0] = '\0';
     FILE *formattext_fp = 0;
     float formattext_refresh = 0.1f;
-    char formattext[100];
+    char formattext[128];
     char serialDevice[16];
     std::string dvSerialDevice;
     int dvGain_dB = 0;
@@ -243,7 +243,9 @@ int main(int argc, char **argv)
         case 'm':
             float rate;
             sscanf(optarg, "%f", &rate);
-            formattext_refresh = rate;
+            if (rate > 0.1f) {
+                formattext_refresh = rate;
+            }
             break;
         case 'i':
             strncpy(in_file, (const char *) optarg, 1023);
