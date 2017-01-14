@@ -71,6 +71,8 @@ You can also run the example files in the `samples` directory. Please refer to t
 
 For more details refer to the online help with the `-h` option: `dsdccx -h`
 
+Since version 1.6 dsdccx has the capability of sending regularly the traffic status messages to a file using the `-M` option. See [messagefile.md](messagefile.md) for details.
+
 <h1>Developpers notes</h1>
 
 <h2>Structure overview</h2>
