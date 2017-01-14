@@ -194,6 +194,17 @@ DSDYSF::DSDYSF(DSDDecoder *dsdDecoder) :
         m_pn(0x1c9),
 		m_fichError(FICHNoError)
 {
+    memset(m_dest, 0, 10+1);
+    memset(m_src, 0, 10+1);
+    memset(m_downlink, 0, 10+1);
+    memset(m_uplink, 0, 10+1);
+    memset(m_rem1, 0, 5+1);
+    memset(m_rem2, 0, 5+1);
+    memset(m_rem3, 0, 5+1);
+    memset(m_rem4, 0, 5+1);
+    memset(m_destId, 0, 5+1);
+    memset(m_srcId, 0, 5+1);
+
     w = 0;
     x = 0;
     y = 0;
