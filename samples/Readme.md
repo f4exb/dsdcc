@@ -11,5 +11,7 @@ They can be used as pipe input to `dsdccx` using `sox` utility as in this exampl
 The files are:
 
   - `dmr_it_8.dis`: Example of a DMR signal. This is some technical conversation in Italian. As this uses DMR slot #2 you have to specify the `-T2` (slot #2) or `-T3` (slots #1 and #2 mixed) option to get an output.
+  - `dpmr.dis`: Example of a dPMR signal. This is some professional communication in French. dPMR is a 2400 baud protocol so you have to specify the `-d0` option to get an output.
   - `dstar_f1zil_1.dis`: Example of a D-Star signal with header. This is an amateur radio conversation in French over F1ZIL repeater. It has quite a few errors.
   - `dstar_f1zil_2.dis`: Example of a D-Star signal captured on the fly i.e. without header. This is also a conversation over F1ZIL. It is shorter than the previous sample but has less errors. 
+  - `ysf_f5zoo.dis`: Example of a Yaesu System Fusion signal. This is an amateur radio conversation in French over F5ZOO repeater.
