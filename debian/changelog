@@ -1,0 +1,8 @@
+dsdcc (1.6.0-1) unstable; urgency=medium
+
+  * Initial release as a Debian package
+  * Code refactoring with some changes in interface from 1.5.5
+  * Added options to log formatted messages containing the traffic control information
+  * Added options to specify own geographical position
+
+ -- Edouard Griffiths, F4EXB <f4exb06@gmail.com>  Sat, 14 Jan 2017 11:15:15 +0100

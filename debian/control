@@ -1,0 +1,19 @@
+Source: dsdcc
+Section: hamradio
+Priority: optional
+Maintainer: Edouard Griffiths, F4EXB <f4exb06@gmail.com>
+Build-Depends: debhelper (>=9)
+Standards-Version: 3.9.6
+Homepage: https://github.com/f4exb/dsdcc
+#Vcs-Git: git://anonscm.debian.org/collab-maint/dsdcc.git
+#Vcs-Browser: https://anonscm.debian.org/cgit/collab-maint/dsdcc.git
+
+Package: dsdcc
+Architecture: any
+Depends: libc6, libstdc++6, libgcc1, libusb-1.0-0, ${shlibs:Depends}, ${misc:Depends}
+Description: Digital Speech Decoder (DSD) rewritten as a C++ library
+ DSDcc is a complete rewrite from the original DSD (Digital Speech Decoder) project.
+ It provides a binary executable dsdccx and a library libdsdcc.so to be used in 
+ other programs.
+ It decodes DMR, dPMR, D-Star and Yaesu System Fusion (YSF) standards
+ 

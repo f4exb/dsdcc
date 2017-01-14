@@ -15,6 +15,19 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules)
 
 project(dsdcc)
 
+if (BUILD_TYPE MATCHES RELEASE)
+    set(CMAKE_BUILD_TYPE "Release")
+elseif (BUILD_TYPE MATCHES RELEASEWITHDBGINFO)
+    set(CMAKE_BUILD_TYPE "ReleaseWithDebugInfo")
+elseif (BUILD_TYPE MATCHES DEBUG)
+    set(CMAKE_BUILD_TYPE "Debug")
+elseif (BUILD_TYPE MATCHES DEBIAN)
+    set(CMAKE_BUILD_TYPE "Release")
+    set(BUILD_DEBIAN TRUE)
+else()
+    set(CMAKE_BUILD_TYPE "Release")
+endif()
+
 find_package(LibMbe)
 find_package(SerialDV) 
 
@@ -114,6 +127,17 @@ endif()
 
 if (LIBSERIALDV_FOUND)
     target_link_libraries(dsdcc ${LIBSERIALDV_LIBRARY})
+endif()
+
+if (BUILD_DEBIAN)
+    add_subdirectory(mbelib)
+    add_subdirectory(serialdv)
+    add_definitions(-DDSD_USE_SERIALDV)
+    include_directories(${LIBSERIALDVSRC})
+    target_link_libraries(dsdcc serialdv)
+    add_definitions(-DDSD_USE_MBELIB)
+    include_directories(${LIBMBELIBSRC})
+    target_link_libraries(dsdcc mbelib)    
 endif()
 
 add_executable(dsdccx
