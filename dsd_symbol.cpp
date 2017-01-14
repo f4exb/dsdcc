@@ -32,16 +32,17 @@ const int DSDSymbol::m_zeroCrossingCorrectionProfile9600[11] = { 0, 1, 1, 1, 1, 
 DSDSymbol::DSDSymbol(DSDDecoder *dsdDecoder) :
         m_dsdDecoder(dsdDecoder),
         m_symbol(0),
+        m_sampleIndex(0),
         m_noSignal(false),
         m_zeroCrossingSlopeDivisor(232), // for 10 samples per symbol
+        m_lmmidx(0),
         m_lmmSamples(10*24),
 		m_ringingFilter(48000.0, 4800.0, 0.99),
 		m_binSymbolBuffer(1024),
 		m_syncSymbolBuffer(64),
 		m_nonInvertedSyncSymbolBuffer(64)
 {
-    resetSymbol();
-    resetZeroCrossing();
+    noCarrier();
     m_umid = 0;
     m_lmid = 0;
     m_nbFSKSymbols = 2;

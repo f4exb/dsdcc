@@ -33,6 +33,7 @@ public:
     {
         assert(m_size > 0);
         m_buffer = new T[2*m_size];
+        reset();
     }
 
     ~DoubleBuffer()
