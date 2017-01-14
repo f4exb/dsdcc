@@ -96,8 +96,8 @@ There is one line per polling occurence with a fixed format depending on the pro
   - **7**: Destination repeater callsign (RPT2)
   - **8**: Informative text
   - **9**: 6 character locator a.k.a. Maidenhead locator
-  - **A**: Bearing to the station when own position is specified (option TBD)
-  - **B**: Distance to the station when own position is specified (option TBD)
+  - **A**: Bearing to the origin station when locator is defined and own position is specified (options -P and -Q)
+  - **B**: Distance to the origin station when locator is defined and own position is specified (options -P and -Q)
   
 <h3>YSF (Yaesu System Fusion)</h3>
 
