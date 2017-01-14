@@ -85,9 +85,10 @@ Since version 1.6 dsdccx has the capability of sending regularly the traffic sta
   - The `DSDSymbol` object is responsible for symbol and dibit processing. It receives a new sample with its `pushSample()` method. It processes it and when enough samples have been receives it can produce a new symbol that it stores internally.
   - The `DSDMBEDecoder` object is responsible of taking in AMBE frames and producing the final audio output at 8 kS/s. It is a wrapper around the `mbelib` library. It also handles the optional upsampling of audio to 48 kS/s.
   - The objects specialized in the decoding of the various formats are:
-    - The `DSDDMRVoice` object is responsible of handling the processing of DMR voice frames. It uses the service of `DSDMBEDecoder` to produce the final audio output.
-    - The `DSDDMRData` object is responsible of handling the processing of DMR data frames. It does not produce any audio output.
+    - The `DSDDMR` object is responsible of handling the processing of DMR frames. It uses the service of `DSDMBEDecoder` to produce the final audio output.
+    - The `DSDdPMR` object is responsible of handling the processing of dPMR frames. It uses the service of `DSDMBEDecoder` to produce the final audio output.
     - The `DSDDstar` object is responsible of handling the processing of D-Star frames. It uses the service of `DSDMBEDecoder` to produce the final audio output.
+    - The `DSDYSF` object is responsible of handling the processing of Yaesu System Fusion frames. It uses the service of `DSDMBEDecoder` to produce the final audio output.    
   - Some utility objects are also defined:
     - The `Descramble` object contains static data and methods mainly used in the decoding of D-Star frames. It is based on Jonathan Naylor G4KLX code.
     - The `DSDFilters` object as the name implies contains methods to perform various forms of DSP filtering.
