@@ -64,7 +64,7 @@ public:
 
     void move(int distance)
     {
-        m_index = (m_index + distance) % m_size;
+        m_index = (m_index + m_size + distance) % m_size;
     }
 
     T *getData(unsigned int shift = 0) // point to oldest by default
@@ -88,7 +88,7 @@ public:
     {
         if (shift < m_size)
         {
-            return &m_buffer[(m_index - shift) % m_size];
+            return &m_buffer[(m_index + m_size - shift) % m_size];
         }
         else
         {
