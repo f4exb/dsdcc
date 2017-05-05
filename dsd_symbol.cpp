@@ -38,7 +38,7 @@ DSDSymbol::DSDSymbol(DSDDecoder *dsdDecoder) :
         m_lmmidx(0),
         m_lmmSamples(10*24),
 		m_ringingFilter(48000.0, 4800.0, 0.99),
-		m_pll(0.1, 0.01, 1e-3),
+		m_pll(0.1, 0.01, 0.25),
 		m_binSymbolBuffer(1024),
 		m_syncSymbolBuffer(64),
 		m_nonInvertedSyncSymbolBuffer(64)
@@ -318,7 +318,7 @@ void DSDSymbol::setSamplesPerSymbol(int samplesPerSymbol)
         m_lmmSamples.resize(5*24);
         m_ringingFilter.setFrequencies(48000.0, 9600.0);
         m_ringingFilter.setR(0.99);
-        m_pll.configure(0.2, 0.01, 1e-3);
+        m_pll.configure(0.2, 0.01, 0.25);
     }
     else if (m_samplesPerSymbol == 10)
     {
@@ -327,7 +327,7 @@ void DSDSymbol::setSamplesPerSymbol(int samplesPerSymbol)
         m_lmmSamples.resize(10*24);
         m_ringingFilter.setFrequencies(48000.0, 4800.0);
         m_ringingFilter.setR(0.99);
-        m_pll.configure(0.1, 0.01, 1e-3);
+        m_pll.configure(0.1, 0.01, 0.25);
     }
     else if (m_samplesPerSymbol == 20)
     {
@@ -336,7 +336,7 @@ void DSDSymbol::setSamplesPerSymbol(int samplesPerSymbol)
         m_lmmSamples.resize(20*24);
         m_ringingFilter.setFrequencies(48000.0, 2400.0);
         m_ringingFilter.setR(0.996);
-        m_pll.configure(0.05, 0.003, 1e-3);
+        m_pll.configure(0.05, 0.003, 0.25);
     }
     else
     {
@@ -345,7 +345,7 @@ void DSDSymbol::setSamplesPerSymbol(int samplesPerSymbol)
         m_lmmSamples.resize(10*24);
         m_ringingFilter.setFrequencies(48000.0, 4800.0);
         m_ringingFilter.setR(0.99);
-        m_pll.configure(0.1, 0.01, 1e-3);
+        m_pll.configure(0.1, 0.01, 0.25);
     }
 }
 

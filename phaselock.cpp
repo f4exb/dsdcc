@@ -45,7 +45,8 @@ PhaseLock::PhaseLock(float freq, float bandwidth, float minsignal)
 
     // Set valid signal threshold.
     m_minsignal  = minsignal;
-    m_lock_delay = int(20.0 / bandwidth);
+    m_lock_delay = int(1.0 / bandwidth);
+    //m_lock_delay = 1;
     m_lock_cnt   = 0;
     m_psin = 0.0;
     m_pcos = 1.0;
@@ -84,7 +85,6 @@ PhaseLock::PhaseLock(float freq, float bandwidth, float minsignal)
 
 void PhaseLock::configure(float freq, float bandwidth, float minsignal)
 {
-	fprintf(stderr, "PhaseLock::configure: freq: %f bandwidth: %f minsignal: %f", freq, bandwidth, minsignal);
     /*
      * This is a type-2, 4th order phase-locked loop.
      *
@@ -104,8 +104,15 @@ void PhaseLock::configure(float freq, float bandwidth, float minsignal)
 
     // Set valid signal threshold.
     m_minsignal  = minsignal;
-    m_lock_delay = int(20.0 / bandwidth);
+    m_lock_delay = int(1.0 / bandwidth);
+    //m_lock_delay = 1;
     m_lock_cnt   = 0;
+
+    fprintf(stderr, "PhaseLock::configure: freq: %f bandwidth: %f minsignal: %f, m_lock_delay: %d\n",
+            freq,
+            bandwidth,
+            minsignal,
+            m_lock_delay);
 
     // Create 2nd order filter for I/Q representation of phase error.
     // Filter has two poles, unit DC gain.
@@ -204,19 +211,22 @@ void PhaseLock::process(const std::vector<float>& samples_in, std::vector<float>
         if (m_phase > 2.0 * M_PI) {
             m_phase -= 2.0 * M_PI;
         }
-    }
 
-    // Update lock status.
-    if (2 * pilot_level > m_minsignal)
-    {
-        if (m_lock_cnt < m_lock_delay)
+        // Update lock status.
+        if ((phase_err > -m_minsignal) && (phase_err < m_minsignal))
         {
-            m_lock_cnt += n;
+            if (m_lock_cnt < 2*m_lock_delay)
+            {
+                m_lock_cnt += 1;
+            }
         }
-    }
-    else
-    {
-        m_lock_cnt = 0;
+        else
+        {
+            if (m_lock_cnt > 0)
+            {
+                m_lock_cnt -= 1;
+            }
+        }
     }
 
     // Update sample counter.
@@ -265,6 +275,22 @@ void PhaseLock::process(const float& sample_in, float *samples_out)
 		phase_err = -1;
 	}
 
+    // Update lock status.
+    if ((phase_err > -m_minsignal) && (phase_err < m_minsignal))
+    {
+        if (m_lock_cnt < 2*m_lock_delay)
+        {
+            m_lock_cnt += 1;
+        }
+    }
+    else
+    {
+        if (m_lock_cnt > 0)
+        {
+            m_lock_cnt -= 1;
+        }
+    }
+
 	// Run phase error through loop filter and update frequency estimate.
 	m_freq += m_loopfilter_b0 * phase_err
 			  + m_loopfilter_b1 * m_loopfilter_x1;
@@ -279,19 +305,6 @@ void PhaseLock::process(const float& sample_in, float *samples_out)
 	{
 		m_phase -= 2.0 * M_PI;
 	}
-
-    // Update lock status.
-    if (2 * phasor_i > m_minsignal)
-    {
-        if (m_lock_cnt < m_lock_delay)
-        {
-            m_lock_cnt += 1; // n
-        }
-    }
-    else
-    {
-        m_lock_cnt = 0;
-    }
 
     // Update sample counter.
     m_sample_cnt += 1; // n
