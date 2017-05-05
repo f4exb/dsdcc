@@ -63,6 +63,7 @@ set(dsdcc_SOURCES
     pn.cpp
     mbefec.cpp
     locator.cpp
+    phaselock.cpp
 )
 
 set(dsdcc_HEADERS
@@ -91,6 +92,7 @@ set(dsdcc_HEADERS
     pn.h
     mbefec.h
     locator.h
+    phaselock.h
 )
 
 if (USE_MBELIB AND LIBMBE_FOUND)

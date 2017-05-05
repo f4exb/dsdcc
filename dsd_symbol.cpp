@@ -38,6 +38,7 @@ DSDSymbol::DSDSymbol(DSDDecoder *dsdDecoder) :
         m_lmmidx(0),
         m_lmmSamples(10*24),
 		m_ringingFilter(48000.0, 4800.0, 0.99),
+		m_pll(0.1, 0.01, 1e-3),
 		m_binSymbolBuffer(1024),
 		m_syncSymbolBuffer(64),
 		m_nonInvertedSyncSymbolBuffer(64)
@@ -117,11 +118,16 @@ bool DSDSymbol::pushSample(short sample)
         short sampleSq = ((((int) sample)- m_center) * (((int) sample)- m_center)) >> 15;
         short sampleRinging = m_ringingFilter.run(sampleSq);
 
-        // zero crossing - rising edge only with enough steepness
-        if ((sampleRinging > 0) && (m_lastsample < 0) && (sampleRinging - m_lastsample > (m_max - m_min) / m_zeroCrossingSlopeDivisor))
+        float pllOut[2];
+        float pllIn = sampleRinging / 32768.0f;
+        m_pll.process(pllIn, pllOut);
+        m_symbolSyncSample = pllOut[0] * 16384.0f;
+
+        // process with PLL
+        if ((m_symbolSyncSample > 0) && (m_lastsample < 0))
         {
-            m_symbolSyncSample = m_max;
-            int targetZero = (m_sampleIndex - (m_samplesPerSymbol/4)) % m_samplesPerSymbol; // empirically should be ~T/4 away
+            int targetZero = (m_sampleIndex - (m_samplesPerSymbol/4)) % m_samplesPerSymbol; // empirically should be ~T/4 away;
+            //int targetZero = (m_sampleIndex - 5) % m_samplesPerSymbol;
 
             if (targetZero < (m_samplesPerSymbol)/2) // sampling point lags
             {
@@ -137,7 +143,29 @@ bool DSDSymbol::pushSample(short sample)
             }
         }
 
-        m_lastsample = sampleRinging;
+        m_lastsample = m_symbolSyncSample;
+
+//        // zero crossing - rising edge only with enough steepness
+//        if ((sampleRinging > 0) && (m_lastsample < 0) && (sampleRinging - m_lastsample > (m_max - m_min) / m_zeroCrossingSlopeDivisor))
+//        {
+//            //m_symbolSyncSample = m_max;
+//            int targetZero = (m_sampleIndex - (m_samplesPerSymbol/4)) % m_samplesPerSymbol; // empirically should be ~T/4 away
+//
+//            if (targetZero < (m_samplesPerSymbol)/2) // sampling point lags
+//            {
+//                m_zeroCrossingPos = -targetZero;
+//                m_zeroCrossing = -targetZero;
+//                m_zeroCrossingInCycle = true;
+//            }
+//            else // sampling point leads
+//            {
+//                m_zeroCrossingPos = m_samplesPerSymbol - targetZero;
+//                m_zeroCrossing = m_samplesPerSymbol - targetZero;
+//                m_zeroCrossingInCycle = true;
+//            }
+//        }
+//
+//        m_lastsample = sampleRinging;
     }
 
     // symbol estimation
@@ -173,7 +201,7 @@ bool DSDSymbol::pushSample(short sample)
 
     if ((m_sampleIndex == 0) && (!m_noSignal))
     {
-        m_symbolSyncSample = m_center;
+        //m_symbolSyncSample = m_center;
 
         if (m_zeroCrossingInCycle)
         {
@@ -289,6 +317,8 @@ void DSDSymbol::setSamplesPerSymbol(int samplesPerSymbol)
         m_zeroCrossingSlopeDivisor = 164;
         m_lmmSamples.resize(5*24);
         m_ringingFilter.setFrequencies(48000.0, 9600.0);
+        m_ringingFilter.setR(0.99);
+        m_pll.configure(0.2, 0.01, 1e-3);
     }
     else if (m_samplesPerSymbol == 10)
     {
@@ -296,6 +326,8 @@ void DSDSymbol::setSamplesPerSymbol(int samplesPerSymbol)
         m_zeroCrossingSlopeDivisor = 232;
         m_lmmSamples.resize(10*24);
         m_ringingFilter.setFrequencies(48000.0, 4800.0);
+        m_ringingFilter.setR(0.99);
+        m_pll.configure(0.1, 0.01, 1e-3);
     }
     else if (m_samplesPerSymbol == 20)
     {
@@ -303,6 +335,8 @@ void DSDSymbol::setSamplesPerSymbol(int samplesPerSymbol)
         m_zeroCrossingSlopeDivisor = 328;
         m_lmmSamples.resize(20*24);
         m_ringingFilter.setFrequencies(48000.0, 2400.0);
+        m_ringingFilter.setR(0.996);
+        m_pll.configure(0.05, 0.003, 1e-3);
     }
     else
     {
@@ -310,6 +344,8 @@ void DSDSymbol::setSamplesPerSymbol(int samplesPerSymbol)
         m_zeroCrossingSlopeDivisor = 232;
         m_lmmSamples.resize(10*24);
         m_ringingFilter.setFrequencies(48000.0, 4800.0);
+        m_ringingFilter.setR(0.99);
+        m_pll.configure(0.1, 0.01, 1e-3);
     }
 }
 

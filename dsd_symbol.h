@@ -20,6 +20,7 @@
 #include "dsd_filters.h"
 #include "doublebuffer.h"
 #include "runningmaxmin.h"
+#include "phaselock.h"
 
 namespace DSDcc
 {
@@ -113,6 +114,7 @@ private:
     int  m_samplesPerSymbol;
     lemiremaxmintruestreaming<short> m_lmmSamples;    //!< running min/max calculator
     DSDSecondOrderRecursiveFilter m_ringingFilter;
+    SimplePhaseLock m_pll;
     DoubleBuffer<unsigned char> m_binSymbolBuffer;    //!< digitized symbol
     DoubleBuffer<unsigned char> m_syncSymbolBuffer;   //!< symbol digitized for synchronization: positive is 1, negative is 3
     DoubleBuffer<unsigned char> m_nonInvertedSyncSymbolBuffer; //!< same but resetting to positive sync
