@@ -27,7 +27,7 @@ class DSDLogger
 {
 public:
     DSDLogger();
-    DSDLogger(const char *filename);
+    explicit DSDLogger(const char *filename);
     ~DSDLogger();
 
     void setFile(const char *filename);

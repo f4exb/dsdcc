@@ -137,7 +137,6 @@ float LocPoint::bearingTo(const LocPoint& distant_point)
   double lon1 = m_locator.longitude() * (M_PI / 180.0);
   double lat2 = distant_point.latitude() * (M_PI / 180.0);
   double lon2 = distant_point.longitude() * (M_PI / 180.0);
-  double dLat = lat2 - lat1;
   double dLon = lon2 - lon1;
   double y = sin(dLon) * cos(lat2);
   double x = (cos(lat1)*sin(lat2)) -

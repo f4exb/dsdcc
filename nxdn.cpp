@@ -27,6 +27,8 @@ DSDNXDN::DSDNXDN(DSDDecoder *dsdDecoder) :
 		m_lichEvenParity(0),
 		m_symbolIndex(0)
 {
+    memset(m_syncBuffer, 0, 11);
+    memset(m_lichBuffer, 0, 8);
 }
 
 DSDNXDN::~DSDNXDN()

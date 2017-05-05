@@ -41,6 +41,8 @@ DSDOpts::DSDOpts()
     frame_nxdn96 = 1;
     frame_dmr = 1;
     frame_provoice = 0;
+    frame_dpmr = 0;
+    frame_ysf = 0;
     uvquality = 3;
     inverted_x2tdma = 1; // most transmitter + scanner + sound card combinations show inverted signals for this
     delay = 0;

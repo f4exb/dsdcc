@@ -29,7 +29,7 @@ class DSDDecoder;
 class DSDSymbol
 {
 public:
-    DSDSymbol(DSDDecoder *dsdDecoder);
+    explicit DSDSymbol(DSDDecoder *dsdDecoder);
     ~DSDSymbol();
 
     void noCarrier();

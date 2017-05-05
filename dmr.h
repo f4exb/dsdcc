@@ -61,7 +61,7 @@ public:
         DSDDMRDataUnknown
     } DSDDMRDataTYpe;
 
-    DSDDMR(DSDDecoder *dsdDecoder);
+    explicit DSDDMR(DSDDecoder *dsdDecoder);
     ~DSDDMR();
 
     void initData();
@@ -83,6 +83,13 @@ public:
 private:
     struct DMRAddresses
     {
+        DMRAddresses() :
+            m_group(false),
+            m_target(0),
+            m_source(0)
+        {
+        }
+
         bool         m_group;
         unsigned int m_target;
         unsigned int m_source;

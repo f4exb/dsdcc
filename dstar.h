@@ -30,7 +30,7 @@ class DSDDecoder;
 class DSDDstar
 {
 public:
-	DSDDstar(DSDDecoder *dsdDecoder);
+	explicit DSDDstar(DSDDecoder *dsdDecoder);
    ~DSDDstar();
 
    void init(bool header = false);
@@ -167,6 +167,11 @@ private:
 
    struct DPRS
    {
+       DPRS() :
+           m_lon(0.0f),
+           m_lat(0.0f)
+       {}
+
        bool matchDSTAR(const char *d);
        unsigned int getCRC(const char *d);
 

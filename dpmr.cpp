@@ -96,8 +96,17 @@ DSDdPMR::DSDdPMR(DSDDecoder *dsdDecoder) :
         y(0),
         z(0)
 {
+    memset(m_bitBuffer, 0, 80);
+    memset(m_bitBufferRx, 0, 120);
+    memset(m_bitWork, 0, 80);
+    m_calledIdWork = 0;
+    memset(m_colourBuffer, 0, 12);
+    m_ownIdWork = 0;
+    memset(m_syncDoubleBuffer, 0, 24);
+
     initScrambling();
     initInterleaveIndexes();
+    init();
 }
 
 DSDdPMR::~DSDdPMR()
@@ -528,7 +537,7 @@ void DSDdPMR::processCCH(int symbolIndex, int dibit)
 
     if (symbolIndex == 35)
     {
-        bool hammingStatus = m_hamming.decode(m_bitBufferRx, m_bitBuffer, 6);
+        m_hamming.decode(m_bitBufferRx, m_bitBuffer, 6);
 
         if (checkCRC7(m_bitBuffer, 41)) // CRC7 check OK
         {
@@ -741,8 +750,6 @@ void DSDdPMR::storeSymbolDV(int dibitindex, unsigned char dibit, bool invertDibi
 
 void DSDdPMR::initScrambling()
 {
-    unsigned char dibit;
-
     m_scramblingGenerator.init();
 
     for (int i = 0; i < 120; i++)

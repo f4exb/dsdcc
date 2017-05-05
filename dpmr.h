@@ -75,7 +75,7 @@ public:
         DPMRUndefinedFormat  //!< Undefined
     } DPMRCommFormat;
 
-    DSDdPMR(DSDDecoder *dsdDecoder);
+    explicit DSDdPMR(DSDDecoder *dsdDecoder);
     ~DSDdPMR();
 
     void init();

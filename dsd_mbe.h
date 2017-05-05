@@ -28,7 +28,7 @@ struct DSDmbelibParms;
 class DSDMBEDecoder
 {
 public:
-    DSDMBEDecoder(DSDDecoder *dsdDecoder);
+    explicit DSDMBEDecoder(DSDDecoder *dsdDecoder);
     ~DSDMBEDecoder();
 
     void initMbeParms();

@@ -112,13 +112,26 @@ DSDDMR::DSDDMR(DSDDecoder *dsdDecoder) :
         m_colorCode(0),
         m_dataType(DSDDMRDataUnknown),
         m_voice1FrameCount(6),
-        m_voice2FrameCount(6)
+        m_voice2FrameCount(6),
+        m_voice1EmbSig_dibitsIndex(0),
+        m_voice2EmbSig_dibitsIndex(0),
+        m_voice1EmbSig_OK(false),
+        m_voice2EmbSig_OK(false)
 {
     m_slotText = m_dsdDecoder->m_state.slot0light;
     w = 0;
     x = 0;
     y = 0;
     z = 0;
+
+    memset(m_slotTypePDU_dibits, 0, 10);
+    memset(m_cachBits, 0, 24);
+    memset(m_emb_dibits, 0, 8);
+    memset(m_voiceEmbSig_dibits, 0, 16);
+    memset(m_voice1EmbSigRawBits, 0, 16*8);
+    memset(m_voice2EmbSigRawBits, 0, 16*8);
+    memset(m_syncDibits, 0, 24);
+    memset(m_mbeDVFrame, 0, 9);
 }
 
 DSDDMR::~DSDDMR()
@@ -1059,8 +1072,8 @@ void DSDDMR::storeSymbolDV(unsigned char *mbeFrame, int dibitindex, unsigned cha
 
 void DSDDMR::textVoiceEmbeddedSignalling(DMRAddresses& addresses, char *slotText)
 {
-    sprintf(&slotText[8],  "%08d", addresses.m_source);
-    sprintf(&slotText[18], "%08d", addresses.m_target);
+    sprintf(&slotText[8],  "%08u", addresses.m_source);
+    sprintf(&slotText[18], "%08u", addresses.m_target);
     slotText[16] = '>';
 
     if (addresses.m_group) {

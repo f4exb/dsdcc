@@ -28,7 +28,8 @@ namespace DSDcc
 
 DSDMBEDecoder::DSDMBEDecoder(DSDDecoder *dsdDecoder) :
         m_dsdDecoder(dsdDecoder),
-        m_upsamplerLastValue(0.0f)
+        m_upsamplerLastValue(0.0f),
+        m_mbelibParms(0)
 {
 #ifdef DSD_USE_MBELIB
     m_mbelibParms = new DSDmbelibParms();
@@ -54,6 +55,9 @@ DSDMBEDecoder::DSDMBEDecoder(DSDDecoder *dsdDecoder) :
     m_upsample = 0;
 
 	initMbeParms();
+
+	memset(ambe_d, 0, 49);
+	memset(imbe_d, 0, 88);
 }
 
 DSDMBEDecoder::~DSDMBEDecoder()
@@ -357,7 +361,7 @@ void DSDMBEDecoder::processAudio()
 
 void DSDMBEDecoder::upsample(int upsampling, float invalue)
 {
-    int i, j, sum;
+    int sum;
     float *outbuf1, c, d;
 
     outbuf1 = m_audio_out_float_buf_p;

@@ -138,10 +138,17 @@ DSDDstar::DSDDstar(DSDDecoder *dsdDecoder) :
 		m_voiceFrameCount(0),
 		m_frameType(DStarVoiceFrame),
 		m_viterbi(2, Viterbi::Poly23a, false),
-		m_crc(CRC::PolyDStar16, 16, 0xffff, 0xffff, 1, 0, 0)
+		m_crc(CRC::PolyDStar16, 16, 0xffff, 0xffff, 1, 0, 0),
+		m_symbolIndex(0),
+		m_symbolIndexHD(0),
+		slowdataIx(0),
+		w(0),
+		x(0)
 {
     reset_header_strings();
     m_slowData.init();
+    memset(nullBytes, 0, 4);
+    memset(slowdata, 0, 4);
 }
 
 DSDDstar::~DSDDstar()

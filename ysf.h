@@ -17,6 +17,7 @@
 #ifndef YSF_H_
 #define YSF_H_
 
+#include <string.h>
 #include <iostream>
 #include <string>
 
@@ -74,6 +75,24 @@ public:
 
     struct FICH
     {
+        FICH() :
+            m_reserved(0),
+            m_freqDeviation(0),
+            m_voipPath(0),
+            m_sqlType(0)
+        {
+            memset(m_frameInfo, 0, 2);
+            memset(m_callsignType, 0, 2);
+            memset(m_callMode, 0, 2);
+            memset(m_blockNumber, 0, 2);
+            memset(m_blockTotal, 0, 2);
+            memset(m_frameNumber, 0, 3);
+            memset(m_frameTotal, 0, 3);
+            memset(m_messagePath, 0, 3);
+            memset(m_dataType, 0, 2);
+            memset(m_sqlCode, 0, 7);
+        }
+
         uint8_t m_frameInfo[2];     //!< 31:30 FI
         uint8_t m_callsignType[2];  //!< 29:28 CS
         uint8_t m_callMode[2];      //!< 27:26 CM
@@ -165,7 +184,7 @@ public:
         }
     };
 
-    DSDYSF(DSDDecoder *dsdDecoder);
+    explicit DSDYSF(DSDDecoder *dsdDecoder);
     ~DSDYSF();
 
     void init();

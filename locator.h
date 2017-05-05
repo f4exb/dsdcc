@@ -27,7 +27,7 @@
 class LocatorInvalidException
 {
   public:
-    LocatorInvalidException(std::string locator_str) : _locator_str(locator_str) {};
+    explicit LocatorInvalidException(std::string locator_str) : _locator_str(locator_str) {};
     std::string getString();
   protected:
     std::string _locator_str;
@@ -37,7 +37,7 @@ class Locator
 {
   public:
     Locator();
-    Locator(std::string locator_str);
+    explicit Locator(std::string locator_str);
     Locator(float lat, float lon);
     std::string toString() const;
     void toCSting(char *locator) const;
@@ -68,7 +68,7 @@ class LocPoint
 {
   public:
     LocPoint() {};
-    LocPoint(Locator& locator) : m_locator(locator) {};
+    explicit LocPoint(Locator& locator) : m_locator(locator) {};
     LocPoint(float lat, float lon) : m_locator(lat, lon) {};
     float latitude() const { return m_locator.latitude(); }
     float longitude() const { return m_locator.longitude(); }

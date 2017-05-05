@@ -51,7 +51,6 @@ private:
 void Mixer::mix(int size1, int size2, short *channel1, short *channel2)
 {
     int m_mixSize = std::max(size1, size2);
-    short mixedSample;
 
     if (m_mixSize > m_mixSizeMax)
     {
@@ -240,11 +239,11 @@ int main(int argc, char **argv)
             break;
         case 'L':
             strncpy(log_file, (const char *) optarg, 1023);
-            log_file[1023] = '\0';
+            log_file[1022] = '\0';
             break;
         case 'M':
             strncpy(formattext_file, (const char *) optarg, 1023);
-            formattext_file[1023] = '\0';
+            formattext_file[1022] = '\0';
             break;
         case 'm':
             float rate;
@@ -255,16 +254,16 @@ int main(int argc, char **argv)
             break;
         case 'i':
             strncpy(in_file, (const char *) optarg, 1023);
-            in_file[1023] = '\0';
+            in_file[1022] = '\0';
             break;
         case 'o':
             strncpy(out_file, (const char *) optarg, 1023);
-            out_file[1023] = '\0';
+            out_file[1022] = '\0';
             break;
 #ifdef DSD_USE_SERIALDV
         case 'D':
             strncpy(serialDevice, (const char *) optarg, 16);
-            serialDevice[16] = '\0';
+            serialDevice[15] = '\0';
             dvSerialDevice = serialDevice;
             break;
 #endif
@@ -454,7 +453,7 @@ int main(int argc, char **argv)
     while (exitflag == 0)
     {
         short sample;
-        int nbAudioSamples1, nbAudioSamples2;
+        int nbAudioSamples1 = 0, nbAudioSamples2 = 0;
         short *audioSamples1, *audioSamples2;
 
         int result = read(in_file_fd, (void *) &sample, sizeof(short));

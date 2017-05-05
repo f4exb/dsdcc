@@ -374,7 +374,6 @@ bool Hamming_12_8::decode(unsigned char *rxBits, unsigned char *decodedBits, int
     {
         // calculate syndrome
 
-        bool error = false;
         int syndromeI = 0; // syndrome index
 
         for (int is = 0; is < 4; is++)
@@ -452,7 +451,6 @@ bool Hamming_16_11_4::decode(unsigned char *rxBits, unsigned char *decodedBits, 
     {
         // calculate syndrome
 
-        bool error = false;
         int syndromeI = 0; // syndrome index
 
         for (int is = 0; is < 5; is++)
@@ -538,7 +536,6 @@ bool Hamming_15_11::decode(unsigned char *rxBits, unsigned char *decodedBits, in
     {
         // calculate syndrome
 
-        bool error = false;
         int syndromeI = 0; // syndrome index
 
         for (int is = 0; is < 4; is++)

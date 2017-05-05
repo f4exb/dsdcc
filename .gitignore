@@ -1,5 +1,6 @@
 .cproject
 .project
+.settings
 build*
 testfec/*.o
 testfec/qr

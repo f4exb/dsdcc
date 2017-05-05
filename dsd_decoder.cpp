@@ -1284,7 +1284,7 @@ void DSDDecoder::formatStatusText(char *statusText)
             strcpy(&statusText[33], "---");
         }
 
-        char dest[11];
+        char dest[11+1];
 
         if ( getYSFDecoder().radioIdMode())
         {

@@ -27,12 +27,21 @@ template<typename T>
 class DoubleBuffer
 {
 public:
-    DoubleBuffer(unsigned int size) :
+    explicit DoubleBuffer(unsigned int size) :
         m_size(size),
         m_index(0)
     {
         assert(m_size > 0);
         m_buffer = new T[2*m_size];
+        reset();
+    }
+
+    DoubleBuffer(const DoubleBuffer& other) :
+        m_size(other.m_size),
+        m_index(other.m_index)
+    {
+        m_buffer = new T[2*m_size];
+        memcpy(m_buffer, other.m_buffer, 2*m_size*sizeof(T));
         reset();
     }
 

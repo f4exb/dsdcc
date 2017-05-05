@@ -25,7 +25,7 @@ class DSDDecoder;
 class DSDNXDN
 {
 public:
-	DSDNXDN(DSDDecoder *dsdDecoder);
+	explicit DSDNXDN(DSDDecoder *dsdDecoder);
 	~DSDNXDN();
 
     void init();
@@ -38,14 +38,22 @@ private:
 		NXDNRDCHPostFrame
     } NXDNState;
 
-    typedef struct
+    struct NXDNLICH
     {
+        NXDNLICH() :
+            rfChannelCode(0),
+            fnChannelCode(0),
+            optionCode(0),
+            direction(0),
+            parity(0)
+        {}
+
     	int rfChannelCode; //!< LICH RF channel type code (should always be 2 as RDCH)
     	int fnChannelCode; //!< LICH Functional channel type code
     	int optionCode;    //!< LICH Option code
     	int direction;     //!< LICH direction code: 0: inbound (MS), 1: outbound (BS)
     	int parity;        //!< LICH bits even parity
-    } NXDNLICH;
+    };
 
     void processRDCHFrame();
     void processRDCHPostFrame();

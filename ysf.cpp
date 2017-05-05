@@ -194,6 +194,18 @@ DSDYSF::DSDYSF(DSDDecoder *dsdDecoder) :
         m_pn(0x1c9),
 		m_fichError(FICHNoError)
 {
+    memset(m_fichRaw, 0, 100);
+    memset(m_fichGolay, 0, 100);
+    memset(m_fichBits, 0, 48);
+    memset(m_dch1Raw, 0, 180);
+    memset(m_dch1Bits, 0, 180);
+    memset(m_dch2Raw, 0, 180);
+    memset(m_dch2Bits, 0, 180);
+    memset(m_vd2BitsRaw, 0, 104);
+    memset(m_vd2MBEBits, 0, 72);
+    memset(m_vfrBitsRaw, 0, 144);
+    memset(m_vfrBits, 0, 88);
+    memset(m_bitWork, 0, 48);
     memset(m_dest, 0, 10+1);
     memset(m_src, 0, 10+1);
     memset(m_downlink, 0, 10+1);
@@ -323,8 +335,6 @@ void DSDYSF::processFICH(int symbolIndex, unsigned char dibit)
 
         if (i == 4) // decoding OK
         {
-            unsigned char bytes[6];
-
             if (checkCRC16(m_fichBits, 4))
             {
                 memcpy(&m_fich, m_fichBits, 32);
@@ -443,9 +453,9 @@ void DSDYSF::processCSD2(unsigned char *dchBytes)
 void DSDYSF::processCSD3_1(unsigned char *dchBytes)
 {
     memcpy(m_rem1, dchBytes, 5);
-    m_rem1[6] = '\0';
+    m_rem1[5] = '\0';
     memcpy(m_rem2, &dchBytes[5], 5);
-    m_rem2[6] = '\0';
+    m_rem2[5] = '\0';
 //    std::cerr << "DSDYSF::processCSD3_1: Rem1: " << m_rem1 << std::endl;
 //    std::cerr << "DSDYSF::processCSD3_1: Rem2: " << m_rem2 << std::endl;
 }
@@ -453,9 +463,9 @@ void DSDYSF::processCSD3_1(unsigned char *dchBytes)
 void DSDYSF::processCSD3_2(unsigned char *dchBytes)
 {
     memcpy(m_rem3, dchBytes, 5);
-    m_rem3[6] = '\0';
+    m_rem3[5] = '\0';
     memcpy(m_rem4, &dchBytes[5], 5);
-    m_rem4[6] = '\0';
+    m_rem4[5] = '\0';
 //    std::cerr << "DSDYSF::processCSD3_2: Rem3: " << m_rem3 << std::endl;
 //    std::cerr << "DSDYSF::processCSD3_2: Rem4: " << m_rem4 << std::endl;
 }
@@ -788,7 +798,6 @@ void DSDYSF::procesVFRFrame(int mbeIndex, unsigned char dibit)
 
 	if (mbeIndex == 72-1) // finalize
 	{
-	    int errs;
         uint16_t seed = 0;
 
         for (uint16_t i = 0; i < 12; i++)
@@ -799,31 +808,31 @@ void DSDYSF::procesVFRFrame(int mbeIndex, unsigned char dibit)
         scrambleVFR(m_vfrBitsRaw+23, m_vfrBitsRaw+23, 144-23-7, seed, 4);
 
         // u0
-        errs = GolayMBE::mbe_golay2312(m_vfrBitsRaw, m_vfrBits);
+        GolayMBE::mbe_golay2312(m_vfrBitsRaw, m_vfrBits);
 //        memcpy(m_vfrBits, m_vfrBitsRaw, 12);
 
         // u1
-        errs = GolayMBE::mbe_golay2312(&m_vfrBitsRaw[23], &m_vfrBits[12]);
+        GolayMBE::mbe_golay2312(&m_vfrBitsRaw[23], &m_vfrBits[12]);
 //        memcpy(&m_vfrBits[12], &m_vfrBitsRaw[23], 12);
 
         // u2
-        errs = GolayMBE::mbe_golay2312(&m_vfrBitsRaw[46], &m_vfrBits[24]);
+        GolayMBE::mbe_golay2312(&m_vfrBitsRaw[46], &m_vfrBits[24]);
 //        memcpy(&m_vfrBits[24], &m_vfrBitsRaw[46], 12);
 
         // u3
-        errs = GolayMBE::mbe_golay2312(&m_vfrBitsRaw[69], &m_vfrBits[36]);
+        GolayMBE::mbe_golay2312(&m_vfrBitsRaw[69], &m_vfrBits[36]);
 //        memcpy(&m_vfrBits[36], &m_vfrBitsRaw[69], 12);
 
         // u4
-        errs = HammingMBE::mbe_hamming1511(&m_vfrBitsRaw[92], &m_vfrBits[48]);
+        HammingMBE::mbe_hamming1511(&m_vfrBitsRaw[92], &m_vfrBits[48]);
 //        memcpy(&m_vfrBits[48], &m_vfrBitsRaw[92], 11);
 
         // u5
-        errs = HammingMBE::mbe_hamming1511(&m_vfrBitsRaw[107], &m_vfrBits[59]);
+        HammingMBE::mbe_hamming1511(&m_vfrBitsRaw[107], &m_vfrBits[59]);
 //        memcpy(&m_vfrBits[59], &m_vfrBitsRaw[107], 11);
 
         // u6
-        errs = HammingMBE::mbe_hamming1511(&m_vfrBitsRaw[122], &m_vfrBits[70]);
+        HammingMBE::mbe_hamming1511(&m_vfrBitsRaw[122], &m_vfrBits[70]);
 //        memcpy(&m_vfrBits[70], &m_vfrBitsRaw[122], 11);
 
         // u7

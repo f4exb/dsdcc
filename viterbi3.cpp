@@ -147,7 +147,6 @@ void Viterbi3::doMetrics(
 {
     uint32_t tempMetric[4];
     uint32_t metric[8];
-    int loop;
 
     uint32_t m1;
     uint32_t m2;

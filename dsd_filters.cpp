@@ -251,7 +251,9 @@ const float DSDMBEAudioInterpolatorFilter::m_b1 = 1.392667E+00;
 const float DSDMBEAudioInterpolatorFilter::m_b2 = -5.474446E-01;
 
 DSDMBEAudioInterpolatorFilter::DSDMBEAudioInterpolatorFilter()
-{}
+{
+    init();
+}
 
 DSDMBEAudioInterpolatorFilter::~DSDMBEAudioInterpolatorFilter()
 {}

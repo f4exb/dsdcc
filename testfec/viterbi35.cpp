@@ -224,7 +224,8 @@ void testMIT()
 void testViterbiLegacy()
 {
     char text[41], decodedText[41];
-    sprintf(text, "The quick brown fox jumps over the lazy    ");
+    //             0....5....0....5....0....5....0....5....0
+    sprintf(text, "The quick brown fox jumps over the lazy ");
     unsigned char bitsPh[41*8 + 2];
     unsigned char symbolsPh[41*8 + 2];
     unsigned char decodedBitsPh[41*8 + 2];
@@ -261,7 +262,7 @@ void testViterbiLegacy()
     std::cout << "Phrase decoded: in " << usecs << " microseconds" << std::endl;
 
 	charify(decodedText, decodedBitsPh, 41*8);
-	decodedText[41] = '\0';
+	decodedText[40] = '\0';
 
 	std::cout << "Phrase: " << decodedText << std::endl;
 
@@ -280,7 +281,7 @@ void testViterbiLegacy()
     std::cout << "Phrase decoded: in " << usecs << " microseconds" << std::endl;
 
     charify(decodedText, decodedBitsPh, 41*8);
-    decodedText[41] = '\0';
+    decodedText[40] = '\0';
 
     std::cout << "Phrase: " << decodedText << std::endl;
 }

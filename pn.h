@@ -23,7 +23,7 @@ namespace DSDcc
 class PN_9_5
 {
 public:
-    PN_9_5(unsigned int seed);
+    explicit PN_9_5(unsigned int seed);
     ~PN_9_5();
 
     unsigned char getByte(unsigned int byteIndex) const
