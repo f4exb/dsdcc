@@ -228,6 +228,7 @@ public:
     bool getVoice2On() const { return m_voice2On; }
     void setTDMAStereo(bool tdmaStereo);
     void formatStatusText(char *statusText);
+    bool getSymbolPLLLocked() const { return m_dsdSymbol.getPLLLocked(); }
 
     const DSDDMR& getDMRDecoder() const { return m_dsdDMR; }
     const DSDDstar& getDStarDecoder() const { return m_dsdDstar; }

@@ -56,6 +56,7 @@ public:
     short getFilteredSample() const { return m_filteredSample; }
     short getSymbolSyncSample() const { return m_symbolSyncSample; }
     int getSamplesPerSymbol() const { return m_samplesPerSymbol; }
+    bool getPLLLocked() const { return m_pll.locked(); }
 
     static void compressBits(const char *bitArray, unsigned char *byteArray, int nbBytes)
     {
