@@ -24,6 +24,9 @@
 
 #include <string>
 
+namespace DSDcc
+{
+
 class LocatorInvalidException
 {
   public:
@@ -79,5 +82,7 @@ class LocPoint
   protected:
     Locator m_locator;
 };
+
+} // namespace DSDcc
 
 #endif // define LOCATOR_H_

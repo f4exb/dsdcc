@@ -24,6 +24,9 @@
 #include <math.h>
 #include "locator.h"
 
+namespace DSDcc
+{
+
 // LocatorInvalidException class
 
 std::string LocatorInvalidException::getString()
@@ -157,3 +160,4 @@ float LocPoint::distanceTo(const LocPoint& distant_point)
   return acos(sin(lat1)*sin(lat2)+cos(lat1)*cos(lat2)*cos(lon2-lon1))*6371.0;
 }
 
+} // namespace DSDcc
