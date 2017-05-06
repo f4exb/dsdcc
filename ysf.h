@@ -73,6 +73,7 @@ public:
 		FICHErrorCRC
     } FICHError;
 
+#pragma pack(push, 1)
     struct FICH
     {
         FICH() :
@@ -81,16 +82,7 @@ public:
             m_voipPath(0),
             m_sqlType(0)
         {
-            memset(m_frameInfo, 0, 2);
-            memset(m_callsignType, 0, 2);
-            memset(m_callMode, 0, 2);
-            memset(m_blockNumber, 0, 2);
-            memset(m_blockTotal, 0, 2);
-            memset(m_frameNumber, 0, 3);
-            memset(m_frameTotal, 0, 3);
-            memset(m_messagePath, 0, 3);
-            memset(m_dataType, 0, 2);
-            memset(m_sqlCode, 0, 7);
+            memset(&m_frameInfo[0], 0, 32);
         }
 
         uint8_t m_frameInfo[2];     //!< 31:30 FI
@@ -107,6 +99,10 @@ public:
         uint8_t m_dataType[2];      //!< 9:8 DT
         uint8_t m_sqlType;          //!< 7     SQL
         uint8_t m_sqlCode[7];       //!< 6:0   SC
+
+        void setBytes(const unsigned char *bytes) {
+            memcpy(&m_frameInfo[0], bytes, 32);
+        }
 
         FrameInformation getFrameInformation() const {
             return (FrameInformation) (((m_frameInfo[0]&1)<<1) + (m_frameInfo[1]&1));
@@ -183,6 +179,7 @@ public:
             return output;
         }
     };
+#pragma pack(pop)
 
     explicit DSDYSF(DSDDecoder *dsdDecoder);
     ~DSDYSF();

@@ -337,7 +337,7 @@ void DSDYSF::processFICH(int symbolIndex, unsigned char dibit)
         {
             if (checkCRC16(m_fichBits, 4))
             {
-                memcpy(&m_fich, m_fichBits, 32);
+                m_fich.setBytes(m_fichBits);
 //                std::cerr << "DSDYSF::processFICH: CRC OK: " << m_fich << std::endl;
                 m_fichError = FICHNoError;
             }
