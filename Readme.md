@@ -73,6 +73,14 @@ For more details refer to the online help with the `-h` option: `dsdccx -h`
 
 Since version 1.6 dsdccx has the capability of sending regularly the traffic status messages to a file using the `-M` option. See [messagefile.md](messagefile.md) for details.
 
+---
+&#9888; (For use with serialDV) Since kernel 4.4.52 the default for FTDI devices (that is in the ftdi_sio kernel module) is not to set it as low latency. This results in the ThumbDV dongle not working anymore because its response is too slow to sustain the normal AMBE packets flow. The solution is to force low latency by changing the variable for your device (ex: /dev/ttyUSB0) as follows:
+
+`echo 1 | sudo tee /sys/bus/usb-serial/devices/ttyUSB0/latency_timer` or `sudo setserial /dev/ttyUSB0 low_latency`
+
+---
+
+
 <h1>Developpers notes</h1>
 
 <h2>Structure overview</h2>

@@ -1,3 +1,10 @@
+dsdcc (1.7.0-1) unstable; urgency=medium
+
+  * Implemented PLL to track symbol synchronization
+  * Code cleanup with cppcheck and Eclipse possibly fixing occasional segfault
+
+ -- Edouard Griffiths, F4EXB <f4exb06@gmail.com>  Sat, 06 May 2017 11:15:15 +0100
+
 dsdcc (1.6.0-1) unstable; urgency=medium
 
   * Initial release as a Debian package
@@ -6,3 +13,4 @@ dsdcc (1.6.0-1) unstable; urgency=medium
   * Added options to specify own geographical position
 
  -- Edouard Griffiths, F4EXB <f4exb06@gmail.com>  Sat, 14 Jan 2017 11:15:15 +0100
+ 
