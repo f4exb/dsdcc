@@ -38,7 +38,7 @@ DSDSymbol::DSDSymbol(DSDDecoder *dsdDecoder) :
         m_lmmidx(0),
         m_lmmSamples(10*24),
 		m_ringingFilter(48000.0, 4800.0, 0.99),
-		m_pll(0.1, 0.01, 0.25),
+		m_pll(0.1, 0.003, 0.25),
 		m_binSymbolBuffer(1024),
 		m_syncSymbolBuffer(64),
 		m_nonInvertedSyncSymbolBuffer(64)
@@ -229,9 +229,9 @@ bool DSDSymbol::pushSample(short sample)
 
         // moved here what was done at symbol retrieval in the decoder
 
-        // symbol syncgronization quality metric
+        // symbol synchronization quality metric
 
-        if (m_symbolSyncQualityCounter < 100)
+        if (m_symbolSyncQualityCounter < 99)
         {
             m_symbolSyncQualityCounter++;
         }
@@ -318,7 +318,7 @@ void DSDSymbol::setSamplesPerSymbol(int samplesPerSymbol)
         m_lmmSamples.resize(5*24);
         m_ringingFilter.setFrequencies(48000.0, 9600.0);
         m_ringingFilter.setR(0.99);
-        m_pll.configure(0.2, 0.01, 0.25);
+        m_pll.configure(0.2, 0.003, 0.25);
     }
     else if (m_samplesPerSymbol == 10)
     {
@@ -327,7 +327,7 @@ void DSDSymbol::setSamplesPerSymbol(int samplesPerSymbol)
         m_lmmSamples.resize(10*24);
         m_ringingFilter.setFrequencies(48000.0, 4800.0);
         m_ringingFilter.setR(0.99);
-        m_pll.configure(0.1, 0.01, 0.25);
+        m_pll.configure(0.1, 0.003, 0.25);
     }
     else if (m_samplesPerSymbol == 20)
     {
@@ -345,7 +345,7 @@ void DSDSymbol::setSamplesPerSymbol(int samplesPerSymbol)
         m_lmmSamples.resize(10*24);
         m_ringingFilter.setFrequencies(48000.0, 4800.0);
         m_ringingFilter.setR(0.99);
-        m_pll.configure(0.1, 0.01, 0.25);
+        m_pll.configure(0.1, 0.003, 0.25);
     }
 }
 
