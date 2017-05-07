@@ -41,7 +41,8 @@ DSDSymbol::DSDSymbol(DSDDecoder *dsdDecoder) :
 		m_pll(0.1, 0.003, 0.25),
 		m_binSymbolBuffer(1024),
 		m_syncSymbolBuffer(64),
-		m_nonInvertedSyncSymbolBuffer(64)
+		m_nonInvertedSyncSymbolBuffer(64),
+		m_pllLock(true)
 {
     noCarrier();
     m_umid = 0;
@@ -118,54 +119,59 @@ bool DSDSymbol::pushSample(short sample)
         short sampleSq = ((((int) sample)- m_center) * (((int) sample)- m_center)) >> 15;
         short sampleRinging = m_ringingFilter.run(sampleSq);
 
-        float pllOut[2];
-        float pllIn = sampleRinging / 32768.0f;
-        m_pll.process(pllIn, pllOut);
-        m_symbolSyncSample = pllOut[0] * 16384.0f;
-
-        // process with PLL
-        if ((m_symbolSyncSample > 0) && (m_lastsample < 0))
+        if (m_pllLock)
         {
-            int targetZero = (m_sampleIndex - (m_samplesPerSymbol/4)) % m_samplesPerSymbol; // empirically should be ~T/4 away;
-            //int targetZero = (m_sampleIndex - 5) % m_samplesPerSymbol;
+            float pllOut[2];
+            float pllIn = sampleRinging / 32768.0f;
+            m_pll.process(pllIn, pllOut);
+            m_symbolSyncSample = pllOut[0] * 16384.0f;
 
-            if (targetZero < (m_samplesPerSymbol)/2) // sampling point lags
+            // process with PLL
+            if ((m_symbolSyncSample > 0) && (m_lastsample < 0))
             {
-                m_zeroCrossingPos = -targetZero;
-                m_zeroCrossing = -targetZero;
-                m_zeroCrossingInCycle = true;
+                int targetZero = (m_sampleIndex - (m_samplesPerSymbol/4)) % m_samplesPerSymbol; // empirically should be ~T/4 away;
+                //int targetZero = (m_sampleIndex - 5) % m_samplesPerSymbol;
+
+                if (targetZero < (m_samplesPerSymbol)/2) // sampling point lags
+                {
+                    m_zeroCrossingPos = -targetZero;
+                    m_zeroCrossing = -targetZero;
+                    m_zeroCrossingInCycle = true;
+                }
+                else // sampling point leads
+                {
+                    m_zeroCrossingPos = m_samplesPerSymbol - targetZero;
+                    m_zeroCrossing = m_samplesPerSymbol - targetZero;
+                    m_zeroCrossingInCycle = true;
+                }
             }
-            else // sampling point leads
-            {
-                m_zeroCrossingPos = m_samplesPerSymbol - targetZero;
-                m_zeroCrossing = m_samplesPerSymbol - targetZero;
-                m_zeroCrossingInCycle = true;
-            }
+
+            m_lastsample = m_symbolSyncSample;
         }
+        else
+        {
+            // zero crossing - rising edge only with enough steepness
+            if ((sampleRinging > 0) && (m_lastsample < 0) && (sampleRinging - m_lastsample > (m_max - m_min) / m_zeroCrossingSlopeDivisor))
+            {
+                m_symbolSyncSample = m_max;
+                int targetZero = (m_sampleIndex - (m_samplesPerSymbol/4)) % m_samplesPerSymbol; // empirically should be ~T/4 away
 
-        m_lastsample = m_symbolSyncSample;
+                if (targetZero < (m_samplesPerSymbol)/2) // sampling point lags
+                {
+                    m_zeroCrossingPos = -targetZero;
+                    m_zeroCrossing = -targetZero;
+                    m_zeroCrossingInCycle = true;
+                }
+                else // sampling point leads
+                {
+                    m_zeroCrossingPos = m_samplesPerSymbol - targetZero;
+                    m_zeroCrossing = m_samplesPerSymbol - targetZero;
+                    m_zeroCrossingInCycle = true;
+                }
+            }
 
-//        // zero crossing - rising edge only with enough steepness
-//        if ((sampleRinging > 0) && (m_lastsample < 0) && (sampleRinging - m_lastsample > (m_max - m_min) / m_zeroCrossingSlopeDivisor))
-//        {
-//            //m_symbolSyncSample = m_max;
-//            int targetZero = (m_sampleIndex - (m_samplesPerSymbol/4)) % m_samplesPerSymbol; // empirically should be ~T/4 away
-//
-//            if (targetZero < (m_samplesPerSymbol)/2) // sampling point lags
-//            {
-//                m_zeroCrossingPos = -targetZero;
-//                m_zeroCrossing = -targetZero;
-//                m_zeroCrossingInCycle = true;
-//            }
-//            else // sampling point leads
-//            {
-//                m_zeroCrossingPos = m_samplesPerSymbol - targetZero;
-//                m_zeroCrossing = m_samplesPerSymbol - targetZero;
-//                m_zeroCrossingInCycle = true;
-//            }
-//        }
-//
-//        m_lastsample = sampleRinging;
+            m_lastsample = sampleRinging;
+        }
     }
 
     // symbol estimation
@@ -201,7 +207,9 @@ bool DSDSymbol::pushSample(short sample)
 
     if ((m_sampleIndex == 0) && (!m_noSignal))
     {
-        //m_symbolSyncSample = m_center;
+        if (!m_pllLock) {
+            m_symbolSyncSample = m_min;
+        }
 
         if (m_zeroCrossingInCycle)
         {

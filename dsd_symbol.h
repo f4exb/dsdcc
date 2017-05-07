@@ -56,7 +56,8 @@ public:
     short getFilteredSample() const { return m_filteredSample; }
     short getSymbolSyncSample() const { return m_symbolSyncSample; }
     int getSamplesPerSymbol() const { return m_samplesPerSymbol; }
-    bool getPLLLocked() const { return m_pll.locked(); }
+    bool getPLLLocked() const { return m_pllLock && m_pll.locked(); }
+    void setPLLLock(bool pllLock) { m_pllLock = pllLock; }
 
     static void compressBits(const char *bitArray, unsigned char *byteArray, int nbBytes)
     {
@@ -113,6 +114,7 @@ private:
     unsigned int m_nbFSKSymbols;
     bool m_invertedFSK;
     int  m_samplesPerSymbol;
+    bool m_pllLock;
     lemiremaxmintruestreaming<short> m_lmmSamples;    //!< running min/max calculator
     DSDSecondOrderRecursiveFilter m_ringingFilter;
     SimplePhaseLock m_pll;

@@ -254,6 +254,7 @@ public:
     void enableScanResumeAfterTDULCFrames(int nbFrames);
     void setDataRate(DSDRate dataRate);
     void setMyPoint(float lat, float lon) { m_myPoint.setLatLon(lat, lon); }
+    void setSymbolPLLLock(bool pllLock) { m_dsdSymbol.setPLLLock(pllLock); }
 
     // parameter getters:
 
