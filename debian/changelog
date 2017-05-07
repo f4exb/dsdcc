@@ -1,3 +1,10 @@
+dsdcc (1.7.1-1) unstable; urgency=medium
+
+  * Make PLL to track symbol synchronization optional
+  * YSF: fixed FICH code
+
+ -- Edouard Griffiths, F4EXB <f4exb06@gmail.com>  Sun, 07 May 2017 11:15:15 +0100
+
 dsdcc (1.7.0-1) unstable; urgency=medium
 
   * Implemented PLL to track symbol synchronization
