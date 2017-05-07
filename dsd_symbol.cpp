@@ -153,7 +153,6 @@ bool DSDSymbol::pushSample(short sample)
             // zero crossing - rising edge only with enough steepness
             if ((sampleRinging > 0) && (m_lastsample < 0) && (sampleRinging - m_lastsample > (m_max - m_min) / m_zeroCrossingSlopeDivisor))
             {
-                m_symbolSyncSample = m_max;
                 int targetZero = (m_sampleIndex - (m_samplesPerSymbol/4)) % m_samplesPerSymbol; // empirically should be ~T/4 away
 
                 if (targetZero < (m_samplesPerSymbol)/2) // sampling point lags
@@ -171,6 +170,44 @@ bool DSDSymbol::pushSample(short sample)
             }
 
             m_lastsample = sampleRinging;
+        }
+    }
+
+    // visualization
+
+    if (!m_pllLock)
+    {
+        if (m_samplesPerSymbol == 5) // 9600 baud
+        {
+            if (m_sampleIndex == 2) {
+                m_symbolSyncSample = m_max;
+            } else {
+                m_symbolSyncSample = m_min;
+            }
+        }
+        else if (m_samplesPerSymbol == 20) // 2400 baud
+        {
+            if ((m_sampleIndex >= 7)
+             && (m_sampleIndex <= 12))
+            {
+                m_symbolSyncSample = m_max;
+            }
+            else
+            {
+                m_symbolSyncSample = m_min;
+            }
+        }
+        else // 4800 baud - default
+        {
+            if ((m_sampleIndex >= 4)
+             && (m_sampleIndex <= 5))
+            {
+                m_symbolSyncSample = m_max;
+            }
+            else
+            {
+                m_symbolSyncSample = m_min;
+            }
         }
     }
 
@@ -207,10 +244,6 @@ bool DSDSymbol::pushSample(short sample)
 
     if ((m_sampleIndex == 0) && (!m_noSignal))
     {
-        if (!m_pllLock) {
-            m_symbolSyncSample = m_min;
-        }
-
         if (m_zeroCrossingInCycle)
         {
             if (m_zeroCrossing < 0)
