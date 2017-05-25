@@ -189,10 +189,10 @@ const char * DSDYSF::ysfCallModeText[4] = {
 DSDYSF::DSDYSF(DSDDecoder *dsdDecoder) :
         m_dsdDecoder(dsdDecoder),
         m_symbolIndex(0),
+        m_fichError(FICHNoError),
         m_viterbiFICH(2, Viterbi::Poly25y, true),
         m_crc(DSDcc::CRC::PolyCCITT16, 16, 0x0, 0xffff),
-        m_pn(0x1c9),
-		m_fichError(FICHNoError)
+        m_pn(0x1c9)
 {
     memset(m_fichRaw, 0, 100);
     memset(m_fichGolay, 0, 100);
@@ -868,7 +868,7 @@ bool DSDYSF::checkCRC16(unsigned char *bits,  unsigned long nbBytes, unsigned ch
     unsigned char bytes[22];
 //    std::cerr << "DSDYSF::checkCRC16: value: ";
 
-    for (int i = 0; i < nbBytes+2; i++)
+    for (unsigned int i = 0; i < nbBytes+2; i++)
     {
         bytes[i] = (bits[8*i+0]<<7)
                 + (bits[8*i+1]<<6)

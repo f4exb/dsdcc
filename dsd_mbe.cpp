@@ -361,7 +361,7 @@ void DSDMBEDecoder::processAudio()
 
 void DSDMBEDecoder::upsample(int upsampling, float invalue)
 {
-    int sum;
+//    int sum;
     float *outbuf1, c, d;
 
     outbuf1 = m_audio_out_float_buf_p;

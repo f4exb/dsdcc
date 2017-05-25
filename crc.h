@@ -96,7 +96,7 @@ private:
     void generate_crc_table();
     void init();
 
-    int           m_order;   //!< CRC order (# bits) or polynomial order
+    unsigned int  m_order;   //!< CRC order (# bits) or polynomial order
     unsigned long m_poly;    //!< Polynomial in binary form with implicit order ex: X^16+X^12+X^5+1 -> (1)0001 0000 0010 0001 = 0x1021
     int           m_direct;  //!< algorithm: 1 = direct, no augmented zero bits
     unsigned long m_crcinit; //!< Shift register is initialized with this value

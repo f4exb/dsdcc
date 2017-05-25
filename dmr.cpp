@@ -111,12 +111,12 @@ DSDDMR::DSDDMR(DSDDecoder *dsdDecoder) :
         m_lcss(0),
         m_colorCode(0),
         m_dataType(DSDDMRDataUnknown),
-        m_voice1FrameCount(6),
-        m_voice2FrameCount(6),
         m_voice1EmbSig_dibitsIndex(0),
-        m_voice2EmbSig_dibitsIndex(0),
         m_voice1EmbSig_OK(false),
-        m_voice2EmbSig_OK(false)
+        m_voice2EmbSig_dibitsIndex(0),
+        m_voice2EmbSig_OK(false),
+        m_voice1FrameCount(6),
+        m_voice2FrameCount(6)
 {
     m_slotText = m_dsdDecoder->m_state.slot0light;
     w = 0;
@@ -949,7 +949,7 @@ bool DSDDMR::processVoiceEmbeddedSignalling(int& voiceEmbSig_dibitsIndex,
 {
     if (m_lcss != 0) // skip RC
     {
-        unsigned char parityCheck;
+        unsigned char parityCheck = 0;
 
         for (int i = 0; i < 16; i++)
         {

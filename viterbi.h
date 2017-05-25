@@ -88,7 +88,7 @@ protected:
         return Partab[x & 0xff];
     }
 
-    int m_k;
+    unsigned int m_k;
     int m_n;
     const unsigned int *m_polys;
     bool m_msbFirst;
@@ -98,8 +98,8 @@ protected:
     unsigned char *m_predA;
     unsigned char *m_predB;
     unsigned char *m_symbols;
-    int m_nbSymbolsMax;
-    int m_nbBitsMax;
+    unsigned int m_nbSymbolsMax;
+    unsigned int m_nbBitsMax;
     static const uint32_t m_maxMetric;
 };
 

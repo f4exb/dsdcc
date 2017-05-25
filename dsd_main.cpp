@@ -39,7 +39,7 @@ public:
             delete[] m_mix;
         }
     }
-    void mix(int size1, int size2, short *channel1, short *channel2);
+    void mix(unsigned int size1, unsigned int size2, short *channel1, short *channel2);
     short *getMix(int &mixSize) { mixSize = m_mixSize; return m_mix; }
 
 private:
@@ -48,9 +48,9 @@ private:
     unsigned int m_mixSizeMax;
 };
 
-void Mixer::mix(int size1, int size2, short *channel1, short *channel2)
+void Mixer::mix(unsigned int size1, unsigned int size2, short *channel1, short *channel2)
 {
-    int m_mixSize = std::max(size1, size2);
+    unsigned int m_mixSize = std::max(size1, size2);
 
     if (m_mixSize > m_mixSizeMax)
     {
@@ -63,7 +63,7 @@ void Mixer::mix(int size1, int size2, short *channel1, short *channel2)
         m_mixSizeMax = m_mixSize;
     }
 
-    for (int i = 0; i < m_mixSize; i++)
+    for (unsigned int i = 0; i < m_mixSize; i++)
     {
         if (i < size1) {
             m_mix[i] = channel1[i];
@@ -156,7 +156,7 @@ void usage()
     exit(0);
 }
 
-void sigfun(int sig)
+void sigfun(int sig __attribute__((unused)))
 {
     exitflag = 1;
     signal(SIGINT, SIG_DFL);
@@ -166,7 +166,9 @@ int main(int argc, char **argv)
 {
     int c;
     extern char *optarg;
-    extern int optind, opterr, optopt;
+    extern int optind __attribute__((unused));
+    extern int optopt __attribute__((unused));
+    extern int opterr;
     DSDcc::DSDDecoder dsdDecoder;
     DSDcc::DSDUpsampler upsamplingEngine;
     char in_file[1023];
@@ -524,9 +526,12 @@ int main(int argc, char **argv)
             {
                 result = write(out_file_fd, (const void *) audioSamples1, sizeof(short) * nbAudioSamples1);
 
-                if (result == -1) {
+                if (result < 0)
+                {
                     fprintf(stderr, "Error writing to output\n");
-                } else if (result != sizeof(short) * nbAudioSamples1) {
+                }
+                else if ((unsigned int) result != sizeof(short) * nbAudioSamples1)
+                {
                     fprintf(stderr, "Written %d out of %d audio samples\n", result/2, nbAudioSamples1);
                 }
 
@@ -537,9 +542,12 @@ int main(int argc, char **argv)
             {
                 result = write(out_file_fd, (const void *) audioSamples2, sizeof(short) * nbAudioSamples2);
 
-                if (result == -1) {
+                if (result < 0)
+                {
                     fprintf(stderr, "Error writing to output\n");
-                } else if (result != sizeof(short) * nbAudioSamples2) {
+                }
+                else if ((unsigned int) result != sizeof(short) * nbAudioSamples2)
+                {
                     fprintf(stderr, "Written %d out of %d audio samples\n", result/2, nbAudioSamples2);
                 }
 
@@ -556,9 +564,12 @@ int main(int argc, char **argv)
 
                 result = write(out_file_fd, (const void *) mix, sizeof(short) * mixSize);
 
-                if (result == -1) {
+                if (result < 0)
+                {
                     fprintf(stderr, "Error writing to output\n");
-                } else if (result != sizeof(short) * mixSize) {
+                }
+                else if ((unsigned int) result != sizeof(short) * mixSize)
+                {
                     fprintf(stderr, "Written %d out of %d audio samples\n", result/2, mixSize);
                 }
 

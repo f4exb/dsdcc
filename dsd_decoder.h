@@ -215,7 +215,7 @@ public:
         return m_lastSyncType;
     }
 
-    const DSDStationType getStationType() const { return m_stationType; }
+    DSDStationType getStationType() const { return m_stationType; }
     const char *getFrameTypeText() const { return m_state.ftype; }
     const char *getFrameSubtypeText() const { return m_state.fsubtype; }
     int getInLevel() const { return m_dsdSymbol.getLevel(); }

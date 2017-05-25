@@ -51,7 +51,7 @@ void Viterbi3::decodeFromBits(
         m_nbBitsMax = nbBits;
     }
 
-    for (int i = 0; i < nbBits; i += m_n)
+    for (unsigned int i = 0; i < nbBits; i += m_n)
     {
         m_symbols[i/m_n] = bits[i];
 
@@ -90,7 +90,7 @@ void Viterbi3::decodeFromSymbols(
     memset(m_pathMetrics, Viterbi::m_maxMetric, sizeof(uint32_t) * (1<<(m_k-1)));
     m_pathMetrics[startstate] = 0;
 
-    for (int is = 0; is < nbSymbols; is++)
+    for (unsigned int is = 0; is < nbSymbols; is++)
     {
 //        std::cerr << "Viterbi3::decodeFromSymbols: S[" << is << "]=" << (int) symbols[is] << std::endl;
 

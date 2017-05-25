@@ -99,7 +99,7 @@ void CRC::generate_crc_table()
 
 void CRC::init()
 {
-    int i;
+    unsigned int i;
     unsigned long bit, crc;
 
     if (!m_direct)

@@ -295,7 +295,6 @@ void DSDP25Heuristics::debug_print_symbol_heuristics(int previous_dibit, int dib
         SymbolHeuristics* sh)
 {
     float mean, sd;
-    int k;
     int n;
 
     n = sh->count;

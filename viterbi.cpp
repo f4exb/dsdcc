@@ -115,9 +115,9 @@ Viterbi::Viterbi(int k, int n, const unsigned int *polys, bool msbFirst) :
         m_k(k),
         m_n(n),
         m_polys(polys),
+        m_msbFirst(msbFirst),
         m_nbSymbolsMax(0),
-        m_nbBitsMax(0),
-		m_msbFirst(msbFirst)
+        m_nbBitsMax(0)
 {
     m_branchCodes = new unsigned char[(1<<m_k)];
     m_predA = new unsigned char[1<<(m_k-1)];
@@ -167,7 +167,7 @@ void Viterbi::initCodes()
 
 void Viterbi::initTreillis()
 {
-    for (unsigned int s = 0; s < 1<<(m_k-2); s++)
+    for (int s = 0; s < 1<<(m_k-2); s++)
     {
         m_predA[s] = (s<<1);
         m_predB[s] = (s<<1) + 1;
@@ -184,7 +184,7 @@ void Viterbi::encodeToSymbols(
 {
     unsigned int encstate = startstate;
 
-    for (int i = 0; i < nbBits; i++)
+    for (unsigned int i = 0; i < nbBits; i++)
     {
         encstate = (encstate >> 1) | (dataBits[i] << (m_k-1));
         *symbols = 0;
@@ -204,14 +204,13 @@ void Viterbi::encodeToBits(
         unsigned int nbBits,
         unsigned int startstate)
 {
-    int i, j;
     unsigned int encstate = startstate;
 
-    for (int i = 0; i < nbBits; i++)
+    for (unsigned int i = 0; i < nbBits; i++)
     {
         encstate = (encstate >> 1) | (dataBits[i] << (m_k-1));
 
-        for (j = 0; j < m_n; j++)
+        for (int j = 0; j < m_n; j++)
         {
             *codedBits = parity(encstate & m_polys[j]);
             codedBits++;
@@ -236,7 +235,7 @@ void Viterbi::decodeFromBits(
         m_nbBitsMax = nbBits;
     }
 
-    for (int i = 0; i < nbBits; i += m_n)
+    for (unsigned int i = 0; i < nbBits; i += m_n)
     {
         m_symbols[i/m_n] = bits[i];
 
@@ -278,13 +277,13 @@ void Viterbi::decodeFromSymbols(
     unsigned int minPathIndex;
     unsigned int minMetric;
 
-    for (int is = 0; is < nbSymbols; is++)
+    for (unsigned int is = 0; is < nbSymbols; is++)
     {
         minMetric = m_maxMetric;
 //        std::cerr << "S[" << is << "]=" << (int) symbols[is] << std::endl;
 
         // compute branch metrics
-    	for (unsigned int ib = 0; ib < 1<<(m_k-1); ib++)
+    	for (int ib = 0; ib < 1<<(m_k-1); ib++)
     	{
             unsigned char bit = ib < 1<<(m_k-2) ? 0 : 1;
 
@@ -378,7 +377,7 @@ void Viterbi::decodeFromSymbols(
 
     // trace back
 
-    unsigned int bIx = minPathIndex;
+    int bIx = minPathIndex = 0;
 
     for (int is = nbSymbols-1; is >= 0; is--)
     {
@@ -387,7 +386,7 @@ void Viterbi::decodeFromSymbols(
 //    			<< " bit: " << bIx < 1<<(m_k-2) ? 0 : 1;
 //				<< " pred: " << (int) m_traceback[bIx + is*(1<<(m_k-1))]
 //				<< std::endl;
-        dataBits[is] = bIx < 1<<(m_k-2) ? 0 : 1;
+        dataBits[is] = bIx < 1<<(m_k-2) ? 0U : 1U;
         bIx = m_traceback[bIx + is*(1<<(m_k-1))];
     }
 }

@@ -54,19 +54,57 @@ Locator::Locator(std::string loc_string)
     throw LocatorInvalidException(loc_string);
   // convert to upper case
   std::transform(loc_string.begin(), loc_string.end(), loc_string.begin(), toupper);
+
   // retrieve latitude and longitude indexes
-  if ((m_lon_index1 = m_lon_array1.find(loc_string[0])) == std::string::npos)
-    throw LocatorInvalidException(loc_string);
-  if ((m_lat_index1 = m_lat_array1.find(loc_string[1])) == std::string::npos)
-    throw LocatorInvalidException(loc_string);
-  if ((m_lon_index2 = m_lon_array2.find(loc_string[2])) == std::string::npos)
-    throw LocatorInvalidException(loc_string);
-  if ((m_lat_index2 = m_lat_array2.find(loc_string[3])) == std::string::npos)
-    throw LocatorInvalidException(loc_string);
-  if ((m_lon_index3 = m_lon_array3.find(loc_string[4])) == std::string::npos)
-    throw LocatorInvalidException(loc_string);
-  if ((m_lat_index3 = m_lat_array3.find(loc_string[5])) == std::string::npos)
-    throw LocatorInvalidException(loc_string);
+
+  std::string::size_type sz = m_lon_array1.find(loc_string[0]);
+
+  if (sz == std::string::npos) {
+      throw LocatorInvalidException(loc_string);
+  } else {
+      m_lon_index1 = sz;
+  }
+
+  sz = m_lat_array1.find(loc_string[1]);
+
+  if (sz == std::string::npos) {
+      throw LocatorInvalidException(loc_string);
+  } else {
+      m_lat_index1 = sz;
+  }
+
+  sz = m_lon_array2.find(loc_string[2]);
+
+  if (sz == std::string::npos) {
+      throw LocatorInvalidException(loc_string);
+  } else {
+      m_lon_index2 = sz;
+  }
+
+  sz = m_lat_array2.find(loc_string[3]);
+
+  if (sz == std::string::npos) {
+      throw LocatorInvalidException(loc_string);
+  } else {
+      m_lat_index2 = sz;
+  }
+
+  sz = m_lon_array3.find(loc_string[4]);
+
+  if (sz == std::string::npos) {
+      throw LocatorInvalidException(loc_string);
+  } else {
+      m_lon_index3 = sz;
+  }
+
+  sz = m_lat_array3.find(loc_string[5]);
+
+  if (sz == std::string::npos) {
+      throw LocatorInvalidException(loc_string);
+  } else {
+      m_lat_index3 = sz;
+  }
+
   // convert to decimal degrees for lower corner of locator square
   m_lat  = (m_lat_index1 * 10.0) - 90.0;
   m_lon  = (m_lon_index1 * 20.0) - 180.0;

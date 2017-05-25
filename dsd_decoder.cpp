@@ -54,12 +54,12 @@ const unsigned char DSDDecoder::m_syncProVoiceEAInv[32]   = {1, 3, 3, 1, 3, 1, 3
 
 DSDDecoder::DSDDecoder() :
         m_fsmState(DSDLookForSync),
-        m_mbeDVReady1(false),
+        m_dsdSymbol(this),
         m_mbelibEnable(true),
         m_mbeRate(DSDMBERateNone),
-        m_dsdSymbol(this),
         m_mbeDecoder1(this),
         m_mbeDecoder2(this),
+        m_mbeDVReady1(false),
         m_dsdDMR(this),
         m_dsdDstar(this),
         m_dsdYSF(this),

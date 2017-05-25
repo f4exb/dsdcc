@@ -36,13 +36,13 @@ DSDSymbol::DSDSymbol(DSDDecoder *dsdDecoder) :
         m_noSignal(false),
         m_zeroCrossingSlopeDivisor(232), // for 10 samples per symbol
         m_lmmidx(0),
+        m_pllLock(true),
         m_lmmSamples(10*24),
-		m_ringingFilter(48000.0, 4800.0, 0.99),
-		m_pll(0.1, 0.003, 0.25),
-		m_binSymbolBuffer(1024),
-		m_syncSymbolBuffer(64),
-		m_nonInvertedSyncSymbolBuffer(64),
-		m_pllLock(true)
+        m_ringingFilter(48000.0, 4800.0, 0.99),
+        m_pll(0.1, 0.003, 0.25),
+        m_binSymbolBuffer(1024),
+        m_syncSymbolBuffer(64),
+		m_nonInvertedSyncSymbolBuffer(64)
 {
     noCarrier();
     m_umid = 0;
@@ -392,10 +392,8 @@ void DSDSymbol::setSamplesPerSymbol(int samplesPerSymbol)
 
 int DSDSymbol::get_dibit()
 {
-    int symbol;
     int dibit;
 
-    symbol = m_symbol;
     dibit = m_binSymbolBuffer.getLatest(); // buffer head
 
     return dibit;
