@@ -157,5 +157,5 @@ target_include_directories(dsdccx PUBLIC
 target_link_libraries(dsdccx dsdcc)
 
 install(TARGETS dsdccx DESTINATION bin)
-install(TARGETS dsdcc DESTINATION lib)
+install(TARGETS dsdcc DESTINATION lib${LIB_SUFFIX})
 install(FILES ${dsdcc_HEADERS} DESTINATION include/${PROJECT_NAME})
