@@ -96,6 +96,7 @@ set(dsdcc_HEADERS
     mbefec.h
     locator.h
     phaselock.h
+    iirfilter.h
 )
 
 if (USE_MBELIB AND LIBMBE_FOUND)

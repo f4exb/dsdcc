@@ -264,6 +264,11 @@ public:
         return m_mbeRate;
     }
 
+    void useHPMbelib(bool useHP) {
+        m_mbeDecoder1.useHP(useHP);
+        m_mbeDecoder2.useHP(useHP);
+    }
+
     /*
      * Frame sync patterns
      */

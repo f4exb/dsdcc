@@ -53,6 +53,7 @@ public:
     void setChannels(unsigned char channels) { m_channels = channels % 4; }
     void setUpsamplingFactor(int upsample) { m_upsample = upsample; }
     int getUpsamplingFactor() const { return m_upsample; }
+    void useHP(bool useHP) { m_upsamplingFilter.useHP(useHP); }
 
 private:
     void processAudio();

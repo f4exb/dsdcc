@@ -147,6 +147,7 @@ void usage()
     fprintf(stderr, "                You must have compiled with serialDV support (see Readme.md)\n");
     fprintf(stderr, "                Device name is the corresponding TTY USB device e.g /dev/ttyUSB0\n");
 #endif
+    fprintf(stderr, "  -H            Use high-pass filter on audio when using mbelib\n");
     fprintf(stderr, "  -P <float>    Own latitude in decimal degrees. Latitude is positive to the North. Default 0\n");
     fprintf(stderr, "  -Q <float>    Own longitue in decimal degrees. Longitude is positive to the East. Default 0\n");
     fprintf(stderr, "                This is useful when status messages (see -M option) contain geographical data\n");
@@ -196,7 +197,7 @@ int main(int argc, char **argv)
     signal(SIGINT, sigfun);
 
     while ((c = getopt(argc, argv,
-            "hep:qtv:i:o:g:nR:f:u:U:lL:D:d:T:M:m:P:Q:x")) != -1)
+            "hHep:qtv:i:o:g:nR:f:u:U:lL:D:d:T:M:m:P:Q:x")) != -1)
     {
         opterr = 0;
         switch (c)
@@ -204,6 +205,9 @@ int main(int argc, char **argv)
         case 'h':
             usage();
             exit(0);
+        case 'H':
+            dsdDecoder.useHPMbelib(true);
+            break;
         case 'e':
             dsdDecoder.showErrorBars();
             break;

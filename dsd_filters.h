@@ -20,6 +20,7 @@
 #define NZEROS 60
 #define NXZEROS 134
 
+#include "iirfilter.h"
 
 namespace DSDcc
 {
@@ -94,13 +95,17 @@ public:
     DSDMBEAudioInterpolatorFilter();
     ~DSDMBEAudioInterpolatorFilter();
 
-    void init();
-    float run(float sample);
+    void useHP(bool useHP) { m_useHP = useHP; }
+    float run(const float& sample);
 
 private:
-    float m_x[2];
-    float m_y[2];
-    static const float m_a0, m_a1, m_a2, m_b1, m_b2;
+    IIRFilter<float, 2> m_filterLP;
+    IIRFilter<float, 2> m_filterHP;
+    bool m_useHP;
+    static const float m_lpa[3];
+    static const float m_lpb[3];
+    static const float m_hpa[3];
+    static const float m_hpb[3];
 };
 
 }
