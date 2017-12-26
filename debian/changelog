@@ -1,3 +1,9 @@
+dsdcc (1.7.3-1) unstable; urgency=medium
+
+  * Added optional audio high pass filter when processing with mbelib
+
+ -- Edouard Griffiths, F4EXB <f4exb06@gmail.com>  Tue, 26 December 2017 19:15:15 +0100
+
 dsdcc (1.7.2-1) unstable; urgency=medium
 
   * Activated compiler warnings and made corresponding fixes
