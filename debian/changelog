@@ -1,3 +1,9 @@
+dsdcc (1.7.4-1) unstable; urgency=medium
+
+  * changed optional audio high pass filter cutoff down to 240 Hz @ -3 dB
+
+ -- Edouard Griffiths, F4EXB <f4exb06@gmail.com>  Tue, 02 Jan 2017 18:15:15 +0100
+
 dsdcc (1.7.3-1) unstable; urgency=medium
 
   * Added optional audio high pass filter when processing with mbelib
