@@ -24,9 +24,13 @@ namespace DSDcc
 
 // Sync wods - Symbol mapping: 01(1):+3, 00(0):+1, 10(2):-1, 11(3):-3
 const unsigned char DSDDecoder::m_syncDMRDataBS[24]       = {3, 1, 3, 3, 3, 3, 1, 1, 1, 3, 3, 1, 1, 3, 1, 1, 3, 1, 3, 3, 1, 1, 3, 1}; // DF F5 7D 75 DF 5D
+const unsigned char DSDDecoder::m_syncDMRDataBSInv[24]    = {1, 3, 1, 1, 1, 1, 3, 3, 3, 1, 1, 3, 3, 1, 3, 3, 1, 3, 1, 1, 3, 3, 1, 3};
 const unsigned char DSDDecoder::m_syncDMRVoiceBS[24]      = {1, 3, 1, 1, 1, 1, 3, 3, 3, 1, 1, 3, 3, 1, 3, 3, 1, 3, 1, 1, 3, 3, 1, 3}; // 75 5F D7 DF 75 F7
+const unsigned char DSDDecoder::m_syncDMRVoiceBSInv[24]   = {3, 1, 3, 3, 3, 3, 1, 1, 1, 3, 3, 1, 1, 3, 1, 1, 3, 1, 3, 3, 1, 1, 3, 1};
 const unsigned char DSDDecoder::m_syncDMRDataMS[24]       = {3, 1, 1, 1, 3, 1, 1, 3, 3, 3, 1, 3, 1, 3, 3, 3, 3, 1, 1, 3, 1, 1, 1, 3}; // D5 D7 F7 7F D7 57
+const unsigned char DSDDecoder::m_syncDMRDataMSInv[24]    = {1, 3, 3, 3, 1, 3, 3, 1, 1, 1, 3, 1, 3, 1, 1, 1, 1, 3, 3, 1, 3, 3, 3, 1};
 const unsigned char DSDDecoder::m_syncDMRVoiceMS[24]      = {1, 3, 3, 3, 1, 3, 3, 1, 1, 1, 3, 1, 3, 1, 1, 1, 1, 3, 3, 1, 3, 3, 3, 1}; // 7F 7D 5D D5 7D FD
+const unsigned char DSDDecoder::m_syncDMRVoiceMSInv[24]   = {3, 1, 1, 1, 3, 1, 1, 3, 3, 3, 1, 3, 1, 3, 3, 3, 3, 1, 1, 3, 1, 1, 1, 3};
 const unsigned char DSDDecoder::m_syncDPMRFS1[24]         = {1, 1, 1, 3, 3, 3, 3, 3, 1, 1, 3, 3, 1, 3, 1, 1, 3, 1, 1, 1, 1, 3, 1, 3}; // 57 FF 5F 75 D5 77 - non packet data header
 const unsigned char DSDDecoder::m_syncDPMRFS4[24]         = {3, 3, 3, 1, 1, 1, 1, 1, 3, 3, 1, 1, 3, 1, 3, 3, 1, 3, 3, 3, 3, 1, 3, 1}; // FD 55 F5 DF 7F DD - packet data header
 const unsigned char DSDDecoder::m_syncDPMRFS2[12]         = {1, 1, 3, 3, 3, 3, 1, 3, 1, 3, 3, 1};                                     // 5F F7 7D          - superframe sync (each 2 384 bit frames)
@@ -797,6 +801,27 @@ int DSDDecoder::getFrameSync()
 				return (int) DSDSyncDMRDataP; // done
         	}
 
+            if (memcmp(m_dsdSymbol.getSyncDibitBack(24), m_syncDMRDataBSInv, 24) == 0)
+            {
+                m_state.carrier = 1;
+                m_dsdSymbol.setFSK(4, true);
+
+                m_stationType = DSDBaseStation;
+                m_dmrBurstType = DSDDMR::DSDDMRBaseStation;
+
+                // data frame
+                sprintf(m_state.ftype, "-DMRd        ");
+
+                if (m_opts.errorbars == 1)
+                {
+                    printFrameSync(" -DMRd     ",  m_synctest_pos + 1);
+                }
+
+                m_lastSyncType = DSDSyncDMRDataN;
+                m_mbeRate = DSDMBERate3600x2450;
+                return (int) DSDSyncDMRDataN; // done
+            }
+
             if (memcmp(m_dsdSymbol.getSyncDibitBack(24), m_syncDMRDataMS, 24) == 0)
             {
                 m_state.carrier = 1;
@@ -816,6 +841,27 @@ int DSDDecoder::getFrameSync()
                 m_lastSyncType = DSDSyncDMRDataMS;
                 m_mbeRate = DSDMBERate3600x2450;
                 return (int) DSDSyncDMRDataMS; // done
+            }
+
+            if (memcmp(m_dsdSymbol.getSyncDibitBack(24), m_syncDMRDataMSInv, 24) == 0)
+            {
+                m_state.carrier = 1;
+                m_dsdSymbol.setFSK(4, true);
+
+                m_stationType = DSDMobileStation;
+                m_dmrBurstType = DSDDMR::DSDDMRMobileStation;
+
+                // data frame
+                sprintf(m_state.ftype, "-DMRd        ");
+
+                if (m_opts.errorbars == 1)
+                {
+                    printFrameSync(" -DMRd     ",  m_synctest_pos + 1);
+                }
+
+                m_lastSyncType = DSDSyncDMRDataMSN;
+                m_mbeRate = DSDMBERate3600x2450;
+                return (int) DSDSyncDMRDataMSN; // done
             }
 
         	if (memcmp(m_dsdSymbol.getSyncDibitBack(24), m_syncDMRVoiceBS, 24) == 0)
@@ -839,6 +885,27 @@ int DSDDecoder::getFrameSync()
 				return (int) DSDSyncDMRVoiceP; // done
         	}
 
+            if (memcmp(m_dsdSymbol.getSyncDibitBack(24), m_syncDMRVoiceBSInv, 24) == 0)
+            {
+                m_state.carrier = 1;
+                m_dsdSymbol.setFSK(4, true);
+
+                m_stationType = DSDBaseStation;
+                m_dmrBurstType = DSDDMR::DSDDMRBaseStation;
+
+                // voice frame
+                sprintf(m_state.ftype, "-DMRv        ");
+
+                if (m_opts.errorbars == 1)
+                {
+                    printFrameSync(" -DMRv     ", m_synctest_pos + 1);
+                }
+
+                m_lastSyncType = DSDSyncDMRVoiceN;
+                m_mbeRate = DSDMBERate3600x2450;
+                return (int) DSDSyncDMRVoiceN; // done
+            }
+
             if (memcmp(m_dsdSymbol.getSyncDibitBack(24), m_syncDMRVoiceMS, 24) == 0)
             {
                 m_state.carrier = 1;
@@ -858,6 +925,27 @@ int DSDDecoder::getFrameSync()
                 m_lastSyncType = DSDSyncDMRVoiceMS;
                 m_mbeRate = DSDMBERate3600x2450;
                 return (int) DSDSyncDMRVoiceMS; // done
+            }
+
+            if (memcmp(m_dsdSymbol.getSyncDibitBack(24), m_syncDMRVoiceMSInv, 24) == 0)
+            {
+                m_state.carrier = 1;
+                m_dsdSymbol.setFSK(4, true);
+
+                m_stationType = DSDMobileStation;
+                m_dmrBurstType = DSDDMR::DSDDMRMobileStation;
+
+                // voice frame
+                sprintf(m_state.ftype, "-DMRv        ");
+
+                if (m_opts.errorbars == 1)
+                {
+                    printFrameSync(" -DMRv     ", m_synctest_pos + 1);
+                }
+
+                m_lastSyncType = DSDSyncDMRVoiceMSN;
+                m_mbeRate = DSDMBERate3600x2450;
+                return (int) DSDSyncDMRVoiceMSN; // done
             }
         }
         if (m_opts.frame_provoice == 1)

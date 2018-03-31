@@ -126,6 +126,10 @@ public:
         DSDSyncDPMRPayload,    // 22
         DSDSyncDPMREnd,        // 23
         DSDSyncYSF,            // 24
+        DSDSyncDMRDataN,       // 25
+        DSDSyncDMRDataMSN,     // 26
+        DSDSyncDMRVoiceN,      // 27
+        DSDSyncDMRVoiceMSN,    // 28
         DSDSyncNone
     } DSDSyncType;
 
@@ -273,9 +277,13 @@ public:
      * Frame sync patterns
      */
     static const unsigned char m_syncDMRDataBS[24];
+    static const unsigned char m_syncDMRDataBSInv[24];
     static const unsigned char m_syncDMRVoiceBS[24];
+    static const unsigned char m_syncDMRVoiceBSInv[24];
     static const unsigned char m_syncDMRDataMS[24];
+    static const unsigned char m_syncDMRDataMSInv[24];
     static const unsigned char m_syncDMRVoiceMS[24];
+    static const unsigned char m_syncDMRVoiceMSInv[24];
     static const unsigned char m_syncDPMRFS1[24];
     static const unsigned char m_syncDPMRFS4[24];
     static const unsigned char m_syncDPMRFS2[12];
