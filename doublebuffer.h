@@ -45,6 +45,17 @@ public:
         reset();
     }
 
+    DoubleBuffer& operator=(const DoubleBuffer& other)
+    {
+        m_size = other.m_size;
+        m_index = other.m_index;
+        m_buffer = new T[2*m_size];
+        memcpy(m_buffer, other.m_buffer, 2*m_size*sizeof(T));
+        reset();
+
+        return *this;
+    }
+
     ~DoubleBuffer()
     {
         delete[] m_buffer;
