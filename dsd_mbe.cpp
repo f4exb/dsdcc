@@ -259,7 +259,8 @@ void DSDMBEDecoder::processAudio()
     // copy audio data to output buffer and upsample if necessary
     m_audio_out_temp_buf_p = m_audio_out_temp_buf;
 
-    if ((m_upsample == 6) || (m_upsample == 7)) // upsampling to 48k
+    //if ((m_upsample == 6) || (m_upsample == 7)) // upsampling to 48k
+    if (m_upsample >= 2)
     {
         int upsampling = m_upsample;
 
@@ -347,7 +348,7 @@ void DSDMBEDecoder::processAudio()
 
             if (m_stereo) // produce second channel
             {
-                *m_audio_out_buf_p = (short) *m_audio_out_float_buf_p;
+                *m_audio_out_buf_p = (short) *m_audio_out_temp_buf_p;
                 m_audio_out_buf_p++;
             }
 
@@ -371,7 +372,51 @@ void DSDMBEDecoder::upsample(int upsampling, float invalue)
     d = invalue;
     // basic triangle interpolation
 //    outbuf1++;
-    if (upsampling == 6)
+    if (upsampling == 2)
+    {
+        *outbuf1 = m_upsamplingFilter.run((invalue * (float) 0.5) + (c * (float) 0.5));
+        outbuf1++;
+        *outbuf1 = m_upsamplingFilter.run(d);
+        m_upsamplerLastValue = d;
+        outbuf1++;
+    }
+    else if (upsampling == 3)
+    {
+        *outbuf1 = m_upsamplingFilter.run((invalue * (float) 0.332) + (c * (float) 0.668));
+        outbuf1++;
+        *outbuf1 = m_upsamplingFilter.run((invalue * (float) 0.668) + (c * (float) 0.332));
+        outbuf1++;
+        *outbuf1 = m_upsamplingFilter.run(d);
+        m_upsamplerLastValue = d;
+        outbuf1++;
+    }
+    else if (upsampling == 4)
+    {
+        *outbuf1 = m_upsamplingFilter.run((invalue * (float) 0.25) + (c * (float) 0.75));
+        outbuf1++;
+        *outbuf1 = m_upsamplingFilter.run((invalue * (float) 0.5) + (c * (float) 0.5));
+        outbuf1++;
+        *outbuf1 = m_upsamplingFilter.run((invalue * (float) 0.75) + (c * (float) 0.25));
+        outbuf1++;
+        *outbuf1 = m_upsamplingFilter.run(d);
+        m_upsamplerLastValue = d;
+        outbuf1++;
+    }
+    else if (upsampling == 5)
+    {
+        *outbuf1 = m_upsamplingFilter.run((invalue * (float) 0.2) + (c * (float) 0.8));
+        outbuf1++;
+        *outbuf1 = m_upsamplingFilter.run((invalue * (float) 0.4) + (c * (float) 0.6));
+        outbuf1++;
+        *outbuf1 = m_upsamplingFilter.run((invalue * (float) 0.6) + (c * (float) 0.4));
+        outbuf1++;
+        *outbuf1 = m_upsamplingFilter.run((invalue * (float) 0.8) + (c * (float) 0.2));
+        outbuf1++;
+        *outbuf1 = m_upsamplingFilter.run(d);
+        m_upsamplerLastValue = d;
+        outbuf1++;
+    }
+    else if (upsampling == 6)
     {
         *outbuf1 = m_upsamplingFilter.run((invalue * (float) 0.166) + (c * (float) 0.834));
         outbuf1++;
@@ -405,7 +450,7 @@ void DSDMBEDecoder::upsample(int upsampling, float invalue)
         m_upsamplerLastValue = d;
         outbuf1++;
     }
-    else // no upsampling
+    else // default is no upsampling (0)
     {
         outbuf1++;
         *outbuf1 = d;

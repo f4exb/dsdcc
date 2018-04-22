@@ -280,13 +280,17 @@ void DSDDecoder::setUvQuality(int uvquality)
 
 void DSDDecoder::setUpsampling(int upsampling)
 {
-    if ((upsampling != 6) && (upsampling != 7)) {
-    	upsampling = 0;
+    if (upsampling > 7) {
+        upsampling = 7;
+    }
+
+    if (upsampling < 0) { // 0 or 1 means 1
+        upsampling = 0;
     }
 
     m_mbeDecoder1.setUpsamplingFactor(upsampling);
     m_mbeDecoder2.setUpsamplingFactor(upsampling);
-    m_dsdLogger.log("Setting upsampling to x%d\n", (upsampling == 0 ? 1 : upsampling));
+    m_dsdLogger.log("Setting upsampling to x%d\n", upsampling);
 }
 
 void DSDDecoder::setStereo(bool on)
