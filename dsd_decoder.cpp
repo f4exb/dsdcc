@@ -539,7 +539,7 @@ void DSDDecoder::processFrameInit()
         m_dsdDstar.processHD(); // process current symbol first
         m_fsmState = DSDprocessDSTAR_HD;
     }
-    else if ((m_syncType == DSDSyncNXDNP) || (m_syncType == DSDSyncNXDNN)) // NXDN conventional
+    else if ((m_syncType == DSDSyncNXDNP) || (m_syncType == DSDSyncNXDNN)) // NXDN conventional (non truked RDCH channel only)
     {
         m_state.nac = 0;
         m_state.lastsrc = 0;

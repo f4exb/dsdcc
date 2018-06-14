@@ -23,9 +23,10 @@ namespace DSDcc
 
 DSDNXDN::DSDNXDN(DSDDecoder *dsdDecoder) :
 		m_dsdDecoder(dsdDecoder),
-		m_state(NXDNRDCHFrame),
+		m_state(NXDNFrame),
 		m_lichEvenParity(0),
-		m_symbolIndex(0)
+		m_symbolIndex(0),
+		m_swallowCount(0)
 {
     memset(m_syncBuffer, 0, 11);
     memset(m_lichBuffer, 0, 8);
@@ -39,25 +40,28 @@ void DSDNXDN::init()
 {
 	m_symbolIndex = 0;
 	m_lichEvenParity = 0;
-	m_state = NXDNRDCHFrame;
+	m_state = NXDNFrame;
 }
 
 void DSDNXDN::process()
 {
     switch(m_state)
     {
-    case NXDNRDCHFrame:
-    	processRDCHFrame();
+    case NXDNFrame:
+    	processFrame();
     	break;
-    case NXDNRDCHPostFrame:
-    	processRDCHPostFrame();
+    case NXDNPostFrame:
+    	processPostFrame();
     	break;
+    case NXDNSwallow:
+        processSwallow();
+        break;
     default:
         m_dsdDecoder->resetFrameSync(); // end
     }
 }
 
-void DSDNXDN::processRDCHFrame()
+void DSDNXDN::processFrame()
 {
 	int dibit = m_dsdDecoder->m_dsdSymbol.getDibit(); // get dibit from symbol
 
@@ -80,53 +84,126 @@ void DSDNXDN::processRDCHFrame()
 			processLICH();
 		}
 	}
-	else if (m_symbolIndex < 8 + 174) // TODO: just pass for now
+	else if (m_symbolIndex < 8 + 174 - 1) // TODO: just pass for now
 	{
 		m_symbolIndex++;
 	}
 	else
 	{
-		m_state = NXDNRDCHPostFrame; // look for next RDCH or end
+		m_state = NXDNPostFrame; // look for next RDCH or end
 		m_symbolIndex = 0;
 	}
 }
 
-void DSDNXDN::processRDCHPostFrame()
+void DSDNXDN::processPostFrame()
 {
 	if (m_symbolIndex < 10)
 	{
+	    int dibit = m_dsdDecoder->m_dsdSymbol.getDibit(); // get dibit from symbol
+
+        if ((dibit == 0) || (dibit == 1)) { // positives => 1 (+3)
+            m_syncBuffer[m_symbolIndex] = 1;
+        } else { // negatives => 3 (-3)
+            m_syncBuffer[m_symbolIndex] = 3;
+        }
+
 		m_symbolIndex++;
 
-		if (m_symbolIndex == 10)
-		{
-			m_syncBuffer[10] = '\0';
-
-			if (m_dsdDecoder->getSyncType() == DSDDecoder::DSDSyncNXDNP)
-			{
-				 if (memcmp(m_dsdDecoder->m_dsdSymbol.getSyncDibitBack(10), DSDDecoder::m_syncNXDNRDCHFSW, 10) == 0) {
-					 init();
-				 } else {
-					 m_dsdDecoder->resetFrameSync(); // end
-				 }
-			}
-			else if (m_dsdDecoder->getSyncType() == DSDDecoder::DSDSyncNXDNN)
-			{
-				 if (memcmp(m_dsdDecoder->m_dsdSymbol.getSyncDibitBack(10), DSDDecoder::m_syncNXDNRDCHFSW, 10) == 0) {
-					 init();
-				 } else {
-					 m_dsdDecoder->resetFrameSync(); // end
-				 }
-			}
-			else
-			{
-				m_dsdDecoder->resetFrameSync(); // end
-			}
+		if (m_symbolIndex == 10) {
+		    processFSW();
 		}
 	}
 	else // out of sync => terminate
 	{
 		m_dsdDecoder->resetFrameSync(); // end
 	}
+}
+
+void DSDNXDN::processFSW()
+{
+    int match_late2 = 0;
+    int match_late1 = 0;
+    int match_spot  = 0;
+    int match_earl1 = 0;
+    int match_earl2 = 0;
+
+    const unsigned char *fsw;
+
+    if (m_dsdDecoder->getSyncType() == DSDDecoder::DSDSyncNXDNP) {
+        fsw = DSDDecoder::m_syncNXDNRDCHFSW;
+    } else if (m_dsdDecoder->getSyncType() == DSDDecoder::DSDSyncNXDNN) {
+        fsw = DSDDecoder::m_syncNXDNRDCHFSWInv;
+    } else {
+        m_dsdDecoder->resetFrameSync(); // end
+        return;
+    }
+
+    for (int i = 0; i < 10; i++)
+    {
+        if (m_syncBuffer[i] ==  fsw[i]) {
+            match_spot++;
+        }
+        if ((i < 7) && (m_syncBuffer[i] ==  fsw[i+2])) {
+            match_late2++;
+        }
+        if ((i < 8) && (m_syncBuffer[i] ==  fsw[i+1])) {
+            match_late1++;
+        }
+        if ((i > 0) && (m_syncBuffer[i] ==  fsw[i-1])) {
+            match_earl1++;
+        }
+        if ((i > 1) && (m_syncBuffer[i] ==  fsw[i-2])) {
+            match_earl2++;
+        }
+    }
+
+    if (match_spot >= 7)
+    {
+        init();
+    }
+    else if (match_earl1 >= 6)
+    {
+        std::cerr << "DSDNXDN::processFSW: match early -1" << std::endl;
+        m_swallowCount = 1;
+        m_state = NXDNSwallow;
+    }
+    else if (match_late1 >= 6)
+    {
+        std::cerr << "DSDNXDN::processFSW: match late +1" << std::endl;
+        m_lichBuffer[0] = m_syncBuffer[9] < 2 ? 0 : 1; // re-introduce last symbol (positive: 0, negative: 1) TODO: init LICH parity
+        m_symbolIndex = 1;
+        m_state = NXDNFrame;
+    }
+    else if (match_earl2 >= 5)
+    {
+        std::cerr << "DSDNXDN::processFSW: match early -2" << std::endl;
+        m_swallowCount = 2;
+        m_state = NXDNSwallow;
+    }
+    else if (match_late2 >= 5)
+    {
+        std::cerr << "DSDNXDN::processFSW: match late +2" << std::endl;
+        m_lichBuffer[0] = m_syncBuffer[8] < 2 ? 0 : 1; // re-introduce last symbol (positive: 0, negative: 1) TODO: init LICH parity
+        m_lichBuffer[1] = m_syncBuffer[9] < 2 ? 0 : 1; // re-introduce last symbol (positive: 0, negative: 1) TODO: init LICH parity
+        m_symbolIndex = 2;
+        m_state = NXDNFrame;
+    }
+    else
+    {
+        std::cerr << "DSDNXDN::processFSW: sync lost" << std::endl;
+        m_dsdDecoder->resetFrameSync(); // end
+    }
+}
+
+void DSDNXDN::processSwallow()
+{
+    if (m_swallowCount > 0) {
+        m_swallowCount--;
+    }
+
+    if (m_swallowCount == 0) {
+        init();
+    }
 }
 
 void DSDNXDN::processLICH()
@@ -137,11 +214,11 @@ void DSDNXDN::processLICH()
 	m_lich.direction     = m_lichBuffer[6];
 	m_lich.parity        = m_lichBuffer[7];
 
-	if (m_lich.parity != (m_lichEvenParity % 2)) {
-		std::cerr << "DSDNXDN::processLICH: LICH parity error" << std::endl;
-	} else if (m_lich.rfChannelCode != 2) {
-		std::cerr << "DSDNXDN::processLICH: wrong RF channel type for RDCH: " << m_lich.rfChannelCode << std::endl;
-	}
+//	if (m_lich.parity != (m_lichEvenParity % 2)) {
+//		std::cerr << "DSDNXDN::processLICH: LICH parity error" << std::endl;
+//	} else if (m_lich.rfChannelCode != 2) {
+//		std::cerr << "DSDNXDN::processLICH: wrong RF channel type for RDCH: " << m_lich.rfChannelCode << std::endl;
+//	}
 }
 
 } // namespace DSDcc

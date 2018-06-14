@@ -34,8 +34,9 @@ public:
 private:
     typedef enum
     {
-    	NXDNRDCHFrame,
-		NXDNRDCHPostFrame
+    	NXDNFrame,
+		NXDNPostFrame,
+		NXDNSwallow
     } NXDNState;
 
     struct NXDNLICH
@@ -55,17 +56,20 @@ private:
     	int parity;        //!< LICH bits even parity
     };
 
-    void processRDCHFrame();
-    void processRDCHPostFrame();
+    void processFrame();
+    void processPostFrame();
     void processLICH();
+    void processFSW();
+    void processSwallow();
 
 	DSDDecoder *m_dsdDecoder;
 	NXDNState   m_state;
-	NXDNLICH    m_lich;      //!< Link Information CHannel data (LICH)
-	char m_syncBuffer[11];   //!< buffer for frame sync: 10  dibits + \0
-	char m_lichBuffer[8];    //!< LICH bits expanded to char (0 or 1)
-	int m_lichEvenParity;    //!< Even parity bits count for LICH
-	int m_symbolIndex;       //!< current symbol index in non HD sequence
+	NXDNLICH    m_lich;             //!< Link Information CHannel data (LICH)
+	unsigned char m_syncBuffer[10]; //!< buffer for frame sync: 10  dibits
+	unsigned char m_lichBuffer[8];  //!< LICH bits expanded to char (0 or 1)
+	int m_lichEvenParity;           //!< Even parity bits count for LICH
+	int m_symbolIndex;              //!< current symbol index in non HD sequence
+	int m_swallowCount;             //!< count of symbols to swallow (used in swallow state)
 };
 
 } // namespace DSDcc
