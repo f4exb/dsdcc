@@ -280,8 +280,8 @@ public:
     static const unsigned char m_syncDPMRFS4[24];
     static const unsigned char m_syncDPMRFS2[12];
     static const unsigned char m_syncDPMRFS3[12];
-    static const unsigned char m_syncNXDNRDCHFull[20];
-    static const unsigned char m_syncNXDNRDCHFullInv[20];
+    static const unsigned char m_syncNXDNRDCHFull[19];
+    static const unsigned char m_syncNXDNRDCHFullInv[19];
     static const unsigned char m_syncNXDNRDCHFSW[10];
     static const unsigned char m_syncNXDNRDCHFSWInv[10];
     static const unsigned char m_syncDStarHeader[24];
