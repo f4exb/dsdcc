@@ -24,6 +24,7 @@ namespace DSDcc
 DSDNXDN::DSDNXDN(DSDDecoder *dsdDecoder) :
 		m_dsdDecoder(dsdDecoder),
 		m_state(NXDNFrame),
+		m_pn(0xe4), // TS 1A v0103 section 4.6
 		m_lichEvenParity(0),
 		m_symbolIndex(0),
 		m_swallowCount(0)
@@ -63,7 +64,8 @@ void DSDNXDN::process()
 
 void DSDNXDN::processFrame()
 {
-	int dibit = m_dsdDecoder->m_dsdSymbol.getDibit(); // get dibit from symbol
+	int dibit = m_dsdDecoder->m_dsdSymbol.getDibit();       // get dibit from symbol
+	dibit = m_pn.getBit(m_symbolIndex) ? dibit ^ 2 : dibit; // apply PN scrambling. Inverting symbol is a XOR by 2 on the dibit.
 
 	if (m_symbolIndex < 8) // LICH info
 	{
@@ -121,11 +123,11 @@ void DSDNXDN::processPostFrame()
 
 void DSDNXDN::processFSW()
 {
-    int match_late2 = 0;
-    int match_late1 = 0;
-    int match_spot  = 0;
-    int match_earl1 = 0;
-    int match_earl2 = 0;
+    int match_late2 = 0; // count of FSW symbols matches late by 2 symbols
+    int match_late1 = 0; // count of FSW symbols matches late by 1 symbol
+    int match_spot  = 0; // count of FSW symbols matches on the spot
+    int match_earl1 = 0; // count of FSW symbols matches early by 1 symbol
+    int match_earl2 = 0; // count of FSW symbols matches early by 2 symbols
 
     const unsigned char *fsw;
 
