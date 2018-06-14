@@ -1,3 +1,21 @@
+dsdcc (1.8.0-1) unstable; urgency=medium
+
+  * NXDN implementation
+
+ -- Edouard Griffiths, F4EXB <f4exb06@gmail.com>  Sun, 24 Jun 2018 16:15:15 +0200
+
+dsdcc (1.7.7-1) unstable; urgency=medium
+
+  * Reverted Implement DMR negative
+
+ -- Edouard Griffiths, F4EXB <f4exb06@gmail.com>  Tue, 24 Apr 2018 16:15:15 +0200
+
+dsdcc (1.7.6-1) unstable; urgency=medium
+
+  * Upsampling by 2,3,4,5 with mbelib decoding
+
+ -- Edouard Griffiths, F4EXB <f4exb06@gmail.com>  Mon, 23 Apr 2018 16:15:15 +0200
+
 dsdcc (1.7.5-1) unstable; urgency=medium
 
   * Implemented DMR negative
