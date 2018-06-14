@@ -68,6 +68,7 @@ private:
 	NXDNState   m_state;
 	NXDNLICH    m_lich;             //!< Link Information CHannel data (LICH)
 	PN_9_5      m_pn;
+	bool        m_inSync;           //!< used to notify when entering into NXDN sync state
 	unsigned char m_syncBuffer[10]; //!< buffer for frame sync: 10  dibits
 	unsigned char m_lichBuffer[8];  //!< LICH bits expanded to char (0 or 1)
 	int m_lichEvenParity;           //!< Even parity bits count for LICH

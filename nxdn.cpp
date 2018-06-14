@@ -25,6 +25,7 @@ DSDNXDN::DSDNXDN(DSDDecoder *dsdDecoder) :
 		m_dsdDecoder(dsdDecoder),
 		m_state(NXDNFrame),
 		m_pn(0xe4), // TS 1A v0103 section 4.6
+		m_inSync(false),
 		m_lichEvenParity(0),
 		m_symbolIndex(0),
 		m_swallowCount(0)
@@ -39,6 +40,12 @@ DSDNXDN::~DSDNXDN()
 
 void DSDNXDN::init()
 {
+    if (!m_inSync)
+    {
+        std::cerr << "DSDNXDN::init: entering sync state" << std::endl;
+        m_inSync = true;
+    }
+
 	m_symbolIndex = 0;
 	m_lichEvenParity = 0;
 	m_state = NXDNFrame;
@@ -59,6 +66,7 @@ void DSDNXDN::process()
         break;
     default:
         m_dsdDecoder->resetFrameSync(); // end
+        m_inSync = false;
     }
 }
 
@@ -118,6 +126,7 @@ void DSDNXDN::processPostFrame()
 	else // out of sync => terminate
 	{
 		m_dsdDecoder->resetFrameSync(); // end
+		m_inSync = false;
 	}
 }
 
@@ -137,6 +146,7 @@ void DSDNXDN::processFSW()
         fsw = DSDDecoder::m_syncNXDNRDCHFSWInv;
     } else {
         m_dsdDecoder->resetFrameSync(); // end
+        m_inSync = false;
         return;
     }
 
@@ -194,6 +204,7 @@ void DSDNXDN::processFSW()
     {
         std::cerr << "DSDNXDN::processFSW: sync lost" << std::endl;
         m_dsdDecoder->resetFrameSync(); // end
+        m_inSync = false;
     }
 }
 
