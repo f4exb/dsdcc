@@ -625,8 +625,8 @@ int DSDDecoder::getFrameSync()
      * 5  = -X2-TDMA (inverted signal data frame)
      * 6  = +D-STAR
      * 7  = -D-STAR
-     * 8  = +NXDN (non inverted RDCH first frame)
-     * 9  = -NXDN (inverted RDCH first frame)
+     * 8  = +NXDN (non inverted FCH)
+     * 9  = -NXDN (inverted FCH)
      * 10 = +DMR (non inverted signal data frame)
      * 11 = +DMR (non inverted signal data frame for mobile station)
      * 12 = +DMR (non inverted signal voice frame)
@@ -1313,6 +1313,13 @@ void DSDDecoder::formatStatusText(char *statusText)
                 getYSFDecoder().getRem4());
 
         m_signalFormat = signalFormatYSF;
+        break;
+    case DSDcc::DSDDecoder::DSDSyncNXDNN:
+    case DSDcc::DSDDecoder::DSDSyncNXDNP:
+        // 1    2    2    3    3    4    4    5    5    6    6    7    7    8
+        // 5....0....5....0....5....0....5....0....5....0....5....0....5....0..
+        // NXD>RU
+        sprintf(&statusText[15], "NXD>%s", getNXDNDecoder().getRfChannel());
         break;
     default:
     	strcpy(&statusText[15], "XXX>");

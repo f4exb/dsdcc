@@ -140,7 +140,7 @@ public:
     {
         DSDMBERateNone,
         DSDMBERate3600x2400, //!< D-Star
-        DSDMBERate3600x2450, //!< DMR, dPMR, YSF V/D type 1
+        DSDMBERate3600x2450, //!< DMR, dPMR, YSF V/D type 1, NXDN
         DSDMBERate7200x4400,
         DSDMBERate7100x4400,
         DSDMBERate2400,
@@ -234,6 +234,7 @@ public:
     const DSDDstar& getDStarDecoder() const { return m_dsdDstar; }
     const DSDdPMR& getDPMRDecoder() const { return m_dsdDPMR; }
     const DSDYSF& getYSFDecoder() const { return m_dsdYSF; }
+    const DSDNXDN& getNXDNDecoder() const { return m_dsdNXDN; }
     void enableMbelib(bool enable) { m_mbelibEnable = enable; }
 
     // Initializations:

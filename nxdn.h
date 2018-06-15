@@ -27,13 +27,6 @@ class DSDDecoder;
 class DSDNXDN
 {
 public:
-	explicit DSDNXDN(DSDDecoder *dsdDecoder);
-	~DSDNXDN();
-
-    void init();
-    void process();
-
-private:
     typedef enum
     {
     	NXDNFrame,
@@ -41,6 +34,25 @@ private:
 		NXDNSwallow
     } NXDNState;
 
+    typedef enum
+    {
+        NXDNRCCH,
+        NXDNRTCH,
+        NXDNRDCH,
+        NXDNRFCHUnknown
+    } NXDNRFChannel;
+
+	explicit DSDNXDN(DSDDecoder *dsdDecoder);
+	~DSDNXDN();
+
+    void init();
+    void process();
+
+    const char *getRfChannel() const { return m_rfChannelStr; }
+
+    static const char *nxdnRFChannelTypeText[4];
+
+private:
     struct NXDNLICH
     {
         NXDNLICH() :
@@ -65,6 +77,10 @@ private:
     void processLICH();
     void processFSW();
     void processSwallow();
+    void processRCCH(int index, unsigned char dibit);
+    void processRTCH(int index, unsigned char dibit);
+    void processRDCH(int index, unsigned char dibit);
+    void processSACCH(int index, unsigned char dibit);
 
 	DSDDecoder *m_dsdDecoder;
 	NXDNState   m_state;
@@ -76,6 +92,13 @@ private:
 	int m_lichEvenParity;           //!< Even parity bits count for LICH
 	int m_symbolIndex;              //!< current symbol index in non HD sequence
 	int m_swallowCount;             //!< count of symbols to swallow (used in swallow state)
+    NXDNRFChannel m_rfChannel;      //!< current RF channel type (from LICH)
+
+    unsigned char m_sacchRaw[60];   //!< SACCH unscrambled dibits after de-interleave
+
+    char m_rfChannelStr[2+1];
+
+    static const int m_sacchInterleave[60];   //!< FICH symbols interleaving matrix
 };
 
 } // namespace DSDcc

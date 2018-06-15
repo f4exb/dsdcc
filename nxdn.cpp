@@ -21,6 +21,21 @@
 namespace DSDcc
 {
 
+const char * DSDNXDN::nxdnRFChannelTypeText[4] = {
+        "RC", //!< RCCH
+        "RT", //!< RTCH
+        "RD", //!< RDCH
+        "RU"  //!< Unknown RF channel
+};
+
+const int DSDNXDN::m_sacchInterleave[60] = {
+    0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55,
+    1, 6, 11, 16, 21, 26, 31, 36, 41, 46, 51, 56,
+    2, 7, 12, 17, 22, 27, 32, 37, 42, 47, 52, 57,
+    3, 8, 13, 18, 23, 28, 33, 38, 43, 48, 53, 58,
+    4, 9, 14, 19, 24, 29, 34, 39, 44, 49, 54, 59
+};
+
 DSDNXDN::DSDNXDN(DSDDecoder *dsdDecoder) :
 		m_dsdDecoder(dsdDecoder),
 		m_state(NXDNFrame),
@@ -32,6 +47,10 @@ DSDNXDN::DSDNXDN(DSDDecoder *dsdDecoder) :
 {
     memset(m_syncBuffer, 0, 11);
     memset(m_lichBuffer, 0, 8);
+    
+    m_rfChannel = NXDNRFCHUnknown;
+
+    m_rfChannelStr[0] = '\0';
 }
 
 DSDNXDN::~DSDNXDN()
@@ -98,8 +117,23 @@ void DSDNXDN::processFrame()
 			processLICH();
 		}
 	}
-	else if (m_symbolIndex < 8 + 174 - 1) // TODO: just pass for now
+	else if (m_symbolIndex < 8 + 174 - 1) 
 	{
+        switch (m_rfChannel)
+        {
+        case NXDNRCCH:
+            processRCCH(m_symbolIndex - 8, dibit);
+            break;
+        case NXDNRTCH:
+            processRTCH(m_symbolIndex - 8, dibit);
+            break;
+        case NXDNRDCH:
+            processRDCH(m_symbolIndex - 8, dibit);
+            break;
+        case NXDNRFCHUnknown:
+        default:
+            break; // do nothing
+        }
 		m_symbolIndex++;
 	}
 	else
@@ -235,21 +269,43 @@ void DSDNXDN::processLICH()
 	m_lich.optionCode    = 2*m_lichBuffer[4] + m_lichBuffer[5];
 	m_lich.direction     = m_lichBuffer[6];
 	m_lich.parity        = m_lichBuffer[7];
-        m_lichEvenParity += m_lich.parity; // you have to sum with parity bit and then test even-ness
+    m_lichEvenParity += m_lich.parity; // you have to sum with parity bit and then test even-ness
 
+    std::cerr << "DSDNXDN::processLICH:"
+            << " rfChannelCode: " << m_lich.rfChannelCode
+            << " fnChannelCode: " << m_lich.fnChannelCode
+            << " optionCode: " << m_lich.optionCode
+            << " direction: " << m_lich.direction
+            << " parity: " << m_lich.parity
+            << " checked: " << (m_lichEvenParity % 2) << std::endl;
 
-//	if (m_lich.parity != (m_lichEvenParity % 2)) {
-//		std::cerr << "DSDNXDN::processLICH: LICH parity error" << std::endl;
-//	} else {
-		std::cerr << "DSDNXDN::processLICH:"
-		        << " rfChannelCode: " << m_lich.rfChannelCode
-		        << " fnChannelCode: " << m_lich.fnChannelCode
-		        << " optionCode: " << m_lich.optionCode
-		        << " direction: " << m_lich.direction
-		        << " parity: " << m_lich.parity
-                        << " checked: " << (m_lichEvenParity % 2) << std::endl;
-//	}
+    m_rfChannel = (m_lichEvenParity % 2) ? NXDNRFCHUnknown : (NXDNRFChannel) m_lich.rfChannelCode;
+    memcpy(m_rfChannelStr, nxdnRFChannelTypeText[(int) m_rfChannel], 3); 
 }
+
+void DSDNXDN::processSACCH(int index, unsigned char dibit)
+{
+    m_sacchRaw[m_sacchInterleave[index]] = dibit;
+    
+    if (index == 59) // all received
+    {
+
+    }
+}
+
+void DSDNXDN::processRCCH(int index __attribute__((unused)), unsigned char dibit __attribute__((unused)))
+{
+}
+
+void DSDNXDN::processRTCH(int index __attribute__((unused)), unsigned char dibit __attribute__((unused)))
+{
+}
+
+void DSDNXDN::processRDCH(int index __attribute__((unused)), unsigned char dibit __attribute__((unused)))
+{
+}
+
+
 
 } // namespace DSDcc
 

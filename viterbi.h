@@ -73,7 +73,7 @@ public:
     static const unsigned int Poly24[];
     static const unsigned int Poly25[];
     static const unsigned int Poly25a[];
-    static const unsigned int Poly25y[]; //!< Yaesu System Fusion
+    static const unsigned int Poly25y[]; //!< Yaesu System Fusion or NXDN SACCH
     static const unsigned char Partab[];
     static const unsigned char NbOnes[];
 
