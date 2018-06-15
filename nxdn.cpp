@@ -70,27 +70,31 @@ void DSDNXDN::process()
     }
 }
 
+int DSDNXDN::unscrambleDibit(int dibit)
+{
+    //return dibit;
+    return m_pn.getBit(m_symbolIndex) ? dibit ^ 2 : dibit; // apply PN scrambling. Inverting symbol is a XOR by 2 on the dibit.
+}
+
+void DSDNXDN::acquireLICH(int dibit)
+{
+    m_lichBuffer[m_symbolIndex] = dibit >> 1; // conversion is a divide by 2
+
+    if (m_symbolIndex < 4) { // parity is on 4 MSB only
+        m_lichEvenParity += m_lichBuffer[m_symbolIndex];
+    }
+}
+
 void DSDNXDN::processFrame()
 {
-	int dibit = m_dsdDecoder->m_dsdSymbol.getDibit();       // get dibit from symbol
-	dibit = m_pn.getBit(m_symbolIndex) ? dibit ^ 2 : dibit; // apply PN scrambling. Inverting symbol is a XOR by 2 on the dibit.
+    int dibit = unscrambleDibit(m_dsdDecoder->m_dsdSymbol.getDibit());
 
 	if (m_symbolIndex < 8) // LICH info
 	{
-		if ((dibit == 0) || (dibit == 1))
-		{ // positives => 0
-			m_lichBuffer[m_symbolIndex] = 0;
-		}
-		else // negatives => 1
-		{
-			m_lichBuffer[m_symbolIndex] = 1;
-			m_lichEvenParity++;
-		}
-
+	    acquireLICH(dibit);
 		m_symbolIndex++;
 
-		if (m_symbolIndex == 8)
-		{
+		if (m_symbolIndex == 8) {
 			processLICH();
 		}
 	}
@@ -137,6 +141,7 @@ void DSDNXDN::processFSW()
     int match_spot  = 0; // count of FSW symbols matches on the spot
     int match_earl1 = 0; // count of FSW symbols matches early by 1 symbol
     int match_earl2 = 0; // count of FSW symbols matches early by 2 symbols
+    int dibit;
 
     const unsigned char *fsw;
 
@@ -182,8 +187,10 @@ void DSDNXDN::processFSW()
     else if (match_late1 >= 6)
     {
         std::cerr << "DSDNXDN::processFSW: match late +1" << std::endl;
-        m_lichBuffer[0] = m_syncBuffer[9] < 2 ? 0 : 1; // re-introduce last symbol (positive: 0, negative: 1) TODO: init LICH parity
-        m_symbolIndex = 1;
+        m_symbolIndex = 0;
+        m_lichEvenParity = 0;
+        acquireLICH(unscrambleDibit(m_syncBuffer[9])); // re-introduce last symbol
+        m_symbolIndex++;
         m_state = NXDNFrame;
     }
     else if (match_earl2 >= 5)
@@ -195,9 +202,12 @@ void DSDNXDN::processFSW()
     else if (match_late2 >= 5)
     {
         std::cerr << "DSDNXDN::processFSW: match late +2" << std::endl;
-        m_lichBuffer[0] = m_syncBuffer[8] < 2 ? 0 : 1; // re-introduce last symbol (positive: 0, negative: 1) TODO: init LICH parity
-        m_lichBuffer[1] = m_syncBuffer[9] < 2 ? 0 : 1; // re-introduce last symbol (positive: 0, negative: 1) TODO: init LICH parity
-        m_symbolIndex = 2;
+        m_symbolIndex = 0;
+        m_lichEvenParity = 0;
+        acquireLICH(unscrambleDibit(m_syncBuffer[8])); // re-introduce symbol before last symbol
+        m_symbolIndex++;
+        acquireLICH(unscrambleDibit(m_syncBuffer[9])); // re-introduce last symbol
+        m_symbolIndex++;
         m_state = NXDNFrame;
     }
     else
@@ -229,8 +239,14 @@ void DSDNXDN::processLICH()
 
 //	if (m_lich.parity != (m_lichEvenParity % 2)) {
 //		std::cerr << "DSDNXDN::processLICH: LICH parity error" << std::endl;
-//	} else if (m_lich.rfChannelCode != 2) {
-//		std::cerr << "DSDNXDN::processLICH: wrong RF channel type for RDCH: " << m_lich.rfChannelCode << std::endl;
+//	} else {
+		std::cerr << "DSDNXDN::processLICH:"
+		        << " rfChannelCode: " << m_lich.rfChannelCode
+		        << " fnChannelCode: " << m_lich.fnChannelCode
+		        << " optionCode: " << m_lich.optionCode
+		        << " direction: " << m_lich.direction
+		        << " parity: " << m_lich.parity
+		        << " " << (m_lich.parity == (m_lichEvenParity % 2)) << std::endl;
 //	}
 }
 

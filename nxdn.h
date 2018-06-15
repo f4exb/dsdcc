@@ -58,8 +58,10 @@ private:
     	int parity;        //!< LICH bits even parity
     };
 
+    int unscrambleDibit(int dibit);
     void processFrame();
     void processPostFrame();
+    void acquireLICH(int dibit);
     void processLICH();
     void processFSW();
     void processSwallow();
