@@ -141,7 +141,6 @@ void DSDNXDN::processFSW()
     int match_spot  = 0; // count of FSW symbols matches on the spot
     int match_earl1 = 0; // count of FSW symbols matches early by 1 symbol
     int match_earl2 = 0; // count of FSW symbols matches early by 2 symbols
-    int dibit;
 
     const unsigned char *fsw;
 
@@ -236,6 +235,8 @@ void DSDNXDN::processLICH()
 	m_lich.optionCode    = 2*m_lichBuffer[4] + m_lichBuffer[5];
 	m_lich.direction     = m_lichBuffer[6];
 	m_lich.parity        = m_lichBuffer[7];
+        m_lichEvenParity += m_lich.parity; // you have to sum with parity bit and then test even-ness
+
 
 //	if (m_lich.parity != (m_lichEvenParity % 2)) {
 //		std::cerr << "DSDNXDN::processLICH: LICH parity error" << std::endl;
@@ -246,7 +247,7 @@ void DSDNXDN::processLICH()
 		        << " optionCode: " << m_lich.optionCode
 		        << " direction: " << m_lich.direction
 		        << " parity: " << m_lich.parity
-		        << " " << (m_lich.parity == (m_lichEvenParity % 2)) << std::endl;
+                        << " checked: " << (m_lichEvenParity % 2) << std::endl;
 //	}
 }
 
