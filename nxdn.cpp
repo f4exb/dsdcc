@@ -16,6 +16,7 @@
 
 #include <iostream>
 #include "nxdn.h"
+#include "nxdnconvolution.h"
 #include "nxdncrc.h"
 #include "dsd_decoder.h"
 
@@ -30,11 +31,18 @@ const char * DSDNXDN::nxdnRFChannelTypeText[4] = {
 };
 
 const int DSDNXDN::SACCH::m_Interleave[60] = {
-    0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55,
-    1, 6, 11, 16, 21, 26, 31, 36, 41, 46, 51, 56,
-    2, 7, 12, 17, 22, 27, 32, 37, 42, 47, 52, 57,
-    3, 8, 13, 18, 23, 28, 33, 38, 43, 48, 53, 58,
-    4, 9, 14, 19, 24, 29, 34, 39, 44, 49, 54, 59
+    0, 12, 24, 36, 48,
+    1, 13, 25, 37, 49,
+    2, 14, 26, 38, 50,
+    3, 15, 27, 39, 51,
+    4, 16, 28, 40, 52,
+    5, 17, 29, 41, 53,
+    6, 18, 30, 42, 54,
+    7, 19, 31, 43, 55,
+    8, 20, 32, 44, 56,
+    9, 21, 33, 45, 57,
+    10, 22, 34, 46, 58,
+    11, 23, 35, 47, 59,
 };
 
 const int DSDNXDN::SACCH::m_PunctureList[12] = { 5, 11, 17, 23, 29, 35, 41, 47, 53, 59, 65, 71 };
@@ -229,6 +237,9 @@ DSDNXDN::DSDNXDN(DSDDecoder *dsdDecoder) :
     memset(m_lichBuffer, 0, 8);
 
     m_rfChannel = NXDNRFCHUnknown;
+    m_frameStructure = NXDNFSReserved;
+    m_steal = NXDNStealReserved;
+    m_sacchCount = 0;
 
     m_rfChannelStr[0] = '\0';
 }
@@ -275,15 +286,6 @@ int DSDNXDN::unscrambleDibit(int dibit)
     return m_pn.getBit(m_symbolIndex) ? dibit ^ 2 : dibit; // apply PN scrambling. Inverting symbol is a XOR by 2 on the dibit.
 }
 
-void DSDNXDN::acquireLICH(int dibit)
-{
-    m_lichBuffer[m_symbolIndex] = dibit >> 1; // conversion is a divide by 2
-
-    if (m_symbolIndex < 6) {
-        m_lichEvenParity += m_lichBuffer[m_symbolIndex];
-    }
-}
-
 void DSDNXDN::processFrame()
 {
     int dibit = unscrambleDibit(m_dsdDecoder->m_dsdSymbol.getDibit());
@@ -305,10 +307,8 @@ void DSDNXDN::processFrame()
             processRCCH(m_symbolIndex - 8, dibit);
             break;
         case NXDNRTCH:
-            processRTCH(m_symbolIndex - 8, dibit);
-            break;
         case NXDNRDCH:
-            processRDCH(m_symbolIndex - 8, dibit);
+            processRTDCH(m_symbolIndex - 8, dibit);
             break;
         case NXDNRFCHUnknown:
         default:
@@ -318,7 +318,7 @@ void DSDNXDN::processFrame()
 	}
 	else
 	{
-		m_state = NXDNPostFrame; // look for next RDCH or end
+		m_state = NXDNPostFrame; // look for next frame sync (FCH) or end
 		m_symbolIndex = 0;
 	}
 }
@@ -442,6 +442,15 @@ void DSDNXDN::processSwallow()
     }
 }
 
+void DSDNXDN::acquireLICH(int dibit)
+{
+    m_lichBuffer[m_symbolIndex] = dibit >> 1; // conversion is a divide by 2
+
+    if (m_symbolIndex < 6) {
+        m_lichEvenParity += m_lichBuffer[m_symbolIndex];
+    }
+}
+
 void DSDNXDN::processLICH()
 {
 	m_lich.rfChannelCode = 2*m_lichBuffer[0] + m_lichBuffer[1]; // MSB first
@@ -459,28 +468,151 @@ void DSDNXDN::processLICH()
             << " parity: " << m_lich.parity
             << " m_lichEvenParity: " << m_lichEvenParity << std::endl;
 
-    m_rfChannel = (m_lichEvenParity % 2) ? NXDNRFCHUnknown : (NXDNRFChannel) m_lich.rfChannelCode;
-    memcpy(m_rfChannelStr, nxdnRFChannelTypeText[(int) m_rfChannel], 3);
+    if (m_lichEvenParity % 2) // odd is wrong
+    {
+        m_rfChannel = NXDNRFCHUnknown;
+        strcpy(m_rfChannelStr, "XX");
+        std::cerr << "DSDNXDN::processLICH: parity error" << std::endl;
+    }
+    else
+    {
+        m_rfChannel = (NXDNRFChannel) m_lich.rfChannelCode;
+        memcpy(m_rfChannelStr, nxdnRFChannelTypeText[(int) m_rfChannel], 3);
+
+        switch(m_rfChannel)
+        {
+        case NXDNRCCH:
+            if (m_lich.fnChannelCode == 0) {
+                m_frameStructure = m_lich.direction ? NXDNFSCAC: NXDNFSReserved;
+            } else if (m_lich.fnChannelCode == 1) {
+                m_frameStructure = m_lich.direction ? NXDNFSReserved: NXDNFSCACLong;
+            } else if (m_lich.fnChannelCode == 3) {
+                m_frameStructure = m_lich.direction ? NXDNFSReserved: NXDNFSCACShort;
+            } else {
+                m_frameStructure = NXDNFSReserved;
+            }
+            break;
+        case NXDNRTCH:
+        case NXDNRDCH:
+            if (m_lich.fnChannelCode == 0) {
+                m_frameStructure = NXDNFSSACCH;
+                m_sacchCount = 0;
+            } else if (m_lich.fnChannelCode == 1) {
+                m_frameStructure = NXDNFSUDCH;
+            } else if (m_lich.fnChannelCode == 2) {
+                m_frameStructure = NXDNFSSACCHSup;
+            } else {
+                m_frameStructure = NXDNFSSACCHIdle;
+            }
+            break;
+        default:
+            break;
+        }
+
+        if ((m_frameStructure == NXDNFSSACCH) || (m_frameStructure == NXDNFSSACCHSup))
+        {
+            m_steal = (NXDNSteal) m_lich.optionCode;
+        }
+        else if (m_frameStructure == NXDNFSUDCH)
+        {
+            if ((m_lich.optionCode == 0) || (m_lich.optionCode == 3)) {
+                m_steal = (NXDNSteal) m_lich.optionCode;
+            } else {
+                m_steal = NXDNStealReserved;
+            }
+        }
+        else
+        {
+            m_steal = NXDNStealReserved;
+        }
+    }
 }
 
-void DSDNXDN::processRCCH(int index __attribute__((unused)), unsigned char dibit __attribute__((unused)))
+void DSDNXDN::processRCCH(int index, unsigned char dibit)
 {
+    switch(m_frameStructure)
+    {
+    case NXDNFSCAC: // CAC outbound
+    {
+        if (index == 0) {
+            m_cac.reset();
+        }
+
+        if (index < 150) {
+            m_cac.pushDibit(dibit);
+        }
+
+        if (index == 150)
+        {
+            m_cac.unpuncture();
+            m_cac.decode();
+        }
+    }
+        break;
+    case NXDNFSCACShort: // Short CAC
+    {
+        if (index == 0) {
+            m_cacShort.reset();
+        }
+
+        if (index < 126) {
+            m_cacShort.pushDibit(dibit);
+        }
+
+        if (index == 126)
+        {
+            m_cacShort.unpuncture();
+            m_cacShort.decode();
+        }
+    }
+        break;
+    case NXDNFSCACLong: // Long CAC
+    {
+        if (index == 0) {
+            m_cacLong.reset();
+        }
+
+        if (index < 126) {
+            m_cacLong.pushDibit(dibit);
+        }
+
+        if (index == 126)
+        {
+            m_cacLong.unpuncture();
+            m_cacLong.decode();
+        }
+    }
+        break;
+    default: // invalid
+        break;
+    }
 }
 
-void DSDNXDN::processRTCH(int index __attribute__((unused)), unsigned char dibit __attribute__((unused)))
+void DSDNXDN::processRTDCH(int index, unsigned char dibit)
 {
-}
+    if ((m_frameStructure == NXDNFSSACCH) || (m_frameStructure == NXDNFSSACCHSup) || (m_frameStructure == NXDNFSSACCHIdle))
+    {
+        if (index == 0) {
+            m_sacch.reset();
+        }
 
-void DSDNXDN::processRDCH(int index __attribute__((unused)), unsigned char dibit __attribute__((unused)))
-{
+        if (index < 30) {
+            m_sacch.pushDibit(dibit);
+        }
+
+        if (index == 30)
+        {
+            m_sacch.unpuncture();
+            m_sacch.decode();
+        }
+    }
 }
 
 DSDNXDN::FnChannel::FnChannel() :
-    m_viterbi(2, Viterbi::Poly25y, true), // MSB first
     m_nbPuncture(0),
     m_rawSize(0),
     m_bufRaw(0),
-    m_buf(0),
+    m_bufTmp(0),
     m_interleave(0),
     m_punctureList(0)
 {
@@ -497,8 +629,8 @@ void DSDNXDN::FnChannel::reset()
 
 void DSDNXDN::FnChannel::pushDibit(unsigned char dibit)
 {
-    m_bufRaw[m_interleave[m_index++]+m_nbPuncture] = dibit&1;
-    m_bufRaw[m_interleave[m_index++]+m_nbPuncture] = dibit&2;
+    m_bufRaw[m_interleave[m_index++]] = (dibit&2)>>1;
+    m_bufRaw[m_interleave[m_index++]] = dibit&1;
 }
 
 void DSDNXDN::FnChannel::unpuncture()
@@ -508,27 +640,29 @@ void DSDNXDN::FnChannel::unpuncture()
     }
 
     int index, punctureIndex, i;
-    bool punctureBit = false;
 
-    for (index = 0, punctureIndex = 0, i = m_nbPuncture; i < m_rawSize; i++)
+    for (index = 0, punctureIndex = 0, i = 0; i < m_rawSize; i++)
     {
-        m_bufRaw[index++] = m_bufRaw[i];
-
         if (index == m_punctureList[punctureIndex])
         {
-            m_bufRaw[index++] = punctureBit ? 1 : 0;
-            punctureBit = !punctureBit;
+            m_bufTmp[index++] = 1;
             punctureIndex++;
         }
+
+        m_bufTmp[index++] = m_bufRaw[i]<<1; // 0->0, 1->2
+    }
+
+    for (int i=0; i<8; i++) {
+        m_bufTmp[index++] = 0;
     }
 }
 
 DSDNXDN::SACCH::SACCH()
 {
-    m_rawSize = 72;
+    m_rawSize = 60;
     m_nbPuncture = 12;
     m_bufRaw = m_sacchRaw;
-    m_buf = m_sacch;
+    m_bufTmp = m_temp;
     m_interleave = m_Interleave;
     m_punctureList = m_PunctureList;
 }
@@ -538,21 +672,37 @@ DSDNXDN::SACCH::~SACCH()
 
 void DSDNXDN::SACCH::decode()
 {
-    m_viterbi.decodeFromBits(m_sacch, m_sacchRaw, 72, 0);
+    CNXDNConvolution conv;
+    conv.start();
+    int n = 0;
 
-    if (!CNXDNCRC::checkCRC6(m_sacch, 26))
+    for (unsigned int i = 0U; i < 40U; i++)
+    {
+        uint8_t s0 = m_temp[n++];
+        uint8_t s1 = m_temp[n++];
+
+        conv.decode(s0, s1);
+    }
+
+    conv.chainback(m_data, 36U);
+
+    if (!CNXDNCRC::checkCRC6(m_data, 26U))
     {
         std::cerr << "DSDNXDN::SACCH::decode: bad CRC" << std::endl;
         return;
+    }
+    else
+    {
+        std::cerr << "DSDNXDN::SACCH::decode: CRC OK" << std::endl;
     }
 }
 
 DSDNXDN::CACOutbound::CACOutbound()
 {
-    m_rawSize = 350;
+    m_rawSize = 300;
     m_nbPuncture = 50;
     m_bufRaw = m_cacRaw;
-    m_buf = m_cac;
+    m_bufTmp = m_temp;
     m_interleave = m_Interleave;
     m_punctureList = m_PunctureList;
 }
@@ -562,21 +712,23 @@ DSDNXDN::CACOutbound::~CACOutbound()
 
 void DSDNXDN::CACOutbound::decode()
 {
-    m_viterbi.decodeFromBits(m_cac, m_cacRaw, 350, 0);
-
     if (!CNXDNCRC::checkCRC16(m_cac, 155))
     {
         std::cerr << "DSDNXDN::CACOutbound::decode: bad CRC" << std::endl;
         return;
     }
+    else
+    {
+        std::cerr << "DSDNXDN::CACOutbound::decode: CRC OK" << std::endl;
+    }
 }
 
 DSDNXDN::CACLong::CACLong()
 {
-    m_rawSize = 312;
+    m_rawSize = 252;
     m_nbPuncture = 60;
     m_bufRaw = m_cacRaw;
-    m_buf = m_cac;
+    m_bufTmp = m_temp;
     m_interleave = m_Interleave;
     m_punctureList = m_PunctureList;
 }
@@ -586,12 +738,14 @@ DSDNXDN::CACLong::~CACLong()
 
 void DSDNXDN::CACLong::decode()
 {
-    m_viterbi.decodeFromBits(m_cac, m_cacRaw, 312, 0);
-
     if (!CNXDNCRC::checkCRC16(m_cac, 136))
     {
         std::cerr << "DSDNXDN::CACLong::decode: bad CRC" << std::endl;
         return;
+    }
+    else
+    {
+        std::cerr << "DSDNXDN::CACLong::decode: CRC OK" << std::endl;
     }
 }
 
@@ -600,7 +754,7 @@ DSDNXDN::CACShort::CACShort()
     m_rawSize = 252;
     m_nbPuncture = 0;
     m_bufRaw = m_cacRaw;
-    m_buf = m_cac;
+    m_bufTmp = m_temp;
     m_interleave = CACLong::m_Interleave;
 }
 
@@ -609,21 +763,23 @@ DSDNXDN::CACShort::~CACShort()
 
 void DSDNXDN::CACShort::decode()
 {
-    m_viterbi.decodeFromBits(m_cac, m_cacRaw, 252, 0);
-
     if (!CNXDNCRC::checkCRC16(m_cac, 106))
     {
         std::cerr << "DSDNXDN::CACShort::decode: bad CRC" << std::endl;
         return;
     }
+    else
+    {
+        std::cerr << "DSDNXDN::CACShort::decode: CRC OK" << std::endl;
+    }
 }
 
 DSDNXDN::FACCH1::FACCH1()
 {
-    m_rawSize = 192;
+    m_rawSize = 144;
     m_nbPuncture = 48;
     m_bufRaw = m_facch1Raw;
-    m_buf = m_facch1;
+    m_bufTmp = m_temp;
     m_interleave = m_Interleave;
     m_punctureList = m_PunctureList;
 }
@@ -633,21 +789,23 @@ DSDNXDN::FACCH1::~FACCH1()
 
 void DSDNXDN::FACCH1::decode()
 {
-    m_viterbi.decodeFromBits(m_facch1, m_facch1Raw, 192, 0);
-
     if (!CNXDNCRC::checkCRC12(m_facch1, 80))
     {
         std::cerr << "DSDNXDN::FACCH1::decode: bad CRC" << std::endl;
         return;
     }
+    else
+    {
+        std::cerr << "DSDNXDN::FACCH1::decode: CRC OK" << std::endl;
+    }
 }
 
 DSDNXDN::UDCH::UDCH()
 {
-    m_rawSize = 406;
+    m_rawSize = 348;
     m_nbPuncture = 58;
     m_bufRaw = m_udchRaw;
-    m_buf = m_udch;
+    m_bufTmp = m_temp;
     m_interleave = m_Interleave;
     m_punctureList = m_PunctureList;
 }
@@ -657,12 +815,14 @@ DSDNXDN::UDCH::~UDCH()
 
 void DSDNXDN::UDCH::decode()
 {
-    m_viterbi.decodeFromBits(m_udch, m_udchRaw, 406, 0);
-
     if (!CNXDNCRC::checkCRC15(m_udch, 184))
     {
         std::cerr << "DSDNXDN::UDCH::decode: bad CRC" << std::endl;
         return;
+    }
+    else
+    {
+        std::cerr << "DSDNXDN::UDCH::decode: CRC OK" << std::endl;
     }
 }
 

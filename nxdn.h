@@ -43,6 +43,27 @@ public:
         NXDNRFCHUnknown
     } NXDNRFChannel;
 
+    typedef enum
+    {
+        NXDNFSReserved,
+        NXDNFSCAC,       // RCCH CAC outbound
+        NXDNFSCACShort,  // RCCH short CAC
+        NXDNFSCACLong,   // RCCH long CAC
+        NXDNFSSACCH,     // RTCH,RDCH SACCH single
+        NXDNFSSACCHSup,  // RTCH,RDCH SACCH superframe
+        NXDNFSSACCHIdle, // RTCH,RDCH SACCH superframe idle
+        NXDNFSUDCH,      // RTCH,RDCH UDCH
+    } NXDNFrameStructure;
+
+    typedef enum
+    {
+        NXDNStealBoth,   // All steal: 2xFACCH1 (SACCH) or FACCH2 (UDCH)
+        NXDNSteal1,      // steal VCH first:  2xVCH + FACCH1 (only SACCH)
+        NXDNSteal2,      // steal VCH second: FACCH1 + 2xVCH (only SACCH)
+        NXDNStealNone,   // No steal: VCH (SACCH) or UDCH (UDCH) only
+        NXDNStealReserved,
+    } NXDNSteal;
+
 	explicit DSDNXDN(DSDDecoder *dsdDecoder);
 	~DSDNXDN();
 
@@ -82,11 +103,10 @@ private:
         virtual void decode() = 0;
     protected:
         int m_index;
-        Viterbi5 m_viterbi;
         int m_nbPuncture;
         int m_rawSize;
         unsigned char *m_bufRaw;
-        unsigned char *m_buf;
+        unsigned char *m_bufTmp;
         const int *m_interleave;
         const int *m_punctureList;
     };
@@ -100,8 +120,10 @@ private:
         static const int m_Interleave[60];   //!< SACCH bits interleaving matrix
         static const int m_PunctureList[12]; //!< SACCH punctured bits indexes
     private:
-        unsigned char m_sacchRaw[72];             //!< SACCH bits before Viterbi decoding
+        unsigned char m_sacchRaw[60];             //!< SACCH bits retrieved from RF channel
+        unsigned char m_temp[90];                 //!< SACCH working area;
         unsigned char m_sacch[36];                //!< SACCH bits
+        unsigned char m_data[5];                  //!< SACCH bytes after de-convolution (36 bits)
     };
 
     class CACOutbound : public FnChannel
@@ -113,8 +135,10 @@ private:
         static const int m_Interleave[300];  //!< CAC outbound bits interleaving matrix
         static const int m_PunctureList[50]; //!< CAC outbound punctured bits indexes
     private:
-        unsigned char m_cacRaw[350];            //!< CAC outbound bits before Viterbi decoding
+        unsigned char m_cacRaw[300];            //!< CAC outbound bits before Viterbi decoding
+        unsigned char m_temp[420];              //!< CAC outbound working area
         unsigned char m_cac[175];               //!< CAC outbound bits
+        unsigned char m_data[22];               //!< CAC outbound bytes after de-convolution (175 bits)
     };
 
     class CACLong : public FnChannel
@@ -126,8 +150,10 @@ private:
         static const int m_Interleave[252];  //!< Long CAC bits interleaving matrix
         static const int m_PunctureList[60]; //!< Long CAC punctured bits indexes
     private:
-        unsigned char m_cacRaw[312];            //!< Long CAC bits before Viterbi decoding
+        unsigned char m_cacRaw[252];            //!< Long CAC bits before Viterbi decoding
+        unsigned char m_temp[420];              //!< Long CAC working area
         unsigned char m_cac[156];               //!< Long CAC bits
+        unsigned char m_data[20];               //!< Long CAC bytes after de-convolution (156 bits)
     };
 
     class CACShort : public FnChannel
@@ -138,7 +164,9 @@ private:
         virtual void decode();
     private:
         unsigned char m_cacRaw[252];           //!< Short CAC bits before Viterbi decoding
+        unsigned char m_temp[420];             //!< Short CAC working area
         unsigned char m_cac[126];              //!< Short CAC bits
+        unsigned char m_data[16];              //!< Short CAC bytes after de-convolution (126 bits)
     };
 
     class FACCH1 : public FnChannel
@@ -151,7 +179,9 @@ private:
         static const int m_PunctureList[48];    //!< FACCH1 punctured bits indexes
     private:
         unsigned char m_facch1Raw[192];         //!< FACCH1 bits before Viterbi decoding
+        unsigned char m_temp[420];              //!< FACCH1 working area
         unsigned char m_facch1[96];             //!< FACCH1 bits
+        unsigned char m_data[12];               //!< FACCH1 bytes after de-convolution (96 bits)
     };
 
     class UDCH : public FnChannel
@@ -164,7 +194,9 @@ private:
         static const int m_PunctureList[58];    //!< UDCH punctured bits indexes
     private:
         unsigned char m_udchRaw[406];           //!< UDCH bits before Viterbi decoding
+        unsigned char m_temp[420];              //!< UDCH working area
         unsigned char m_udch[203];              //!< UDCH bits
+        unsigned char m_data[26];               //!< UDCH bytes after de-convolution (203 bits)
     };
 
     int unscrambleDibit(int dibit);
@@ -175,8 +207,7 @@ private:
     void processFSW();
     void processSwallow();
     void processRCCH(int index, unsigned char dibit);
-    void processRTCH(int index, unsigned char dibit);
-    void processRDCH(int index, unsigned char dibit);
+    void processRTDCH(int index, unsigned char dibit);
 
 	DSDDecoder *m_dsdDecoder;
 	NXDNState   m_state;
@@ -189,10 +220,16 @@ private:
 	int m_symbolIndex;              //!< current symbol index in non HD sequence
 	int m_swallowCount;             //!< count of symbols to swallow (used in swallow state)
     NXDNRFChannel m_rfChannel;      //!< current RF channel type (from LICH)
+    NXDNFrameStructure m_frameStructure; //!< frame structure indicator
+    NXDNSteal m_steal;              //!< stealing scheme
+    int m_sacchCount;               //!< SACCH block count
 
+    CACOutbound m_cac;
+    CACShort m_cacShort;
+    CACLong m_cacLong;
+    SACCH m_sacch;
 
     char m_rfChannelStr[2+1];
-
 };
 
 } // namespace DSDcc

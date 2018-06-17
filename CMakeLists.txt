@@ -56,6 +56,7 @@ set(dsdcc_SOURCES
     ysf.cpp
     dpmr.cpp
     nxdn.cpp
+    nxdnconvolution.cpp
     nxdncrc.cpp
     p25p1_heuristics.cpp
     dsd_upsample.cpp
@@ -84,6 +85,7 @@ set(dsdcc_HEADERS
     ysf.h
     dpmr.h
     nxdn.h
+    nxdnconvolution.h
     nxdncrc.h
     p25p1_heuristics.h
     dsd_upsample.h
