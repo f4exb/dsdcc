@@ -907,8 +907,8 @@ int DSDDecoder::getFrameSync()
         }
         if ((m_opts.frame_nxdn96 == 1) || (m_opts.frame_nxdn48 == 1))
         {
-            if (memcmp(m_dsdSymbol.getSyncDibitBack(10), m_syncNXDNRDCHFSW, 10) == 0)
-            //if (memcmp(m_dsdSymbol.getSyncDibitBack(19), m_syncNXDNRDCHFull, 19) == 0)
+            //if (memcmp(m_dsdSymbol.getSyncDibitBack(10), m_syncNXDNRDCHFSW, 10) == 0) TODO: need a bit of work to put in "NXDN mode" only for a whilw
+            if (memcmp(m_dsdSymbol.getSyncDibitBack(19), m_syncNXDNRDCHFull, 19) == 0)
             {
 				m_state.carrier = 1;
                 m_dsdSymbol.setFSK(4);
@@ -936,8 +936,8 @@ int DSDDecoder::getFrameSync()
 				m_mbeRate = DSDMBERate3600x2450;
 				return (int) DSDSyncNXDNP; // done
             }
-            else if (memcmp(m_dsdSymbol.getSyncDibitBack(10), m_syncNXDNRDCHFSWInv, 10) == 0)
-            //else if (memcmp(m_dsdSymbol.getSyncDibitBack(19), m_syncNXDNRDCHFullInv, 19) == 0)
+            //else if (memcmp(m_dsdSymbol.getSyncDibitBack(10), m_syncNXDNRDCHFSWInv, 10) == 0)
+            else if (memcmp(m_dsdSymbol.getSyncDibitBack(19), m_syncNXDNRDCHFullInv, 19) == 0)
             {
 				m_state.carrier = 1;
                 m_dsdSymbol.setFSK(4, true);

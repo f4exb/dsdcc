@@ -37,7 +37,7 @@ Viterbi5::~Viterbi5()
 void Viterbi5::decodeFromBits(
         unsigned char *dataBits,      //!< Decoded output data bits
         const unsigned char *bits,    //!< Input bits
-        unsigned int nbBits,          //!< Number of imput bits
+        unsigned int nbBits,          //!< Number of input bits
         unsigned int startstate)      //!< Encoder starting state
 
 {

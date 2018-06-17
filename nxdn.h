@@ -18,6 +18,7 @@
 #define NXDN_H_
 
 #include "pn.h"
+#include "viterbi5.h"
 
 namespace DSDcc
 {
@@ -70,6 +71,76 @@ private:
     	int parity;        //!< LICH bits even parity
     };
 
+    class FnChannel
+    {
+    public:
+        FnChannel();
+        virtual ~FnChannel();
+        void reset();
+        void pushDibit(unsigned char dibit);
+        void unpuncture();
+        virtual void decode() = 0;
+    protected:
+        int m_index;
+        Viterbi5 m_viterbi;
+        int m_nbPuncture;
+        int m_rawSize;
+        unsigned char *m_bufRaw;
+        unsigned char *m_buf;
+        const int *m_interleave;
+        const int *m_punctureList;
+    };
+
+    class SACCH : public FnChannel
+    {
+    public:
+        SACCH();
+        virtual ~SACCH();
+        virtual void decode();
+        static const int m_sacchInterleave[60];   //!< SACCH bits interleaving matrix
+        static const int m_sacchPunctureList[12]; //!< SACCH punctured bits indexes
+    private:
+        unsigned char m_sacchRaw[72];             //!< SACCH bits before Viterbi decoding
+        unsigned char m_sacch[36];                //!< SACCH bits
+    };
+
+    class CACOutbound : public FnChannel
+    {
+    public:
+        CACOutbound();
+        virtual ~CACOutbound();
+        virtual void decode();
+        static const int m_cacInterleave[300];  //!< CAC outbound bits interleaving matrix
+        static const int m_cacPunctureList[50]; //!< CAC outbound punctured bits indexes
+    private:
+        unsigned char m_cacRaw[350];            //!< CAC outbound bits before Viterbi decoding
+        unsigned char m_cac[175];               //!< CAC outbound bits
+    };
+
+    class CACLong : public FnChannel
+    {
+    public:
+        CACLong();
+        virtual ~CACLong();
+        virtual void decode();
+        static const int m_cacInterleave[252];  //!< Long CAC bits interleaving matrix
+        static const int m_cacPunctureList[60]; //!< Long CAC punctured bits indexes
+    private:
+        unsigned char m_cacRaw[312];            //!< Long CAC bits before Viterbi decoding
+        unsigned char m_cac[156];               //!< Long CAC bits
+    };
+
+    class CACShort : public FnChannel
+    {
+    public:
+        CACShort();
+        virtual ~CACShort();
+        virtual void decode();
+    private:
+        unsigned char m_cacRaw[252];           //!< Short CAC bits before Viterbi decoding
+        unsigned char m_cac[126];              //!< Short CAC bits
+    };
+
     int unscrambleDibit(int dibit);
     void processFrame();
     void processPostFrame();
@@ -80,7 +151,6 @@ private:
     void processRCCH(int index, unsigned char dibit);
     void processRTCH(int index, unsigned char dibit);
     void processRDCH(int index, unsigned char dibit);
-    void processSACCH(int index, unsigned char dibit);
 
 	DSDDecoder *m_dsdDecoder;
 	NXDNState   m_state;
@@ -94,11 +164,9 @@ private:
 	int m_swallowCount;             //!< count of symbols to swallow (used in swallow state)
     NXDNRFChannel m_rfChannel;      //!< current RF channel type (from LICH)
 
-    unsigned char m_sacchRaw[60];   //!< SACCH unscrambled dibits after de-interleave
 
     char m_rfChannelStr[2+1];
 
-    static const int m_sacchInterleave[60];   //!< FICH symbols interleaving matrix
 };
 
 } // namespace DSDcc
