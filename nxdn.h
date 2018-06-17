@@ -97,8 +97,8 @@ private:
         SACCH();
         virtual ~SACCH();
         virtual void decode();
-        static const int m_sacchInterleave[60];   //!< SACCH bits interleaving matrix
-        static const int m_sacchPunctureList[12]; //!< SACCH punctured bits indexes
+        static const int m_Interleave[60];   //!< SACCH bits interleaving matrix
+        static const int m_PunctureList[12]; //!< SACCH punctured bits indexes
     private:
         unsigned char m_sacchRaw[72];             //!< SACCH bits before Viterbi decoding
         unsigned char m_sacch[36];                //!< SACCH bits
@@ -110,8 +110,8 @@ private:
         CACOutbound();
         virtual ~CACOutbound();
         virtual void decode();
-        static const int m_cacInterleave[300];  //!< CAC outbound bits interleaving matrix
-        static const int m_cacPunctureList[50]; //!< CAC outbound punctured bits indexes
+        static const int m_Interleave[300];  //!< CAC outbound bits interleaving matrix
+        static const int m_PunctureList[50]; //!< CAC outbound punctured bits indexes
     private:
         unsigned char m_cacRaw[350];            //!< CAC outbound bits before Viterbi decoding
         unsigned char m_cac[175];               //!< CAC outbound bits
@@ -123,8 +123,8 @@ private:
         CACLong();
         virtual ~CACLong();
         virtual void decode();
-        static const int m_cacInterleave[252];  //!< Long CAC bits interleaving matrix
-        static const int m_cacPunctureList[60]; //!< Long CAC punctured bits indexes
+        static const int m_Interleave[252];  //!< Long CAC bits interleaving matrix
+        static const int m_PunctureList[60]; //!< Long CAC punctured bits indexes
     private:
         unsigned char m_cacRaw[312];            //!< Long CAC bits before Viterbi decoding
         unsigned char m_cac[156];               //!< Long CAC bits
@@ -139,6 +139,32 @@ private:
     private:
         unsigned char m_cacRaw[252];           //!< Short CAC bits before Viterbi decoding
         unsigned char m_cac[126];              //!< Short CAC bits
+    };
+
+    class FACCH1 : public FnChannel
+    {
+    public:
+        FACCH1();
+        virtual ~FACCH1();
+        virtual void decode();
+        static const int m_Interleave[144];     //!< FACCH1 bits interleaving matrix
+        static const int m_PunctureList[48];    //!< FACCH1 punctured bits indexes
+    private:
+        unsigned char m_facch1Raw[192];         //!< FACCH1 bits before Viterbi decoding
+        unsigned char m_facch1[96];             //!< FACCH1 bits
+    };
+
+    class UDCH : public FnChannel
+    {
+    public:
+        UDCH();
+        virtual ~UDCH();
+        virtual void decode();
+        static const int m_Interleave[348];     //!< UDCH bits interleaving matrix
+        static const int m_PunctureList[58];    //!< UDCH punctured bits indexes
+    private:
+        unsigned char m_udchRaw[406];           //!< UDCH bits before Viterbi decoding
+        unsigned char m_udch[203];              //!< UDCH bits
     };
 
     int unscrambleDibit(int dibit);

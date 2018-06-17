@@ -29,7 +29,7 @@ const char * DSDNXDN::nxdnRFChannelTypeText[4] = {
         "RU"  //!< Unknown RF channel
 };
 
-const int DSDNXDN::SACCH::m_sacchInterleave[60] = {
+const int DSDNXDN::SACCH::m_Interleave[60] = {
     0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55,
     1, 6, 11, 16, 21, 26, 31, 36, 41, 46, 51, 56,
     2, 7, 12, 17, 22, 27, 32, 37, 42, 47, 52, 57,
@@ -37,9 +37,9 @@ const int DSDNXDN::SACCH::m_sacchInterleave[60] = {
     4, 9, 14, 19, 24, 29, 34, 39, 44, 49, 54, 59
 };
 
-const int DSDNXDN::SACCH::m_sacchPunctureList[12] = { 5, 11, 17, 23, 29, 35, 41, 47, 53, 59, 65, 71 };
+const int DSDNXDN::SACCH::m_PunctureList[12] = { 5, 11, 17, 23, 29, 35, 41, 47, 53, 59, 65, 71 };
 
-const int DSDNXDN::CACOutbound::m_cacInterleave[300] = {
+const int DSDNXDN::CACOutbound::m_Interleave[300] = {
     0, 25, 50, 75, 100, 125, 150, 175, 200, 225, 250, 275,
     1, 26, 51, 76, 101, 126, 151, 176, 201, 226, 251, 276,
     2, 27, 52, 77, 102, 127, 152, 177, 202, 227, 252, 277,
@@ -67,7 +67,7 @@ const int DSDNXDN::CACOutbound::m_cacInterleave[300] = {
     24, 49, 74, 99, 124, 149, 174, 199, 224, 249, 274, 299
 };
 
-const int DSDNXDN::CACOutbound::m_cacPunctureList[50] = {
+const int DSDNXDN::CACOutbound::m_PunctureList[50] = {
     3, 11,    // 0
     17, 25,   // 1 14
     31, 39,   // 2 28
@@ -95,7 +95,7 @@ const int DSDNXDN::CACOutbound::m_cacPunctureList[50] = {
     339, 347  // 24 336
 };
 
-const int DSDNXDN::CACLong::m_cacInterleave[252] = {
+const int DSDNXDN::CACLong::m_Interleave[252] = {
     0, 21, 42, 63, 84, 105, 126, 147, 168, 189, 210, 231,
     1, 22, 43, 64, 85, 106, 127, 148, 169, 190, 211, 232,
     2, 23, 44, 65, 86, 107, 128, 149, 170, 191, 212, 233,
@@ -119,7 +119,7 @@ const int DSDNXDN::CACLong::m_cacInterleave[252] = {
     20, 41, 62, 83, 104, 125, 146, 167, 188, 209, 230, 251
 };
 
-const int DSDNXDN::CACLong::m_cacPunctureList[60] = {
+const int DSDNXDN::CACLong::m_PunctureList[60] = {
     1, 7, 9, 11, 19,
     27, 33, 35, 37, 45,
     53, 59, 61, 63, 71,
@@ -132,6 +132,88 @@ const int DSDNXDN::CACLong::m_cacPunctureList[60] = {
     235, 241, 243, 245, 253,
     261, 267, 269, 271, 279,
     287, 293, 295, 297, 305
+};
+
+const int DSDNXDN::FACCH1::m_Interleave[144] = {
+    0, 9, 18, 27, 36, 45, 54, 63, 72, 81, 90, 99, 108, 117, 126, 135,
+    1, 10, 19, 28, 37, 46, 55, 64, 73, 82, 91, 100, 109, 118, 127, 136,
+    2, 11, 20, 29, 38, 47, 56, 65, 74, 83, 92, 101, 110, 119, 128, 137,
+    3, 12, 21, 30, 39, 48, 57, 66, 75, 84, 93, 102, 111, 120, 129, 138,
+    4, 13, 22, 31, 40, 49, 58, 67, 76, 85, 94, 103, 112, 121, 130, 139,
+    5, 14, 23, 32, 41, 50, 59, 68, 77, 86, 95, 104, 113, 122, 131, 140,
+    6, 15, 24, 33, 42, 51, 60, 69, 78, 87, 96, 105, 114, 123, 132, 141,
+    7, 16, 25, 34, 43, 52, 61, 70, 79, 88, 97, 106, 115, 124, 133, 142,
+    8, 17, 26, 35, 44, 53, 62, 71, 80, 89, 98, 107, 116, 125, 134, 143,
+};
+
+const int DSDNXDN::FACCH1::m_PunctureList[48] = {
+    1, 5, 9, 13, 17, 21, 25, 29, 33, 37, 41, 45, 49, 53, 57, 61, 65, 69, 73, 77,
+    81, 85, 89, 93, 97, 101, 105, 109, 113, 117, 121, 125, 129, 133, 137, 141, 145,
+    149, 153, 157, 161, 165, 169, 173, 177, 181, 185, 189,
+};
+
+const int DSDNXDN::UDCH::m_Interleave[348] = {
+    0, 29, 58, 87, 116, 145, 174, 203, 232, 261, 290, 319,
+    1, 30, 59, 88, 117, 146, 175, 204, 233, 262, 291, 320,
+    2, 31, 60, 89, 118, 147, 176, 205, 234, 263, 292, 321,
+    3, 32, 61, 90, 119, 148, 177, 206, 235, 264, 293, 322,
+    4, 33, 62, 91, 120, 149, 178, 207, 236, 265, 294, 323,
+    5, 34, 63, 92, 121, 150, 179, 208, 237, 266, 295, 324,
+    6, 35, 64, 93, 122, 151, 180, 209, 238, 267, 296, 325,
+    7, 36, 65, 94, 123, 152, 181, 210, 239, 268, 297, 326,
+    8, 37, 66, 95, 124, 153, 182, 211, 240, 269, 298, 327,
+    9, 38, 67, 96, 125, 154, 183, 212, 241, 270, 299, 328,
+    10, 39, 68, 97, 126, 155, 184, 213, 242, 271, 300, 329,
+    11, 40, 69, 98, 127, 156, 185, 214, 243, 272, 301, 330,
+    12, 41, 70, 99, 128, 157, 186, 215, 244, 273, 302, 331,
+    13, 42, 71, 100, 129, 158, 187, 216, 245, 274, 303, 332,
+    14, 43, 72, 101, 130, 159, 188, 217, 246, 275, 304, 333,
+    15, 44, 73, 102, 131, 160, 189, 218, 247, 276, 305, 334,
+    16, 45, 74, 103, 132, 161, 190, 219, 248, 277, 306, 335,
+    17, 46, 75, 104, 133, 162, 191, 220, 249, 278, 307, 336,
+    18, 47, 76, 105, 134, 163, 192, 221, 250, 279, 308, 337,
+    19, 48, 77, 106, 135, 164, 193, 222, 251, 280, 309, 338,
+    20, 49, 78, 107, 136, 165, 194, 223, 252, 281, 310, 339,
+    21, 50, 79, 108, 137, 166, 195, 224, 253, 282, 311, 340,
+    22, 51, 80, 109, 138, 167, 196, 225, 254, 283, 312, 341,
+    23, 52, 81, 110, 139, 168, 197, 226, 255, 284, 313, 342,
+    24, 53, 82, 111, 140, 169, 198, 227, 256, 285, 314, 343,
+    25, 54, 83, 112, 141, 170, 199, 228, 257, 286, 315, 344,
+    26, 55, 84, 113, 142, 171, 200, 229, 258, 287, 316, 345,
+    27, 56, 85, 114, 143, 172, 201, 230, 259, 288, 317, 346,
+    28, 57, 86, 115, 144, 173, 202, 231, 260, 289, 318, 347,
+};
+
+const int DSDNXDN::UDCH::m_PunctureList[58] = {
+    3, 11,
+    17, 25,
+    31, 39,
+    45, 53,
+    59, 67,
+    73, 81,
+    87, 95,
+    101, 109,
+    115, 123,
+    129, 137,
+    143, 151,
+    157, 165,
+    171, 179,
+    185, 193,
+    199, 207,
+    213, 221,
+    227, 235,
+    241, 249,
+    255, 263,
+    269, 277,
+    283, 291,
+    297, 305,
+    311, 319,
+    325, 333,
+    339, 347,
+    353, 361,
+    367, 375,
+    381, 389,
+    395, 403,
 };
 
 DSDNXDN::DSDNXDN(DSDDecoder *dsdDecoder) :
@@ -447,8 +529,8 @@ DSDNXDN::SACCH::SACCH()
     m_nbPuncture = 12;
     m_bufRaw = m_sacchRaw;
     m_buf = m_sacch;
-    m_interleave = m_sacchInterleave;
-    m_punctureList = m_sacchPunctureList;
+    m_interleave = m_Interleave;
+    m_punctureList = m_PunctureList;
 }
 
 DSDNXDN::SACCH::~SACCH()
@@ -471,8 +553,8 @@ DSDNXDN::CACOutbound::CACOutbound()
     m_nbPuncture = 50;
     m_bufRaw = m_cacRaw;
     m_buf = m_cac;
-    m_interleave = m_cacInterleave;
-    m_punctureList = m_cacPunctureList;
+    m_interleave = m_Interleave;
+    m_punctureList = m_PunctureList;
 }
 
 DSDNXDN::CACOutbound::~CACOutbound()
@@ -495,8 +577,8 @@ DSDNXDN::CACLong::CACLong()
     m_nbPuncture = 60;
     m_bufRaw = m_cacRaw;
     m_buf = m_cac;
-    m_interleave = m_cacInterleave;
-    m_punctureList = m_cacPunctureList;
+    m_interleave = m_Interleave;
+    m_punctureList = m_PunctureList;
 }
 
 DSDNXDN::CACLong::~CACLong()
@@ -519,7 +601,7 @@ DSDNXDN::CACShort::CACShort()
     m_nbPuncture = 0;
     m_bufRaw = m_cacRaw;
     m_buf = m_cac;
-    m_interleave = CACLong::m_cacInterleave;
+    m_interleave = CACLong::m_Interleave;
 }
 
 DSDNXDN::CACShort::~CACShort()
@@ -532,6 +614,54 @@ void DSDNXDN::CACShort::decode()
     if (!CNXDNCRC::checkCRC16(m_cac, 106))
     {
         std::cerr << "DSDNXDN::CACShort::decode: bad CRC" << std::endl;
+        return;
+    }
+}
+
+DSDNXDN::FACCH1::FACCH1()
+{
+    m_rawSize = 192;
+    m_nbPuncture = 48;
+    m_bufRaw = m_facch1Raw;
+    m_buf = m_facch1;
+    m_interleave = m_Interleave;
+    m_punctureList = m_PunctureList;
+}
+
+DSDNXDN::FACCH1::~FACCH1()
+{}
+
+void DSDNXDN::FACCH1::decode()
+{
+    m_viterbi.decodeFromBits(m_facch1, m_facch1Raw, 192, 0);
+
+    if (!CNXDNCRC::checkCRC12(m_facch1, 80))
+    {
+        std::cerr << "DSDNXDN::FACCH1::decode: bad CRC" << std::endl;
+        return;
+    }
+}
+
+DSDNXDN::UDCH::UDCH()
+{
+    m_rawSize = 406;
+    m_nbPuncture = 58;
+    m_bufRaw = m_udchRaw;
+    m_buf = m_udch;
+    m_interleave = m_Interleave;
+    m_punctureList = m_PunctureList;
+}
+
+DSDNXDN::UDCH::~UDCH()
+{}
+
+void DSDNXDN::UDCH::decode()
+{
+    m_viterbi.decodeFromBits(m_udch, m_udchRaw, 406, 0);
+
+    if (!CNXDNCRC::checkCRC15(m_udch, 184))
+    {
+        std::cerr << "DSDNXDN::UDCH::decode: bad CRC" << std::endl;
         return;
     }
 }
