@@ -58,6 +58,7 @@ set(dsdcc_SOURCES
     nxdn.cpp
     nxdnconvolution.cpp
     nxdncrc.cpp
+    nxdnmessage.cpp
     p25p1_heuristics.cpp
     dsd_upsample.cpp
     fec.cpp
@@ -87,6 +88,7 @@ set(dsdcc_HEADERS
     nxdn.h
     nxdnconvolution.h
     nxdncrc.h
+    nxdnmessage.h
     p25p1_heuristics.h
     dsd_upsample.h
     runningmaxmin.h

@@ -23,6 +23,47 @@
 namespace DSDcc
 {
 
+/*
+ * DMR AMBE interleave schedule
+ */
+// bit 1
+const int DSDNXDN::rW[36] = {
+  0, 1, 0, 1, 0, 1,
+  0, 1, 0, 1, 0, 1,
+  0, 1, 0, 1, 0, 1,
+  0, 1, 0, 1, 0, 2,
+  0, 2, 0, 2, 0, 2,
+  0, 2, 0, 2, 0, 2
+};
+
+const int DSDNXDN::rX[36] = {
+  23, 10, 22, 9, 21, 8,
+  20, 7, 19, 6, 18, 5,
+  17, 4, 16, 3, 15, 2,
+  14, 1, 13, 0, 12, 10,
+  11, 9, 10, 8, 9, 7,
+  8, 6, 7, 5, 6, 4
+};
+
+// bit 0
+const int DSDNXDN::rY[36] = {
+  0, 2, 0, 2, 0, 2,
+  0, 2, 0, 3, 0, 3,
+  1, 3, 1, 3, 1, 3,
+  1, 3, 1, 3, 1, 3,
+  1, 3, 1, 3, 1, 3,
+  1, 3, 1, 3, 1, 3
+};
+
+const int DSDNXDN::rZ[36] = {
+  5, 3, 4, 2, 3, 1,
+  2, 0, 1, 13, 0, 12,
+  22, 11, 21, 10, 20, 9,
+  19, 8, 18, 7, 17, 6,
+  16, 5, 15, 4, 14, 3,
+  13, 2, 12, 1, 11, 0
+};
+
 const char * DSDNXDN::nxdnRFChannelTypeText[4] = {
         "RC", //!< RCCH
         "RT", //!< RTCH
@@ -48,31 +89,18 @@ const int DSDNXDN::SACCH::m_Interleave[60] = {
 const int DSDNXDN::SACCH::m_PunctureList[12] = { 5, 11, 17, 23, 29, 35, 41, 47, 53, 59, 65, 71 };
 
 const int DSDNXDN::CACOutbound::m_Interleave[300] = {
-    0, 25, 50, 75, 100, 125, 150, 175, 200, 225, 250, 275,
-    1, 26, 51, 76, 101, 126, 151, 176, 201, 226, 251, 276,
-    2, 27, 52, 77, 102, 127, 152, 177, 202, 227, 252, 277,
-    3, 28, 53, 78, 103, 128, 153, 178, 203, 228, 253, 278,
-    4, 29, 54, 79, 104, 129, 154, 179, 204, 229, 254, 279,
-    5, 30, 55, 80, 105, 130, 155, 180, 205, 230, 255, 280,
-    6, 31, 56, 81, 106, 131, 156, 181, 206, 231, 256, 281,
-    7, 32, 57, 82, 107, 132, 157, 182, 207, 232, 257, 282,
-    8, 33, 58, 83, 108, 133, 158, 183, 208, 233, 258, 283,
-    9, 34, 59, 84, 109, 134, 159, 184, 209, 234, 259, 284,
-    10, 35, 60, 85, 110, 135, 160, 185, 210, 235, 260, 285,
-    11, 36, 61, 86, 111, 136, 161, 186, 211, 236, 261, 286,
-    12, 37, 62, 87, 112, 137, 162, 187, 212, 237, 262, 287,
-    13, 38, 63, 88, 113, 138, 163, 188, 213, 238, 263, 288,
-    14, 39, 64, 89, 114, 139, 164, 189, 214, 239, 264, 289,
-    15, 40, 65, 90, 115, 140, 165, 190, 215, 240, 265, 290,
-    16, 41, 66, 91, 116, 141, 166, 191, 216, 241, 266, 291,
-    17, 42, 67, 92, 117, 142, 167, 192, 217, 242, 267, 292,
-    18, 43, 68, 93, 118, 143, 168, 193, 218, 243, 268, 293,
-    19, 44, 69, 94, 119, 144, 169, 194, 219, 244, 269, 294,
-    20, 45, 70, 95, 120, 145, 170, 195, 220, 245, 270, 295,
-    21, 46, 71, 96, 121, 146, 171, 196, 221, 246, 271, 296,
-    22, 47, 72, 97, 122, 147, 172, 197, 222, 247, 272, 297,
-    23, 48, 73, 98, 123, 148, 173, 198, 223, 248, 273, 298,
-    24, 49, 74, 99, 124, 149, 174, 199, 224, 249, 274, 299
+    0, 12, 24, 36, 48, 60, 72, 84, 96, 108, 120, 132, 144, 156, 168, 180, 192, 204, 216, 228, 240, 252, 264, 276, 288,
+    1, 13, 25, 37, 49, 61, 73, 85, 97, 109, 121, 133, 145, 157, 169, 181, 193, 205, 217, 229, 241, 253, 265, 277, 289,
+    2, 14, 26, 38, 50, 62, 74, 86, 98, 110, 122, 134, 146, 158, 170, 182, 194, 206, 218, 230, 242, 254, 266, 278, 290,
+    3, 15, 27, 39, 51, 63, 75, 87, 99, 111, 123, 135, 147, 159, 171, 183, 195, 207, 219, 231, 243, 255, 267, 279, 291,
+    4, 16, 28, 40, 52, 64, 76, 88, 100, 112, 124, 136, 148, 160, 172, 184, 196, 208, 220, 232, 244, 256, 268, 280, 292,
+    5, 17, 29, 41, 53, 65, 77, 89, 101, 113, 125, 137, 149, 161, 173, 185, 197, 209, 221, 233, 245, 257, 269, 281, 293,
+    6, 18, 30, 42, 54, 66, 78, 90, 102, 114, 126, 138, 150, 162, 174, 186, 198, 210, 222, 234, 246, 258, 270, 282, 294,
+    7, 19, 31, 43, 55, 67, 79, 91, 103, 115, 127, 139, 151, 163, 175, 187, 199, 211, 223, 235, 247, 259, 271, 283, 295,
+    8, 20, 32, 44, 56, 68, 80, 92, 104, 116, 128, 140, 152, 164, 176, 188, 200, 212, 224, 236, 248, 260, 272, 284, 296,
+    9, 21, 33, 45, 57, 69, 81, 93, 105, 117, 129, 141, 153, 165, 177, 189, 201, 213, 225, 237, 249, 261, 273, 285, 297,
+    10, 22, 34, 46, 58, 70, 82, 94, 106, 118, 130, 142, 154, 166, 178, 190, 202, 214, 226, 238, 250, 262, 274, 286, 298,
+    11, 23, 35, 47, 59, 71, 83, 95, 107, 119, 131, 143, 155, 167, 179, 191, 203, 215, 227, 239, 251, 263, 275, 287, 299,
 };
 
 const int DSDNXDN::CACOutbound::m_PunctureList[50] = {
@@ -100,31 +128,22 @@ const int DSDNXDN::CACOutbound::m_PunctureList[50] = {
     297, 305, // 21 294
     311, 319, // 22 308
     325, 333, // 23 322
-    339, 347  // 24 336
+    339, 347,  // 24 336
 };
 
 const int DSDNXDN::CACLong::m_Interleave[252] = {
-    0, 21, 42, 63, 84, 105, 126, 147, 168, 189, 210, 231,
-    1, 22, 43, 64, 85, 106, 127, 148, 169, 190, 211, 232,
-    2, 23, 44, 65, 86, 107, 128, 149, 170, 191, 212, 233,
-    3, 24, 45, 66, 87, 108, 129, 150, 171, 192, 213, 234,
-    4, 25, 46, 67, 88, 109, 130, 151, 172, 193, 214, 235,
-    5, 26, 47, 68, 89, 110, 131, 152, 173, 194, 215, 236,
-    6, 27, 48, 69, 90, 111, 132, 153, 174, 195, 216, 237,
-    7, 28, 49, 70, 91, 112, 133, 154, 175, 196, 217, 238,
-    8, 29, 50, 71, 92, 113, 134, 155, 176, 197, 218, 239,
-    9, 30, 51, 72, 93, 114, 135, 156, 177, 198, 219, 240,
-    10, 31, 52, 73, 94, 115, 136, 157, 178, 199, 220, 241,
-    11, 32, 53, 74, 95, 116, 137, 158, 179, 200, 221, 242,
-    12, 33, 54, 75, 96, 117, 138, 159, 180, 201, 222, 243,
-    13, 34, 55, 76, 97, 118, 139, 160, 181, 202, 223, 244,
-    14, 35, 56, 77, 98, 119, 140, 161, 182, 203, 224, 245,
-    15, 36, 57, 78, 99, 120, 141, 162, 183, 204, 225, 246,
-    16, 37, 58, 79, 100, 121, 142, 163, 184, 205, 226, 247,
-    17, 38, 59, 80, 101, 122, 143, 164, 185, 206, 227, 248,
-    18, 39, 60, 81, 102, 123, 144, 165, 186, 207, 228, 249,
-    19, 40, 61, 82, 103, 124, 145, 166, 187, 208, 229, 250,
-    20, 41, 62, 83, 104, 125, 146, 167, 188, 209, 230, 251
+    0, 12, 24, 36, 48, 60, 72, 84, 96, 108, 120, 132, 144, 156, 168, 180, 192, 204, 216, 228, 240,
+    1, 13, 25, 37, 49, 61, 73, 85, 97, 109, 121, 133, 145, 157, 169, 181, 193, 205, 217, 229, 241,
+    2, 14, 26, 38, 50, 62, 74, 86, 98, 110, 122, 134, 146, 158, 170, 182, 194, 206, 218, 230, 242,
+    3, 15, 27, 39, 51, 63, 75, 87, 99, 111, 123, 135, 147, 159, 171, 183, 195, 207, 219, 231, 243,
+    4, 16, 28, 40, 52, 64, 76, 88, 100, 112, 124, 136, 148, 160, 172, 184, 196, 208, 220, 232, 244,
+    5, 17, 29, 41, 53, 65, 77, 89, 101, 113, 125, 137, 149, 161, 173, 185, 197, 209, 221, 233, 245,
+    6, 18, 30, 42, 54, 66, 78, 90, 102, 114, 126, 138, 150, 162, 174, 186, 198, 210, 222, 234, 246,
+    7, 19, 31, 43, 55, 67, 79, 91, 103, 115, 127, 139, 151, 163, 175, 187, 199, 211, 223, 235, 247,
+    8, 20, 32, 44, 56, 68, 80, 92, 104, 116, 128, 140, 152, 164, 176, 188, 200, 212, 224, 236, 248,
+    9, 21, 33, 45, 57, 69, 81, 93, 105, 117, 129, 141, 153, 165, 177, 189, 201, 213, 225, 237, 249,
+    10, 22, 34, 46, 58, 70, 82, 94, 106, 118, 130, 142, 154, 166, 178, 190, 202, 214, 226, 238, 250,
+    11, 23, 35, 47, 59, 71, 83, 95, 107, 119, 131, 143, 155, 167, 179, 191, 203, 215, 227, 239, 251,
 };
 
 const int DSDNXDN::CACLong::m_PunctureList[60] = {
@@ -143,15 +162,22 @@ const int DSDNXDN::CACLong::m_PunctureList[60] = {
 };
 
 const int DSDNXDN::FACCH1::m_Interleave[144] = {
-    0, 9, 18, 27, 36, 45, 54, 63, 72, 81, 90, 99, 108, 117, 126, 135,
-    1, 10, 19, 28, 37, 46, 55, 64, 73, 82, 91, 100, 109, 118, 127, 136,
-    2, 11, 20, 29, 38, 47, 56, 65, 74, 83, 92, 101, 110, 119, 128, 137,
-    3, 12, 21, 30, 39, 48, 57, 66, 75, 84, 93, 102, 111, 120, 129, 138,
-    4, 13, 22, 31, 40, 49, 58, 67, 76, 85, 94, 103, 112, 121, 130, 139,
-    5, 14, 23, 32, 41, 50, 59, 68, 77, 86, 95, 104, 113, 122, 131, 140,
-    6, 15, 24, 33, 42, 51, 60, 69, 78, 87, 96, 105, 114, 123, 132, 141,
-    7, 16, 25, 34, 43, 52, 61, 70, 79, 88, 97, 106, 115, 124, 133, 142,
-    8, 17, 26, 35, 44, 53, 62, 71, 80, 89, 98, 107, 116, 125, 134, 143,
+    0, 16, 32, 48, 64, 80, 96, 112, 128,
+    1, 17, 33, 49, 65, 81, 97, 113, 129,
+    2, 18, 34, 50, 66, 82, 98, 114, 130,
+    3, 19, 35, 51, 67, 83, 99, 115, 131,
+    4, 20, 36, 52, 68, 84, 100, 116, 132,
+    5, 21, 37, 53, 69, 85, 101, 117, 133,
+    6, 22, 38, 54, 70, 86, 102, 118, 134,
+    7, 23, 39, 55, 71, 87, 103, 119, 135,
+    8, 24, 40, 56, 72, 88, 104, 120, 136,
+    9, 25, 41, 57, 73, 89, 105, 121, 137,
+    10, 26, 42, 58, 74, 90, 106, 122, 138,
+    11, 27, 43, 59, 75, 91, 107, 123, 139,
+    12, 28, 44, 60, 76, 92, 108, 124, 140,
+    13, 29, 45, 61, 77, 93, 109, 125, 141,
+    14, 30, 46, 62, 78, 94, 110, 126, 142,
+    15, 31, 47, 63, 79, 95, 111, 127, 143,
 };
 
 const int DSDNXDN::FACCH1::m_PunctureList[48] = {
@@ -161,35 +187,18 @@ const int DSDNXDN::FACCH1::m_PunctureList[48] = {
 };
 
 const int DSDNXDN::UDCH::m_Interleave[348] = {
-    0, 29, 58, 87, 116, 145, 174, 203, 232, 261, 290, 319,
-    1, 30, 59, 88, 117, 146, 175, 204, 233, 262, 291, 320,
-    2, 31, 60, 89, 118, 147, 176, 205, 234, 263, 292, 321,
-    3, 32, 61, 90, 119, 148, 177, 206, 235, 264, 293, 322,
-    4, 33, 62, 91, 120, 149, 178, 207, 236, 265, 294, 323,
-    5, 34, 63, 92, 121, 150, 179, 208, 237, 266, 295, 324,
-    6, 35, 64, 93, 122, 151, 180, 209, 238, 267, 296, 325,
-    7, 36, 65, 94, 123, 152, 181, 210, 239, 268, 297, 326,
-    8, 37, 66, 95, 124, 153, 182, 211, 240, 269, 298, 327,
-    9, 38, 67, 96, 125, 154, 183, 212, 241, 270, 299, 328,
-    10, 39, 68, 97, 126, 155, 184, 213, 242, 271, 300, 329,
-    11, 40, 69, 98, 127, 156, 185, 214, 243, 272, 301, 330,
-    12, 41, 70, 99, 128, 157, 186, 215, 244, 273, 302, 331,
-    13, 42, 71, 100, 129, 158, 187, 216, 245, 274, 303, 332,
-    14, 43, 72, 101, 130, 159, 188, 217, 246, 275, 304, 333,
-    15, 44, 73, 102, 131, 160, 189, 218, 247, 276, 305, 334,
-    16, 45, 74, 103, 132, 161, 190, 219, 248, 277, 306, 335,
-    17, 46, 75, 104, 133, 162, 191, 220, 249, 278, 307, 336,
-    18, 47, 76, 105, 134, 163, 192, 221, 250, 279, 308, 337,
-    19, 48, 77, 106, 135, 164, 193, 222, 251, 280, 309, 338,
-    20, 49, 78, 107, 136, 165, 194, 223, 252, 281, 310, 339,
-    21, 50, 79, 108, 137, 166, 195, 224, 253, 282, 311, 340,
-    22, 51, 80, 109, 138, 167, 196, 225, 254, 283, 312, 341,
-    23, 52, 81, 110, 139, 168, 197, 226, 255, 284, 313, 342,
-    24, 53, 82, 111, 140, 169, 198, 227, 256, 285, 314, 343,
-    25, 54, 83, 112, 141, 170, 199, 228, 257, 286, 315, 344,
-    26, 55, 84, 113, 142, 171, 200, 229, 258, 287, 316, 345,
-    27, 56, 85, 114, 143, 172, 201, 230, 259, 288, 317, 346,
-    28, 57, 86, 115, 144, 173, 202, 231, 260, 289, 318, 347,
+    0, 12, 24, 36, 48, 60, 72, 84, 96, 108, 120, 132, 144, 156, 168, 180, 192, 204, 216, 228, 240, 252, 264, 276, 288, 300, 312, 324, 336,
+    1, 13, 25, 37, 49, 61, 73, 85, 97, 109, 121, 133, 145, 157, 169, 181, 193, 205, 217, 229, 241, 253, 265, 277, 289, 301, 313, 325, 337,
+    2, 14, 26, 38, 50, 62, 74, 86, 98, 110, 122, 134, 146, 158, 170, 182, 194, 206, 218, 230, 242, 254, 266, 278, 290, 302, 314, 326, 338,
+    3, 15, 27, 39, 51, 63, 75, 87, 99, 111, 123, 135, 147, 159, 171, 183, 195, 207, 219, 231, 243, 255, 267, 279, 291, 303, 315, 327, 339,
+    4, 16, 28, 40, 52, 64, 76, 88, 100, 112, 124, 136, 148, 160, 172, 184, 196, 208, 220, 232, 244, 256, 268, 280, 292, 304, 316, 328, 340,
+    5, 17, 29, 41, 53, 65, 77, 89, 101, 113, 125, 137, 149, 161, 173, 185, 197, 209, 221, 233, 245, 257, 269, 281, 293, 305, 317, 329, 341,
+    6, 18, 30, 42, 54, 66, 78, 90, 102, 114, 126, 138, 150, 162, 174, 186, 198, 210, 222, 234, 246, 258, 270, 282, 294, 306, 318, 330, 342,
+    7, 19, 31, 43, 55, 67, 79, 91, 103, 115, 127, 139, 151, 163, 175, 187, 199, 211, 223, 235, 247, 259, 271, 283, 295, 307, 319, 331, 343,
+    8, 20, 32, 44, 56, 68, 80, 92, 104, 116, 128, 140, 152, 164, 176, 188, 200, 212, 224, 236, 248, 260, 272, 284, 296, 308, 320, 332, 344,
+    9, 21, 33, 45, 57, 69, 81, 93, 105, 117, 129, 141, 153, 165, 177, 189, 201, 213, 225, 237, 249, 261, 273, 285, 297, 309, 321, 333, 345,
+    10, 22, 34, 46, 58, 70, 82, 94, 106, 118, 130, 142, 154, 166, 178, 190, 202, 214, 226, 238, 250, 262, 274, 286, 298, 310, 322, 334, 346,
+    11, 23, 35, 47, 59, 71, 83, 95, 107, 119, 131, 143, 155, 167, 179, 191, 203, 215, 227, 239, 251, 263, 275, 287, 299, 311, 323, 335, 347,
 };
 
 const int DSDNXDN::UDCH::m_PunctureList[58] = {
@@ -231,7 +240,11 @@ DSDNXDN::DSDNXDN(DSDDecoder *dsdDecoder) :
 		m_inSync(false),
 		m_lichEvenParity(0),
 		m_symbolIndex(0),
-		m_swallowCount(0)
+		m_swallowCount(0),
+        w(0),
+        x(0),
+        y(0),
+        z(0)
 {
     memset(m_syncBuffer, 0, 11);
     memset(m_lichBuffer, 0, 8);
@@ -239,7 +252,7 @@ DSDNXDN::DSDNXDN(DSDDecoder *dsdDecoder) :
     m_rfChannel = NXDNRFCHUnknown;
     m_frameStructure = NXDNFSReserved;
     m_steal = NXDNStealReserved;
-    m_sacchCount = 0;
+    m_ran = 0;
 
     m_rfChannelStr[0] = '\0';
 }
@@ -253,6 +266,7 @@ void DSDNXDN::init()
     if (!m_inSync)
     {
         std::cerr << "DSDNXDN::init: entering sync state" << std::endl;
+        m_currentMessage.reset();
         m_inSync = true;
     }
 
@@ -460,18 +474,17 @@ void DSDNXDN::processLICH()
 	m_lich.parity        = m_lichBuffer[7];
     m_lichEvenParity += m_lich.parity; // you have to sum with parity bit and then test even-ness
 
-    std::cerr << "DSDNXDN::processLICH:"
-            << " rfChannelCode: " << m_lich.rfChannelCode
-            << " fnChannelCode: " << m_lich.fnChannelCode
-            << " optionCode: " << m_lich.optionCode
-            << " direction: " << m_lich.direction
-            << " parity: " << m_lich.parity
-            << " m_lichEvenParity: " << m_lichEvenParity << std::endl;
-
     if (m_lichEvenParity % 2) // odd is wrong
     {
         m_rfChannel = NXDNRFCHUnknown;
         strcpy(m_rfChannelStr, "XX");
+        std::cerr << "DSDNXDN::processLICH:"
+                << " rfChannelCode: " << m_lich.rfChannelCode
+                << " fnChannelCode: " << m_lich.fnChannelCode
+                << " optionCode: " << m_lich.optionCode
+                << " direction: " << m_lich.direction
+                << " parity: " << m_lich.parity
+                << " m_lichEvenParity: " << m_lichEvenParity << std::endl;
         std::cerr << "DSDNXDN::processLICH: parity error" << std::endl;
     }
     else
@@ -496,7 +509,6 @@ void DSDNXDN::processLICH()
         case NXDNRDCH:
             if (m_lich.fnChannelCode == 0) {
                 m_frameStructure = NXDNFSSACCH;
-                m_sacchCount = 0;
             } else if (m_lich.fnChannelCode == 1) {
                 m_frameStructure = NXDNFSUDCH;
             } else if (m_lich.fnChannelCode == 2) {
@@ -604,6 +616,91 @@ void DSDNXDN::processRTDCH(int index, unsigned char dibit)
         {
             m_sacch.unpuncture();
             m_sacch.decode();
+            m_ran = m_sacch.getRAN();
+
+            if ((m_sacch.getCountdown() == 0) && (m_sacch.getDecodeCount() == 0)) {
+                m_currentMessage = m_sacch.getMessage();
+                std::cerr << "DSDNXDN::processRTDCH:"
+                        << " msgId: " <<  (int) m_currentMessage.getMessageType()
+                        << " src: " << m_currentMessage.getSourceUnitId()
+                        << " dest: " << m_currentMessage.getDestinationGroupId()
+                        << " group: " << m_currentMessage.getIsGroup() << std::endl;
+            }
+        }
+
+        if ((m_steal == NXDNStealNone) || (m_steal == NXDNSteal2)) // two VCHs
+        {
+            if ((index >= 30) && (index < 30+2*36)) {
+                processVoiceFrame((index-30) % 36, dibit);
+            }
+        }
+
+        if ((m_steal == NXDNStealNone) || (m_steal == NXDNSteal1)) // two VCHs
+        {
+            if ((index >= 30+2*36) && (index < 30+4*36)) {
+                processVoiceFrame((index-30) % 36, dibit);
+            }
+        }
+
+        if ((m_steal == NXDNStealBoth) || (m_steal == NXDNSteal1)) // FACCH1 in first position
+        {
+            if (index == 30) {
+                m_facch1.reset();
+            }
+
+            if ((index >= 30) && (index < 30+2*36)) {
+                m_facch1.pushDibit(dibit);
+            }
+
+            if (index == 30+2*36-1)
+            {
+                m_facch1.unpuncture();
+
+                if (m_facch1.decode()) {
+                    m_currentMessage.setFromFACCH1(m_facch1.getData());
+                }
+            }
+        }
+
+        if ((m_steal == NXDNStealBoth) || (m_steal == NXDNSteal2)) // FACCH1 in second position
+        {
+            if (index == 30+2*36) {
+                m_facch1.reset();
+            }
+
+            if ((index >= 30+2*36) && (index < 30+4*36)) {
+                m_facch1.pushDibit(dibit);
+            }
+
+            if (index == 30+4*36-1)
+            {
+                m_facch1.unpuncture();
+
+                if (m_facch1.decode()) {
+                    m_currentMessage.setFromFACCH1(m_facch1.getData());
+                }
+            }
+        }
+    }
+    else if (m_frameStructure == NXDNFSUDCH)
+    {
+        if (index == 0) {
+            m_udch.reset();
+        }
+
+        if (index < 174) {
+            m_udch.pushDibit(dibit);
+        }
+
+        if (index == 174)
+        {
+            m_udch.unpuncture();
+
+            if (m_udch.decode())
+            {
+                m_ran = m_udch.getRAN();
+                m_currentMessage.setFromFACCH2(&m_udch.getData()[1]);
+            }
         }
     }
 }
@@ -665,12 +762,14 @@ DSDNXDN::SACCH::SACCH()
     m_bufTmp = m_temp;
     m_interleave = m_Interleave;
     m_punctureList = m_PunctureList;
+    m_message.reset();
+    m_decodeCount = 0;
 }
 
 DSDNXDN::SACCH::~SACCH()
 {}
 
-void DSDNXDN::SACCH::decode()
+bool DSDNXDN::SACCH::decode()
 {
     CNXDNConvolution conv;
     conv.start();
@@ -689,13 +788,36 @@ void DSDNXDN::SACCH::decode()
     if (!CNXDNCRC::checkCRC6(m_data, 26U))
     {
         std::cerr << "DSDNXDN::SACCH::decode: bad CRC" << std::endl;
-        return;
+
+        if (m_decodeCount >= 0) {
+            m_decodeCount = -1;
+        }
+
+        return false;
     }
     else
     {
-        std::cerr << "DSDNXDN::SACCH::decode: CRC OK" << std::endl;
+        if (getCountdown() == 3) {
+            m_decodeCount = 3;
+        } else {
+            m_decodeCount--;
+        }
+
+        m_message.setFromSACCH(3-getCountdown(), &m_data[1]);
+        return true;
     }
 }
+
+unsigned char DSDNXDN::SACCH::getRAN() const
+{
+    return m_data[0U] & 0x3FU;
+}
+
+unsigned char DSDNXDN::SACCH::getCountdown() const
+{
+    return (m_data[0U] >> 6) & 0x03U;
+}
+
 
 DSDNXDN::CACOutbound::CACOutbound()
 {
@@ -710,16 +832,31 @@ DSDNXDN::CACOutbound::CACOutbound()
 DSDNXDN::CACOutbound::~CACOutbound()
 {}
 
-void DSDNXDN::CACOutbound::decode()
+bool DSDNXDN::CACOutbound::decode()
 {
-    if (!CNXDNCRC::checkCRC16(m_cac, 155))
+    CNXDNConvolution conv;
+    conv.start();
+    int n = 0;
+
+    for (unsigned int i = 0U; i < 179U; i++)
+    {
+        uint8_t s0 = m_temp[n++];
+        uint8_t s1 = m_temp[n++];
+
+        conv.decode(s0, s1);
+    }
+
+    conv.chainback(m_data, 175U);
+
+    if (!CNXDNCRC::checkCRC16(m_data, 155))
     {
         std::cerr << "DSDNXDN::CACOutbound::decode: bad CRC" << std::endl;
-        return;
+        return false;
     }
     else
     {
         std::cerr << "DSDNXDN::CACOutbound::decode: CRC OK" << std::endl;
+        return true;
     }
 }
 
@@ -736,16 +873,31 @@ DSDNXDN::CACLong::CACLong()
 DSDNXDN::CACLong::~CACLong()
 {}
 
-void DSDNXDN::CACLong::decode()
+bool DSDNXDN::CACLong::decode()
 {
-    if (!CNXDNCRC::checkCRC16(m_cac, 136))
+    CNXDNConvolution conv;
+    conv.start();
+    int n = 0;
+
+    for (unsigned int i = 0U; i < 160U; i++)
+    {
+        uint8_t s0 = m_temp[n++];
+        uint8_t s1 = m_temp[n++];
+
+        conv.decode(s0, s1);
+    }
+
+    conv.chainback(m_data, 156U);
+
+    if (!CNXDNCRC::checkCRC16(m_data, 136))
     {
         std::cerr << "DSDNXDN::CACLong::decode: bad CRC" << std::endl;
-        return;
+        return false;
     }
     else
     {
         std::cerr << "DSDNXDN::CACLong::decode: CRC OK" << std::endl;
+        return true;
     }
 }
 
@@ -761,16 +913,31 @@ DSDNXDN::CACShort::CACShort()
 DSDNXDN::CACShort::~CACShort()
 {}
 
-void DSDNXDN::CACShort::decode()
+bool DSDNXDN::CACShort::decode()
 {
-    if (!CNXDNCRC::checkCRC16(m_cac, 106))
+    CNXDNConvolution conv;
+    conv.start();
+    int n = 0;
+
+    for (unsigned int i = 0U; i < 130U; i++)
+    {
+        uint8_t s0 = m_temp[n++];
+        uint8_t s1 = m_temp[n++];
+
+        conv.decode(s0, s1);
+    }
+
+    conv.chainback(m_data, 126U);
+
+    if (!CNXDNCRC::checkCRC16(m_data, 106))
     {
         std::cerr << "DSDNXDN::CACShort::decode: bad CRC" << std::endl;
-        return;
+        return false;
     }
     else
     {
         std::cerr << "DSDNXDN::CACShort::decode: CRC OK" << std::endl;
+        return true;
     }
 }
 
@@ -787,16 +954,31 @@ DSDNXDN::FACCH1::FACCH1()
 DSDNXDN::FACCH1::~FACCH1()
 {}
 
-void DSDNXDN::FACCH1::decode()
+bool DSDNXDN::FACCH1::decode()
 {
-    if (!CNXDNCRC::checkCRC12(m_facch1, 80))
+    CNXDNConvolution conv;
+    conv.start();
+    int n = 0;
+
+    for (unsigned int i = 0U; i < 100U; i++)
+    {
+        uint8_t s0 = m_temp[n++];
+        uint8_t s1 = m_temp[n++];
+
+        conv.decode(s0, s1);
+    }
+
+    conv.chainback(m_data, 96U);
+
+    if (!CNXDNCRC::checkCRC12(m_data, 80))
     {
         std::cerr << "DSDNXDN::FACCH1::decode: bad CRC" << std::endl;
-        return;
+        return false;
     }
     else
     {
         std::cerr << "DSDNXDN::FACCH1::decode: CRC OK" << std::endl;
+        return true;
     }
 }
 
@@ -813,17 +995,93 @@ DSDNXDN::UDCH::UDCH()
 DSDNXDN::UDCH::~UDCH()
 {}
 
-void DSDNXDN::UDCH::decode()
+bool DSDNXDN::UDCH::decode()
 {
-    if (!CNXDNCRC::checkCRC15(m_udch, 184))
+    CNXDNConvolution conv;
+    conv.start();
+    int n = 0;
+
+    for (unsigned int i = 0U; i < 207U; i++)
+    {
+        uint8_t s0 = m_temp[n++];
+        uint8_t s1 = m_temp[n++];
+
+        conv.decode(s0, s1);
+    }
+
+    conv.chainback(m_data, 203U);
+
+    if (!CNXDNCRC::checkCRC15(m_data, 184))
     {
         std::cerr << "DSDNXDN::UDCH::decode: bad CRC" << std::endl;
-        return;
+        return false;
     }
     else
     {
-        std::cerr << "DSDNXDN::UDCH::decode: CRC OK" << std::endl;
+        return true;
     }
+}
+
+unsigned char DSDNXDN::UDCH::getRAN() const
+{
+    return m_data[0U] & 0x3FU;
+}
+
+unsigned char DSDNXDN::UDCH::getStructure() const
+{
+    return (m_data[0U] >> 6) & 0x03U;
+}
+
+void DSDNXDN::processVoiceFrame(int symbolIndex, int dibit)
+{
+    if ((symbolIndex == 0) && (m_dsdDecoder->m_opts.errorbars == 1))
+    {
+        m_dsdDecoder->getLogger().log("\nMBE: ");
+    }
+
+    if (symbolIndex % 36 == 0)
+    {
+        w = rW;
+        x = rX;
+        y = rY;
+        z = rZ;
+        memset((void *) m_dsdDecoder->m_mbeDVFrame1, 0, 9); // initialize DVSI frame
+    }
+
+    m_dsdDecoder->ambe_fr[*w][*x] = (1 & (dibit >> 1)); // bit 1
+    m_dsdDecoder->ambe_fr[*y][*z] = (1 & dibit);        // bit 0
+    w++;
+    x++;
+    y++;
+    z++;
+
+    storeSymbolDV(symbolIndex % 36, dibit); // store dibit for DVSI hardware decoder
+
+    if (symbolIndex % 36 == 35)
+    {
+        m_dsdDecoder->m_mbeDecoder1.processFrame(0, m_dsdDecoder->ambe_fr, 0);
+        m_dsdDecoder->m_mbeDVReady1 = true; // Indicate that a DVSI frame is available
+
+        if (m_dsdDecoder->m_opts.errorbars == 1)
+        {
+            m_dsdDecoder->getLogger().log(".");
+        }
+    }
+}
+
+void DSDNXDN::storeSymbolDV(int dibitindex, unsigned char dibit, bool invertDibit)
+{
+    if (m_dsdDecoder->m_mbelibEnable)
+    {
+        return;
+    }
+
+    if (invertDibit)
+    {
+        dibit = DSDcc::DSDSymbol::invert_dibit(dibit);
+    }
+
+    m_dsdDecoder->m_mbeDVFrame1[dibitindex/4] |= (dibit << (6 - 2*(dibitindex % 4)));
 }
 
 } // namespace DSDcc

@@ -19,6 +19,7 @@
 
 #include "pn.h"
 #include "viterbi5.h"
+#include "nxdnmessage.h"
 
 namespace DSDcc
 {
@@ -71,6 +72,7 @@ public:
     void process();
 
     const char *getRfChannel() const { return m_rfChannelStr; }
+    int getRAN() const { return m_ran; }
 
     static const char *nxdnRFChannelTypeText[4];
 
@@ -100,7 +102,7 @@ private:
         void reset();
         void pushDibit(unsigned char dibit);
         void unpuncture();
-        virtual void decode() = 0;
+        virtual bool decode() = 0;
     protected:
         int m_index;
         int m_nbPuncture;
@@ -116,14 +118,19 @@ private:
     public:
         SACCH();
         virtual ~SACCH();
-        virtual void decode();
+        virtual bool decode();
+        unsigned char getRAN() const;
+        unsigned char getCountdown() const;  //!< get SACCH block countdown in a superframe structure
+        int getDecodeCount() const { return m_decodeCount; }
+        const Message& getMessage() const { return m_message; }
         static const int m_Interleave[60];   //!< SACCH bits interleaving matrix
         static const int m_PunctureList[12]; //!< SACCH punctured bits indexes
     private:
-        unsigned char m_sacchRaw[60];             //!< SACCH bits retrieved from RF channel
-        unsigned char m_temp[90];                 //!< SACCH working area;
-        unsigned char m_sacch[36];                //!< SACCH bits
-        unsigned char m_data[5];                  //!< SACCH bytes after de-convolution (36 bits)
+        unsigned char m_sacchRaw[60];        //!< SACCH bits retrieved from RF channel
+        unsigned char m_temp[90];            //!< SACCH working area;
+        unsigned char m_data[5];             //!< SACCH bytes after de-convolution (36 bits)
+        Message m_message;                   //!< locally stored layer-3 message
+        int m_decodeCount;                   //!< count of subsequent successful decodes starting at start of superframe
     };
 
     class CACOutbound : public FnChannel
@@ -131,13 +138,12 @@ private:
     public:
         CACOutbound();
         virtual ~CACOutbound();
-        virtual void decode();
+        virtual bool decode();
         static const int m_Interleave[300];  //!< CAC outbound bits interleaving matrix
         static const int m_PunctureList[50]; //!< CAC outbound punctured bits indexes
     private:
         unsigned char m_cacRaw[300];            //!< CAC outbound bits before Viterbi decoding
         unsigned char m_temp[420];              //!< CAC outbound working area
-        unsigned char m_cac[175];               //!< CAC outbound bits
         unsigned char m_data[22];               //!< CAC outbound bytes after de-convolution (175 bits)
     };
 
@@ -146,13 +152,12 @@ private:
     public:
         CACLong();
         virtual ~CACLong();
-        virtual void decode();
+        virtual bool decode();
         static const int m_Interleave[252];  //!< Long CAC bits interleaving matrix
         static const int m_PunctureList[60]; //!< Long CAC punctured bits indexes
     private:
         unsigned char m_cacRaw[252];            //!< Long CAC bits before Viterbi decoding
         unsigned char m_temp[420];              //!< Long CAC working area
-        unsigned char m_cac[156];               //!< Long CAC bits
         unsigned char m_data[20];               //!< Long CAC bytes after de-convolution (156 bits)
     };
 
@@ -161,11 +166,10 @@ private:
     public:
         CACShort();
         virtual ~CACShort();
-        virtual void decode();
+        virtual bool decode();
     private:
         unsigned char m_cacRaw[252];           //!< Short CAC bits before Viterbi decoding
         unsigned char m_temp[420];             //!< Short CAC working area
-        unsigned char m_cac[126];              //!< Short CAC bits
         unsigned char m_data[16];              //!< Short CAC bytes after de-convolution (126 bits)
     };
 
@@ -174,13 +178,13 @@ private:
     public:
         FACCH1();
         virtual ~FACCH1();
-        virtual void decode();
+        virtual bool decode();
+        const unsigned char *getData() const { return m_data; }
         static const int m_Interleave[144];     //!< FACCH1 bits interleaving matrix
         static const int m_PunctureList[48];    //!< FACCH1 punctured bits indexes
     private:
         unsigned char m_facch1Raw[192];         //!< FACCH1 bits before Viterbi decoding
-        unsigned char m_temp[420];              //!< FACCH1 working area
-        unsigned char m_facch1[96];             //!< FACCH1 bits
+        unsigned char m_temp[210];              //!< FACCH1 working area
         unsigned char m_data[12];               //!< FACCH1 bytes after de-convolution (96 bits)
     };
 
@@ -189,13 +193,15 @@ private:
     public:
         UDCH();
         virtual ~UDCH();
-        virtual void decode();
+        virtual bool decode();
+        unsigned char getRAN() const;
+        unsigned char getStructure() const;     //!< get (super)frame structure information (2 bits)
+        const unsigned char *getData() const { return m_data; }
         static const int m_Interleave[348];     //!< UDCH bits interleaving matrix
         static const int m_PunctureList[58];    //!< UDCH punctured bits indexes
     private:
         unsigned char m_udchRaw[406];           //!< UDCH bits before Viterbi decoding
         unsigned char m_temp[420];              //!< UDCH working area
-        unsigned char m_udch[203];              //!< UDCH bits
         unsigned char m_data[26];               //!< UDCH bytes after de-convolution (203 bits)
     };
 
@@ -208,6 +214,9 @@ private:
     void processSwallow();
     void processRCCH(int index, unsigned char dibit);
     void processRTDCH(int index, unsigned char dibit);
+
+    void processVoiceFrame(int symbolIndex, int dibit);
+    void storeSymbolDV(int dibitindex, unsigned char dibit, bool invertDibit = false);
 
 	DSDDecoder *m_dsdDecoder;
 	NXDNState   m_state;
@@ -222,14 +231,23 @@ private:
     NXDNRFChannel m_rfChannel;      //!< current RF channel type (from LICH)
     NXDNFrameStructure m_frameStructure; //!< frame structure indicator
     NXDNSteal m_steal;              //!< stealing scheme
-    int m_sacchCount;               //!< SACCH block count
+    int m_ran;                      //!< Radio Access Number (kind of color code)
 
     CACOutbound m_cac;
     CACShort m_cacShort;
     CACLong m_cacLong;
     SACCH m_sacch;
+    FACCH1 m_facch1;
+    UDCH m_udch;
+    Message m_currentMessage;
 
     char m_rfChannelStr[2+1];
+
+    static const int rW[36];
+    static const int rX[36];
+    static const int rY[36];
+    static const int rZ[36];
+    const int *w, *x, *y, *z;
 };
 
 } // namespace DSDcc
