@@ -298,6 +298,8 @@ void DSDNXDN::process()
         processSwallow();
         break;
     default:
+        std::cerr << "DSDNXDN::process: unsupported state (end)" << std::endl;
+        m_dsdDecoder->m_voice1On = false;
         m_dsdDecoder->resetFrameSync(); // end
         m_inSync = false;
     }
@@ -312,6 +314,10 @@ int DSDNXDN::unscrambleDibit(int dibit)
 void DSDNXDN::processFrame()
 {
     int dibit = unscrambleDibit(m_dsdDecoder->m_dsdSymbol.getDibit());
+
+    // if (m_symbolIndex == 0) {
+    //     std::cerr << "DSDNXDN::processFrame: start" << std::endl;
+    // }
 
 	if (m_symbolIndex < 8) // LICH info
 	{
@@ -366,6 +372,8 @@ void DSDNXDN::processPostFrame()
 	}
 	else // out of sync => terminate
 	{
+        std::cerr << "DSDNXDN::processPostFrame: out of sync (end)" << std::endl;
+        m_dsdDecoder->m_voice1On = false;
 		m_dsdDecoder->resetFrameSync(); // end
 		m_inSync = false;
 	}
@@ -385,7 +393,10 @@ void DSDNXDN::processFSW()
         fsw = DSDDecoder::m_syncNXDNRDCHFSW;
     } else if (m_dsdDecoder->getSyncType() == DSDDecoder::DSDSyncNXDNN) {
         fsw = DSDDecoder::m_syncNXDNRDCHFSWInv;
-    } else {
+    } else
+    {
+        std::cerr << "DSDNXDN::processFSW: sync inconsistent (end)" << std::endl;
+        m_dsdDecoder->m_voice1On = false;
         m_dsdDecoder->resetFrameSync(); // end
         m_inSync = false;
         return;
@@ -448,7 +459,8 @@ void DSDNXDN::processFSW()
     }
     else
     {
-        std::cerr << "DSDNXDN::processFSW: sync lost" << std::endl;
+        std::cerr << "DSDNXDN::processFSW: sync lost (end)" << std::endl;
+        m_dsdDecoder->m_voice1On = false;
         m_dsdDecoder->resetFrameSync(); // end
         m_inSync = false;
     }
@@ -487,6 +499,8 @@ void DSDNXDN::processLICH()
     {
         m_rfChannel = NXDNRFCHUnknown;
         strcpy(m_rfChannelStr, "XX");
+        m_dsdDecoder->m_voice1On = false;
+        std::cerr << "DSDNXDN::processLICH: parity error" << std::endl;
         std::cerr << "DSDNXDN::processLICH:"
                 << " rfChannelCode: " << m_lich.rfChannelCode
                 << " fnChannelCode: " << m_lich.fnChannelCode
@@ -494,7 +508,6 @@ void DSDNXDN::processLICH()
                 << " direction: " << m_lich.direction
                 << " parity: " << m_lich.parity
                 << " m_lichEvenParity: " << m_lichEvenParity << std::endl;
-        std::cerr << "DSDNXDN::processLICH: parity error" << std::endl;
     }
     else
     {
@@ -533,9 +546,12 @@ void DSDNXDN::processLICH()
         if ((m_frameStructure == NXDNFSSACCH) || (m_frameStructure == NXDNFSSACCHSup))
         {
             m_steal = (NXDNSteal) m_lich.optionCode;
+            m_dsdDecoder->m_voice1On = (m_steal != NXDNStealBoth);
         }
         else if (m_frameStructure == NXDNFSUDCH)
         {
+            m_dsdDecoder->m_voice1On = false;
+
             if ((m_lich.optionCode == 0) || (m_lich.optionCode == 3)) {
                 m_steal = (NXDNSteal) m_lich.optionCode;
             } else {
@@ -640,16 +656,16 @@ void DSDNXDN::processRTDCH(int index, unsigned char dibit)
         if ((m_steal == NXDNStealNone) || (m_steal == NXDNSteal2)) // two VCHs
         {
             if ((index >= 30) && (index < 30+2*36)) {
-                //processVoiceFrame((index-30) % 36, dibit);
-                processVoiceTest((index-30) % 36);
+                processVoiceFrame(index - 30, dibit);
+                //processVoiceTest((index-30) % 36);
             }
         }
 
         if ((m_steal == NXDNStealNone) || (m_steal == NXDNSteal1)) // two VCHs
         {
             if ((index >= 30+2*36) && (index < 30+4*36)) {
-                //processVoiceFrame((index-30) % 36, dibit);
-                processVoiceTest((index-30) % 36);
+                processVoiceFrame(index - 30, dibit);
+                //processVoiceTest((index-30) % 36);
             }
         }
 
@@ -1050,6 +1066,10 @@ void DSDNXDN::processVoiceTest(int symbolIndex)
 
 void DSDNXDN::processVoiceFrame(int symbolIndex, int dibit)
 {
+    // if (symbolIndex % 36 == 0) {
+    //     std::cerr << "DSDNXDN::processVoiceFrame: start: " << m_symbolIndex << " " << symbolIndex << std::endl;
+    // }
+
     if ((symbolIndex == 0) && (m_dsdDecoder->m_opts.errorbars == 1))
     {
         m_dsdDecoder->getLogger().log("\nMBE: ");
