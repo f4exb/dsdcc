@@ -20,6 +20,7 @@
 #include <iomanip>
 #include <string.h>
 #include "../crc.h"
+#include "../nxdncrc.h"
 
 void testYSF(DSDcc::CRC& crc, const unsigned char *bytes, const char *comment, const unsigned int crcCorrect)
 {
@@ -33,6 +34,13 @@ void testYSF(DSDcc::CRC& crc, const unsigned char *bytes, const char *comment, c
     std::cout << "crc bit by bit fast :  " << std::hex << ret_crcbitbybitfast << (ret_crcbitbybitfast == crcCorrect ? " OK" : " KO") << std::endl;
     std::cout << "crc table           :  " << std::hex << ret_crctable << (ret_crctable == crcCorrect ? " OK" : " KO") << std::endl;
     std::cout << "crc table fast      :  " << std::hex << ret_crctablefast << (ret_crctablefast == crcCorrect ? " OK" : " KO") << std::endl;
+}
+
+void testNXDN()
+{
+    unsigned char test[] = {0x60, 0x36, 0x02, 0x00};
+    uint16_t test_crc = DSDcc::CNXDNCRC::createCRC16(test, 32U);
+    std::cout << "NXDN CCITT16 for test: " << std::hex << test_crc << std::endl;
 }
 
 int main(int argc, char *argv[])
@@ -172,6 +180,8 @@ int main(int argc, char *argv[])
     }
 
     std::cout << ((int) strlen(dstarCRCGPS_2) - 11) << std::endl;
+
+    testNXDN();
 
     return 0;
 }

@@ -3,8 +3,8 @@ CXXFLAGS=-O3
 
 all: qr golay20 golay23 golay24 hamming7 hamming12 hamming15 hamming16 viterbi viterbi35 crc pn
 
-crc: crc.o crc.cpp
-	g++ -o crc crc.o crc.cpp
+crc: crc.o nxdncrc.o crc.cpp
+	g++ -o crc crc.o nxdncrc.o crc.cpp
 
 pn: pn.o pn.cpp
 	g++ -o pn pn.o pn.cpp
@@ -44,6 +44,9 @@ fec.o: ../fec.h ../fec.cpp
 
 crc.o: ../crc.h ../crc.cpp
 	g++ $(CXXFLAGS) -c -o crc.o -I.. ../crc.cpp
+
+nxdncrc.o: ../nxdncrc.h ../nxdncrc.cpp
+	g++ $(CXXFLAGS) -c -o nxdncrc.o -I.. ../nxdncrc.cpp
 
 pn.o: ../pn.h ../pn.cpp
 	g++ $(CXXFLAGS) -c -o pn.o -I.. ../pn.cpp
