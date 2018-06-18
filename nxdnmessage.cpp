@@ -63,7 +63,7 @@ void Message::setFromSACCH(int index, const unsigned char *data)
     }
     else if (index == 2)
     {
-        m_data[4] = (m_data[2] & 0xF0) + (data[0]>>4);
+        m_data[4] = (m_data[4] & 0xF0) + (data[0]>>4);
         m_data[5] = ((data[0]&0x0F)<<4) + (data[1]>>4);
         m_data[6] = ((data[1]&0x0F)<<4) + (data[2]>>4);
     }
