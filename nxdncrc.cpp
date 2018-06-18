@@ -21,6 +21,7 @@
 
 #include "nxdncrc.h"
 
+#include <iostream>
 #include <stdio.h>
 #include <assert.h>
 
@@ -150,8 +151,7 @@ bool CNXDNCRC::checkCRC16(const unsigned char* in, unsigned int length)
     uint8_t temp2[2U];
     temp2[0U] = 0x00U;
     temp2[1U] = 0x00U;
-    unsigned int j = length;
-    for (unsigned int i = 1U; i < 16U; i++, j++) {
+    for (unsigned int i = 0U, j = length; i < 16U; i++, j++) {
         bool b = READ_BIT1(in, j);
         WRITE_BIT1(temp2, i, b);
     }

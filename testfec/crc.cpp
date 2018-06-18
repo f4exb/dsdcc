@@ -22,6 +22,11 @@
 #include "../crc.h"
 #include "../nxdncrc.h"
 
+const uint8_t  BIT_MASK_TABLE1[] = { 0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04U, 0x02U, 0x01U };
+
+#define WRITE_BIT1(p,i,b) p[(i)>>3] = (b) ? (p[(i)>>3] | BIT_MASK_TABLE1[(i)&7]) : (p[(i)>>3] & ~BIT_MASK_TABLE1[(i)&7])
+#define READ_BIT1(p,i)    (p[(i)>>3] & BIT_MASK_TABLE1[(i)&7])
+
 void testYSF(DSDcc::CRC& crc, const unsigned char *bytes, const char *comment, const unsigned int crcCorrect)
 {
     unsigned long ret_crcbitbybit     = crc.crcbitbybit((unsigned char *)bytes, 4);
@@ -38,9 +43,21 @@ void testYSF(DSDcc::CRC& crc, const unsigned char *bytes, const char *comment, c
 
 void testNXDN()
 {
-    unsigned char test[] = {0x60, 0x36, 0x02, 0x00};
-    uint16_t test_crc = DSDcc::CNXDNCRC::createCRC16(test, 32U);
-    std::cout << "NXDN CCITT16 for test: " << std::hex << test_crc << std::endl;
+    unsigned char test1[] = {0x60, 0x36, 0x02, 0x00};
+    uint16_t test_crc1 = DSDcc::CNXDNCRC::createCRC16(test1, 32U);
+    std::cout << "NXDN CCITT16 for test (1): " << std::hex << test_crc1 << std::endl;
+    unsigned char test2[] = {0x01, 0x19, 0x40, 0x7f, 0x61, 0xb3, 0xc0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x83, 0x00};
+    uint16_t test_crc2 = DSDcc::CNXDNCRC::createCRC16(test2, 155U);
+    std::cout << "NXDN CCITT16 for test (2): " << std::hex << test_crc2 << std::endl;
+    uint8_t temp[2];
+    for (int i = 0, j = 155; i < 16; i++, j++)
+    {
+        bool b = READ_BIT1(test2, j);
+        WRITE_BIT1(temp, i, b);
+    }
+    std::cout << "NXDN CCITT16 for test (2): " << std::hex << (unsigned int) temp[0] << ":" << (unsigned int) temp[1] << std::endl;
+    bool test = DSDcc::CNXDNCRC::checkCRC16(test2, 155U);
+    std::cout << "NXDN CCITT16 for test (2): " << test << std::endl;
 }
 
 int main(int argc, char *argv[])

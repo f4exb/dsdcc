@@ -139,6 +139,10 @@ private:
         CACOutbound();
         virtual ~CACOutbound();
         virtual bool decode();
+        unsigned char getRAN() const;
+        bool isHeadOfSuperframe() const;
+        bool hasDualMessageFormat() const;
+        unsigned char getMessageType() const;
         static const int m_Interleave[300];  //!< CAC outbound bits interleaving matrix
         static const int m_PunctureList[50]; //!< CAC outbound punctured bits indexes
     private:

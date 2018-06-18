@@ -582,7 +582,16 @@ void DSDNXDN::processRCCH(int index, unsigned char dibit)
         if (index == 150)
         {
             m_cac.unpuncture();
-            m_cac.decode();
+
+            if (m_cac.decode())
+            {
+                m_ran = m_cac.getRAN();
+                std::cerr << "DSDNXDN::processRCCH:"
+                        << " RAN: " <<  m_ran
+                        << " head: " << m_cac.isHeadOfSuperframe()
+                        << " dual: " << m_cac.hasDualMessageFormat()
+                        << " msgType: " << std::hex << (int) m_cac.getMessageType() << std::endl;
+            }
         }
     }
         break;
@@ -640,8 +649,10 @@ void DSDNXDN::processRTDCH(int index, unsigned char dibit)
         if (index == 30)
         {
             m_sacch.unpuncture();
-            m_sacch.decode();
-            m_ran = m_sacch.getRAN();
+
+            if (m_sacch.decode()) {
+                m_ran = m_sacch.getRAN();
+            }
 
             if ((m_sacch.getCountdown() == 0) && (m_sacch.getDecodeCount() == 0)) {
                 m_currentMessage = m_sacch.getMessage();
@@ -882,9 +893,28 @@ bool DSDNXDN::CACOutbound::decode()
     }
     else
     {
-        std::cerr << "DSDNXDN::CACOutbound::decode: CRC OK" << std::endl;
         return true;
     }
+}
+
+unsigned char DSDNXDN::CACOutbound::getRAN() const
+{
+    return m_data[0U] & 0x3FU;
+}
+
+bool DSDNXDN::CACOutbound::isHeadOfSuperframe() const
+{
+    return (m_data[0U] & 0x80U) == 0x80U;
+}
+
+bool DSDNXDN::CACOutbound::hasDualMessageFormat() const
+{
+    return (m_data[0U] & 0x40U) == 0x40U;
+}
+
+unsigned char DSDNXDN::CACOutbound::getMessageType() const
+{
+    return m_data[1U] & 0x3FU;
 }
 
 DSDNXDN::CACLong::CACLong()
@@ -1004,7 +1034,6 @@ bool DSDNXDN::FACCH1::decode()
     }
     else
     {
-        std::cerr << "DSDNXDN::FACCH1::decode: CRC OK" << std::endl;
         return true;
     }
 }
