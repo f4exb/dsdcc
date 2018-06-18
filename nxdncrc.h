@@ -4,6 +4,7 @@
  *   Copyright (C) 2018 by Edouard Griffiths F4EXB:
  *   - Cosmetic changes to integrate with DSDcc
  *   - Added a CRC16 based on CCITT16 polynomial
+ *   - Make create methods public for testing
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -42,11 +43,12 @@ public:
     static bool checkCRC16(const unsigned char* in, unsigned int length);
     static void encodeCRC16(unsigned char* in, unsigned int length);
 
-private:
 	static uint8_t  createCRC6(const unsigned char* in, unsigned int length);
 	static uint16_t createCRC12(const unsigned char* in, unsigned int length);
 	static uint16_t createCRC15(const unsigned char* in, unsigned int length);
     static uint16_t createCRC16(const unsigned char* in, unsigned int length);
+
+private:
 	static const uint8_t  BIT_MASK_TABLE1[];
 };
 } // namespace
