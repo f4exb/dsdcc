@@ -42,6 +42,11 @@ const unsigned char Message::NXDN_MESSAGE_TYPE_AUTH_INQ_REQ    = 0x28U;
 const unsigned char Message::NXDN_MESSAGE_TYPE_AUTH_INQ_RESP   = 0x29U;
 const unsigned char Message::NXDN_MESSAGE_TYPE_PROP_FORM       = 0x3FU;
 
+const unsigned char Message::NXDN_MESSAGE_TYPE_VCALL_ASSGN     = 0x04U;
+const unsigned char Message::NXDN_MESSAGE_TYPE_SRV_INFO        = 0x19U;
+const unsigned char Message::NXDN_MESSAGE_TYPE_SITE_INFO       = 0x18U;
+const unsigned char Message::NXDN_MESSAGE_TYPE_GRP_REG_REQ_RESP= 0x24U;
+
 void Message::reset()
 {
     memset(m_data, 0, 22);

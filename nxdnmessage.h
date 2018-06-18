@@ -56,6 +56,11 @@ public:
     static const unsigned char NXDN_MESSAGE_TYPE_AUTH_INQ_RESP;
     static const unsigned char NXDN_MESSAGE_TYPE_PROP_FORM;
 
+    static const unsigned char NXDN_MESSAGE_TYPE_VCALL_ASSGN;
+    static const unsigned char NXDN_MESSAGE_TYPE_SRV_INFO;
+    static const unsigned char NXDN_MESSAGE_TYPE_SITE_INFO;
+    static const unsigned char NXDN_MESSAGE_TYPE_GRP_REG_REQ_RESP;
+
 private:
     unsigned char m_data[22];               //!< Maximum 22 bytes
 };
