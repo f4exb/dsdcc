@@ -233,6 +233,15 @@ const int DSDNXDN::UDCH::m_PunctureList[58] = {
     395, 403,
 };
 
+// NXDN Technical Specifications - NXDN TS 1-A Version 1.3 p.165
+const unsigned char DSDNXDN::m_voiceTestPattern[36] = {
+    3, 0, 3, 2, 2, 2, 2, 0, // CEA8 11 00 11 10 10 10 10 00
+    3, 3, 3, 2, 2, 0, 0, 3, // FE83 11 11 11 10 10 00 00 11
+    2, 2, 3, 0, 3, 0, 1, 0, // ACC4 10 10 11 00 11 00 01 00
+    1, 1, 2, 0, 0, 2, 0, 0, // 5820 01 01 10 00 00 10 00 00
+    0, 0, 2, 2,             // 0A 00 00 10 10
+};
+
 DSDNXDN::DSDNXDN(DSDDecoder *dsdDecoder) :
 		m_dsdDecoder(dsdDecoder),
 		m_state(NXDNFrame),
@@ -631,14 +640,16 @@ void DSDNXDN::processRTDCH(int index, unsigned char dibit)
         if ((m_steal == NXDNStealNone) || (m_steal == NXDNSteal2)) // two VCHs
         {
             if ((index >= 30) && (index < 30+2*36)) {
-                processVoiceFrame((index-30) % 36, dibit);
+                //processVoiceFrame((index-30) % 36, dibit);
+                processVoiceTest((index-30) % 36);
             }
         }
 
         if ((m_steal == NXDNStealNone) || (m_steal == NXDNSteal1)) // two VCHs
         {
             if ((index >= 30+2*36) && (index < 30+4*36)) {
-                processVoiceFrame((index-30) % 36, dibit);
+                //processVoiceFrame((index-30) % 36, dibit);
+                processVoiceTest((index-30) % 36);
             }
         }
 
@@ -1030,6 +1041,11 @@ unsigned char DSDNXDN::UDCH::getRAN() const
 unsigned char DSDNXDN::UDCH::getStructure() const
 {
     return (m_data[0U] >> 6) & 0x03U;
+}
+
+void DSDNXDN::processVoiceTest(int symbolIndex)
+{
+    processVoiceFrame(symbolIndex, m_voiceTestPattern[symbolIndex%36]);
 }
 
 void DSDNXDN::processVoiceFrame(int symbolIndex, int dibit)

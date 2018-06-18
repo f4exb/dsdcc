@@ -215,6 +215,7 @@ private:
     void processRCCH(int index, unsigned char dibit);
     void processRTDCH(int index, unsigned char dibit);
 
+    void processVoiceTest(int symbolIndex);
     void processVoiceFrame(int symbolIndex, int dibit);
     void storeSymbolDV(int dibitindex, unsigned char dibit, bool invertDibit = false);
 
@@ -248,6 +249,7 @@ private:
     static const int rY[36];
     static const int rZ[36];
     const int *w, *x, *y, *z;
+    static const unsigned char m_voiceTestPattern[36];
 };
 
 } // namespace DSDcc
