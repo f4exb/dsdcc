@@ -668,58 +668,36 @@ void DSDNXDN::processRTDCH(int index, unsigned char dibit)
             }
         }
 
-        if ((m_steal == NXDNStealNone) || (m_steal == NXDNSteal2)) // two VCHs
+        if (index >= 30)
         {
-            if ((index >= 30) && (index < 30+2*36)) {
-                processVoiceFrame(index - 30, dibit);
-                //processVoiceTest((index-30) % 36);
-            }
-        }
+            int vindex = index - 30; // rebase index at start of Voice/FACCH frames
 
-        if ((m_steal == NXDNStealNone) || (m_steal == NXDNSteal1)) // two VCHs
-        {
-            if ((index >= 30+2*36) && (index < 30+4*36)) {
-                processVoiceFrame(index - 30, dibit);
-                //processVoiceTest((index-30) % 36);
-            }
-        }
-
-        if ((m_steal == NXDNStealBoth) || (m_steal == NXDNSteal1)) // FACCH1 in first position
-        {
-            if (index == 30) {
-                m_facch1.reset();
-            }
-
-            if ((index >= 30) && (index < 30+2*36)) {
-                m_facch1.pushDibit(dibit);
-            }
-
-            if (index == 30+2*36-1)
+            if (m_steal == NXDNStealNone) // 4 voice frames
             {
-                m_facch1.unpuncture();
-
-                if (m_facch1.decode()) {
-                    m_currentMessage.setFromFACCH1(m_facch1.getData());
+                processVoiceFrame(vindex, dibit);
+            }
+            else if (m_steal == NXDNSteal1) // FACCH1 then 2 voice frames
+            {
+                if (vindex < 72) {
+                    processFACCH1(vindex, dibit);
+                } else {
+                    processVoiceFrame(vindex-72, dibit);
                 }
             }
-        }
-
-        if ((m_steal == NXDNStealBoth) || (m_steal == NXDNSteal2)) // FACCH1 in second position
-        {
-            if (index == 30+2*36) {
-                m_facch1.reset();
-            }
-
-            if ((index >= 30+2*36) && (index < 30+4*36)) {
-                m_facch1.pushDibit(dibit);
-            }
-
-            if (index == 30+4*36-1)
+            else if (m_steal == NXDNSteal2) // 2 voice frames then FACCH1
             {
-                m_facch1.unpuncture();
-
-                if (m_facch1.decode()) {
-                    m_currentMessage.setFromFACCH1(m_facch1.getData());
+                if (vindex < 72) {
+                    processVoiceFrame(vindex, dibit);
+                } else {
+                    processFACCH1(vindex-72, dibit);
+                }
+            }
+            else if (m_steal == NXDNStealBoth) // All FACCH1
+            {
+                if (vindex < 72) {
+                    processFACCH1(vindex, dibit);
+                } else {
+                    processFACCH1(vindex-72, dibit);
                 }
             }
         }
@@ -746,6 +724,28 @@ void DSDNXDN::processRTDCH(int index, unsigned char dibit)
         }
     }
     // Do nothing if SACCH with idle status
+}
+
+void DSDNXDN::processFACCH1(int index, unsigned char dibit)
+{
+    if (index == 0) {
+        m_facch1.reset();
+    }
+
+    if (index < 72) {
+        m_facch1.pushDibit(dibit);
+    }
+
+    if (index == 72-1)
+    {
+        m_facch1.unpuncture();
+
+        if (m_facch1.decode()) {
+            m_currentMessage.setFromFACCH1(m_facch1.getData());
+        }
+
+        m_facch1.reset();
+    }
 }
 
 DSDNXDN::FnChannel::FnChannel() :

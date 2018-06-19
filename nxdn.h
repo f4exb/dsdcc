@@ -218,6 +218,7 @@ private:
     void processSwallow();
     void processRCCH(int index, unsigned char dibit);
     void processRTDCH(int index, unsigned char dibit);
+    void processFACCH1(int index, unsigned char dibit);
 
     void processVoiceTest(int symbolIndex);
     void processVoiceFrame(int symbolIndex, int dibit);
