@@ -262,6 +262,7 @@ DSDNXDN::DSDNXDN(DSDDecoder *dsdDecoder) :
     m_frameStructure = NXDNFSReserved;
     m_steal = NXDNStealReserved;
     m_ran = 0;
+    m_idle = true;
 
     m_rfChannelStr[0] = '\0';
 }
@@ -517,6 +518,7 @@ void DSDNXDN::processLICH()
         switch(m_rfChannel)
         {
         case NXDNRCCH:
+            m_idle = false;
             if (m_lich.fnChannelCode == 0) {
                 m_frameStructure = m_lich.direction ? NXDNFSCAC: NXDNFSReserved;
             } else if (m_lich.fnChannelCode == 1) {
@@ -529,6 +531,7 @@ void DSDNXDN::processLICH()
             break;
         case NXDNRTCH:
         case NXDNRDCH:
+            m_idle = false;
             if (m_lich.fnChannelCode == 0) {
                 m_frameStructure = NXDNFSSACCH;
             } else if (m_lich.fnChannelCode == 1) {
@@ -537,6 +540,7 @@ void DSDNXDN::processLICH()
                 m_frameStructure = NXDNFSSACCHSup;
             } else {
                 m_frameStructure = NXDNFSSACCHIdle;
+                m_idle = true;
             }
             break;
         default:
@@ -636,7 +640,7 @@ void DSDNXDN::processRCCH(int index, unsigned char dibit)
 
 void DSDNXDN::processRTDCH(int index, unsigned char dibit)
 {
-    if ((m_frameStructure == NXDNFSSACCH) || (m_frameStructure == NXDNFSSACCHSup) || (m_frameStructure == NXDNFSSACCHIdle))
+    if ((m_frameStructure == NXDNFSSACCH) || (m_frameStructure == NXDNFSSACCHSup))
     {
         if (index == 0) {
             m_sacch.reset();
@@ -741,6 +745,7 @@ void DSDNXDN::processRTDCH(int index, unsigned char dibit)
             }
         }
     }
+    // Do nothing if SACCH with idle status
 }
 
 DSDNXDN::FnChannel::FnChannel() :

@@ -237,6 +237,7 @@ private:
     NXDNFrameStructure m_frameStructure; //!< frame structure indicator
     NXDNSteal m_steal;              //!< stealing scheme
     int m_ran;                      //!< Radio Access Number (kind of color code)
+    bool m_idle;                    //!< Channel in idle state
 
     CACOutbound m_cac;
     CACShort m_cacShort;
