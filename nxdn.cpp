@@ -314,7 +314,8 @@ int DSDNXDN::unscrambleDibit(int dibit)
 
 void DSDNXDN::processFrame()
 {
-    int dibit = unscrambleDibit(m_dsdDecoder->m_dsdSymbol.getDibit());
+    int dibitRaw = m_dsdDecoder->m_dsdSymbol.getDibit();
+    int dibit = unscrambleDibit(dibitRaw);
 
     // if (m_symbolIndex == 0) {
     //     std::cerr << "DSDNXDN::processFrame: start" << std::endl;
@@ -329,7 +330,7 @@ void DSDNXDN::processFrame()
 			processLICH();
 		}
 	}
-	else if (m_symbolIndex < 8 + 174 - 1)
+	else if (m_symbolIndex < 8 + 174)
 	{
         switch (m_rfChannel)
         {
@@ -346,10 +347,17 @@ void DSDNXDN::processFrame()
         }
 		m_symbolIndex++;
 	}
-	else
+	else // look for next 192 symbols frame...
 	{
+        // process first presumably sync symbol
+        if ((dibitRaw == 0) || (dibitRaw == 1)) { // positives => 1 (+3)
+            m_syncBuffer[0] = 1;
+        } else { // negatives => 3 (-3)
+            m_syncBuffer[0] = 3;
+        }
+        
 		m_state = NXDNPostFrame; // look for next frame sync (FCH) or end
-		m_symbolIndex = 0;
+		m_symbolIndex = 1; // first sync symbol consumed already
 	}
 }
 
