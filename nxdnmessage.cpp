@@ -90,6 +90,21 @@ void Message::setFromFACCH2(const unsigned char *data)
     memcpy(m_data, data, 22);
 }
 
+void Message::setFromCAC(const unsigned char *data)
+{
+    memcpy(m_data, data, 17);
+}
+
+void Message::setFromCACShort(const unsigned char *data)
+{
+    memcpy(m_data, data, 11);
+}
+
+void Message::setFromCACLong(const unsigned char *data)
+{
+    memcpy(m_data, data, 15);
+}
+
 bool Message::hasCallDetails() const
 {
     bool ret;
@@ -116,7 +131,33 @@ bool Message::hasCallDetails() const
         ret = false;
         break;
     }
+    return ret;
+}
 
+bool Message::hasGroupCallInfo() const
+{
+    bool ret;
+    switch(getMessageType())
+    {
+    case NXDN_MESSAGE_TYPE_VCALL:
+    case NXDN_MESSAGE_TYPE_DCALL_HDR:
+    case NXDN_MESSAGE_TYPE_DCALL_ACK:
+    case NXDN_MESSAGE_TYPE_TX_REL:
+    case NXDN_MESSAGE_TYPE_HEAD_DLY:
+    case NXDN_MESSAGE_TYPE_SDCALL_REQ_HDR:
+    case NXDN_MESSAGE_TYPE_SDCALL_RESP:
+    case NXDN_MESSAGE_TYPE_STAT_INQ_REQ:
+    case NXDN_MESSAGE_TYPE_STAT_INQ_RESP:
+    case NXDN_MESSAGE_TYPE_STAT_REQ:
+    case NXDN_MESSAGE_TYPE_STAT_RESP:
+    case NXDN_MESSAGE_TYPE_REM_CON_REQ:
+    case NXDN_MESSAGE_TYPE_REM_CON_RESP:
+        ret = true;
+        break;
+    default:
+        ret = false;
+        break;
+    }
     return ret;
 }
 
@@ -124,19 +165,85 @@ unsigned char Message::getMessageType() const
 {
     return m_data[0U] & 0x3FU;
 }
-unsigned short Message::getSourceUnitId() const
+
+bool Message::getSourceUnitId(unsigned short& id) const
 {
-    return (m_data[3U] << 8) | m_data[4U];
-}
-unsigned short Message::getDestinationGroupId() const
-{
-    return (m_data[5U] << 8) | m_data[6U];
-}
-bool Message::getIsGroup() const
-{
-    return (m_data[2U] & 0x80U) != 0x80U;
+    if (hasCallDetails())
+    {
+        id = (m_data[3U] << 8) | m_data[4U];
+        return true;
+    }
+    else
+    {
+        return false;
+    }
 }
 
+bool Message::getDestinationGroupId(unsigned short& id) const
+{
+    if (hasCallDetails())
+    {
+        id = (m_data[5U] << 8) | m_data[6U];
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+bool Message::isGroupCall(bool& sw) const
+{
+    if (hasGroupCallInfo())
+    {
+        sw = (m_data[2U] & 0x80U) != 0x80U;
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+bool Message::getLocationId(unsigned int& id) const
+{
+    bool ret;
+    switch(getMessageType())
+    {
+    case NXDN_MESSAGE_TYPE_SITE_INFO:
+        id = (m_data[1]<<16) | (m_data[2]<<8) | m_data[3];
+        ret = true;
+        break;
+    case NXDN_MESSAGE_TYPE_SRV_INFO:
+        id = (m_data[1]<<16) | (m_data[2]<<8) | m_data[3];
+        ret = true;
+        break;
+    default:
+        ret = false;
+        break;
+    }
+    return ret;
+}
+
+bool Message::getServiceInformation(unsigned short& sibits) const
+{
+    bool ret;
+    switch(getMessageType())
+    {
+    case NXDN_MESSAGE_TYPE_SITE_INFO:
+        sibits = (m_data[6]<<8) | m_data[7];
+        ret = true;
+        break;
+    case NXDN_MESSAGE_TYPE_SRV_INFO:
+        sibits = (m_data[4]<<8) | m_data[5];
+        ret = true;
+        break;
+    default:
+        ret = false;
+        break;
+    }
+    return ret;
+}
 
 } // namespace
 

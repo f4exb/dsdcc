@@ -263,6 +263,12 @@ DSDNXDN::DSDNXDN(DSDDecoder *dsdDecoder) :
     m_steal = NXDNStealReserved;
     m_ran = 0;
     m_idle = true;
+    m_sourceId = 0;
+    m_destinationId = 0;
+    m_group = false;
+    m_messageType = 0;
+    m_locationId = 0;
+    m_services = 0;
 
     m_rfChannelStr[0] = '\0';
 }
@@ -355,7 +361,7 @@ void DSDNXDN::processFrame()
         } else { // negatives => 3 (-3)
             m_syncBuffer[0] = 3;
         }
-        
+
 		m_state = NXDNPostFrame; // look for next frame sync (FCH) or end
 		m_symbolIndex = 1; // first sync symbol consumed already
 	}
@@ -598,11 +604,13 @@ void DSDNXDN::processRCCH(int index, unsigned char dibit)
             if (m_cac.decode())
             {
                 m_ran = m_cac.getRAN();
-                std::cerr << "DSDNXDN::processRCCH:"
-                        << " RAN: " <<  m_ran
-                        << " head: " << m_cac.isHeadOfSuperframe()
-                        << " dual: " << m_cac.hasDualMessageFormat()
-                        << " msgType: " << std::hex << (int) m_cac.getMessageType() << std::endl;
+                m_currentMessage.setFromCAC(&m_cac.getData()[1]);
+                m_messageType = m_currentMessage.getMessageType();
+                m_currentMessage.getSourceUnitId(m_sourceId);
+                m_currentMessage.getDestinationGroupId(m_destinationId);
+                m_currentMessage.isGroupCall(m_group);
+                m_currentMessage.getLocationId(m_locationId);
+                m_currentMessage.getServiceInformation(m_services);
             }
         }
     }
@@ -620,7 +628,18 @@ void DSDNXDN::processRCCH(int index, unsigned char dibit)
         if (index == 126)
         {
             m_cacShort.unpuncture();
-            m_cacShort.decode();
+
+            if (m_cacShort.decode())
+            {
+                m_ran = m_cacShort.getRAN();
+                m_currentMessage.setFromCACShort(&m_cacShort.getData()[1]);
+                m_messageType = m_currentMessage.getMessageType();
+                m_currentMessage.getSourceUnitId(m_sourceId);
+                m_currentMessage.getDestinationGroupId(m_destinationId);
+                m_currentMessage.isGroupCall(m_group);
+                m_currentMessage.getLocationId(m_locationId);
+                m_currentMessage.getServiceInformation(m_services);
+            }
         }
     }
         break;
@@ -637,7 +656,18 @@ void DSDNXDN::processRCCH(int index, unsigned char dibit)
         if (index == 126)
         {
             m_cacLong.unpuncture();
-            m_cacLong.decode();
+
+            if (m_cacLong.decode())
+            {
+                m_ran = m_cacLong.getRAN();
+                m_currentMessage.setFromCACLong(&m_cacLong.getData()[1]);
+                m_messageType = m_currentMessage.getMessageType();
+                m_currentMessage.getSourceUnitId(m_sourceId);
+                m_currentMessage.getDestinationGroupId(m_destinationId);
+                m_currentMessage.isGroupCall(m_group);
+                m_currentMessage.getLocationId(m_locationId);
+                m_currentMessage.getServiceInformation(m_services);
+            }
         }
     }
         break;
@@ -666,13 +696,13 @@ void DSDNXDN::processRTDCH(int index, unsigned char dibit)
                 m_ran = m_sacch.getRAN();
             }
 
-            if ((m_sacch.getCountdown() == 0) && (m_sacch.getDecodeCount() == 0)) {
+            if ((m_sacch.getCountdown() == 0) && (m_sacch.getDecodeCount() == 0))
+            {
                 m_currentMessage = m_sacch.getMessage();
-                std::cerr << "DSDNXDN::processRTDCH:"
-                        << " msgId: " <<  (int) m_currentMessage.getMessageType()
-                        << " src: " << m_currentMessage.getSourceUnitId()
-                        << " dest: " << m_currentMessage.getDestinationGroupId()
-                        << " group: " << m_currentMessage.getIsGroup() << std::endl;
+                m_messageType = m_currentMessage.getMessageType();
+                m_currentMessage.getSourceUnitId(m_sourceId);
+                m_currentMessage.getDestinationGroupId(m_destinationId);
+                m_currentMessage.isGroupCall(m_group);
             }
         }
 
@@ -728,6 +758,10 @@ void DSDNXDN::processRTDCH(int index, unsigned char dibit)
             {
                 m_ran = m_udch.getRAN();
                 m_currentMessage.setFromFACCH2(&m_udch.getData()[1]);
+                m_messageType = m_currentMessage.getMessageType();
+                m_currentMessage.getSourceUnitId(m_sourceId);
+                m_currentMessage.getDestinationGroupId(m_destinationId);
+                m_currentMessage.isGroupCall(m_group);
             }
         }
     }
@@ -750,6 +784,10 @@ void DSDNXDN::processFACCH1(int index, unsigned char dibit)
 
         if (m_facch1.decode()) {
             m_currentMessage.setFromFACCH1(m_facch1.getData());
+            m_messageType = m_currentMessage.getMessageType();
+            m_currentMessage.getSourceUnitId(m_sourceId);
+            m_currentMessage.getDestinationGroupId(m_destinationId);
+            m_currentMessage.isGroupCall(m_group);
         }
 
         m_facch1.reset();
@@ -971,6 +1009,11 @@ bool DSDNXDN::CACLong::decode()
     }
 }
 
+unsigned char DSDNXDN::CACLong::getRAN() const
+{
+    return m_data[0U] & 0x3FU;
+}
+
 DSDNXDN::CACShort::CACShort()
 {
     m_rawSize = 252;
@@ -1009,6 +1052,11 @@ bool DSDNXDN::CACShort::decode()
         std::cerr << "DSDNXDN::CACShort::decode: CRC OK" << std::endl;
         return true;
     }
+}
+
+unsigned char DSDNXDN::CACShort::getRAN() const
+{
+    return m_data[0U] & 0x3FU;
 }
 
 DSDNXDN::FACCH1::FACCH1()

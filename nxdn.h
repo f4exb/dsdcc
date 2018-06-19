@@ -73,6 +73,11 @@ public:
 
     const char *getRfChannel() const { return m_rfChannelStr; }
     int getRAN() const { return m_ran; }
+    unsigned short getSourceId() const { return m_sourceId; }
+    unsigned short getDestinationId() const { return m_destinationId; }
+    bool isGroupCall() const { return m_group; }
+    unsigned int getLocationId() const { return m_locationId; }
+    unsigned int getServicesFlag() const { return m_services; }
 
     static const char *nxdnRFChannelTypeText[4];
 
@@ -143,6 +148,7 @@ private:
         bool isHeadOfSuperframe() const;
         bool hasDualMessageFormat() const;
         unsigned char getMessageType() const;
+        const unsigned char *getData() const { return m_data; }
         static const int m_Interleave[300];  //!< CAC outbound bits interleaving matrix
         static const int m_PunctureList[50]; //!< CAC outbound punctured bits indexes
     private:
@@ -157,6 +163,8 @@ private:
         CACLong();
         virtual ~CACLong();
         virtual bool decode();
+        unsigned char getRAN() const;
+        const unsigned char *getData() const { return m_data; }
         static const int m_Interleave[252];  //!< Long CAC bits interleaving matrix
         static const int m_PunctureList[60]; //!< Long CAC punctured bits indexes
     private:
@@ -171,6 +179,8 @@ private:
         CACShort();
         virtual ~CACShort();
         virtual bool decode();
+        unsigned char getRAN() const;
+        const unsigned char *getData() const { return m_data; }
     private:
         unsigned char m_cacRaw[252];           //!< Short CAC bits before Viterbi decoding
         unsigned char m_temp[420];             //!< Short CAC working area
@@ -237,8 +247,14 @@ private:
     NXDNRFChannel m_rfChannel;      //!< current RF channel type (from LICH)
     NXDNFrameStructure m_frameStructure; //!< frame structure indicator
     NXDNSteal m_steal;              //!< stealing scheme
+    unsigned char m_messageType;    //!< Latest message type
     int m_ran;                      //!< Radio Access Number (kind of color code)
     bool m_idle;                    //!< Channel in idle state
+    unsigned short m_sourceId;      //!< Latest source Id
+    unsigned short m_destinationId; //!< Latest source Id
+    bool m_group;                   //!< Latest group indicator
+    unsigned int m_locationId;      //!< Site location Id (trunked)
+    unsigned short m_services;      //!< Site services available (trunked)
 
     CACOutbound m_cac;
     CACShort m_cacShort;

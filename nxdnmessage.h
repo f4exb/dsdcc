@@ -28,11 +28,16 @@ public:
     void setFromSACCH(int index, const unsigned char *data);
     void setFromFACCH1(const unsigned char *data);
     void setFromFACCH2(const unsigned char *data);
-    bool hasCallDetails() const;
+    void setFromCAC(const unsigned char *data);
+    void setFromCACShort(const unsigned char *data);
+    void setFromCACLong(const unsigned char *data);
+    bool hasBroadcastInformation() const;
     unsigned char  getMessageType() const;
-    unsigned short getSourceUnitId() const;
-    unsigned short getDestinationGroupId() const;
-    bool           getIsGroup() const;
+    bool getSourceUnitId(unsigned short& id) const;
+    bool getDestinationGroupId(unsigned short& id) const;
+    bool isGroupCall(bool& sw) const;
+    bool getLocationId(unsigned int& id) const;
+    bool getServiceInformation(unsigned short& sibits) const;
 
     static const unsigned char NXDN_MESSAGE_TYPE_VCALL;
     static const unsigned char NXDN_MESSAGE_TYPE_VCALL_IV;
@@ -62,6 +67,8 @@ public:
     static const unsigned char NXDN_MESSAGE_TYPE_GRP_REG_REQ_RESP;
 
 private:
+    bool hasCallDetails() const;
+    bool hasGroupCallInfo() const;
     unsigned char m_data[22];               //!< Maximum 22 bytes
 };
 
