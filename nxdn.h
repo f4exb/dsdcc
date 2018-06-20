@@ -71,8 +71,11 @@ public:
     void init();
     void process();
 
-    const char *getRfChannel() const { return m_rfChannelStr; }
+    NXDNRFChannel getRFChannel() const { return m_rfChannel; }
+    const char *getRFChannelStr() const { return m_rfChannelStr; }
+    bool isIdle() const { return m_idle; }
     int getRAN() const { return m_ran; }
+    unsigned char getMessageType() const { return m_messageType; }
     unsigned short getSourceId() const { return m_sourceId; }
     unsigned short getDestinationId() const { return m_destinationId; }
     bool isGroupCall() const { return m_group; }
