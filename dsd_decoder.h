@@ -332,6 +332,7 @@ private:
     char m_spectrum[64];
     int m_t;
     int m_squelchTimeoutCount;
+    int m_nxdnInterSyncCount;
     // Symbol extraction and operations
     DSDSymbol m_dsdSymbol;
     // MBE decoder

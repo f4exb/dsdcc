@@ -75,6 +75,7 @@ DSDDecoder::DSDDecoder() :
     resetFrameSync();
     noCarrier();
     m_squelchTimeoutCount = 0;
+    m_nxdnInterSyncCount = 0;
 }
 
 DSDDecoder::~DSDDecoder()
@@ -541,7 +542,7 @@ void DSDDecoder::processFrameInit()
         m_dsdDstar.processHD(); // process current symbol first
         m_fsmState = DSDprocessDSTAR_HD;
     }
-    else if ((m_syncType == DSDSyncNXDNP) || (m_syncType == DSDSyncNXDNN)) // NXDN conventional (non truked RDCH channel only)
+    else if ((m_syncType == DSDSyncNXDNP) || (m_syncType == DSDSyncNXDNN)) // NXDN full sync with preamble
     {
         m_state.nac = 0;
         m_state.lastsrc = 0;
@@ -907,9 +908,9 @@ int DSDDecoder::getFrameSync()
         }
         if ((m_opts.frame_nxdn96 == 1) || (m_opts.frame_nxdn48 == 1))
         {
-            //if (memcmp(m_dsdSymbol.getSyncDibitBack(10), m_syncNXDNRDCHFSW, 10) == 0) TODO: need a bit of work to put in "NXDN mode" only for a whilw
-            if (memcmp(m_dsdSymbol.getSyncDibitBack(19), m_syncNXDNRDCHFull, 19) == 0)
+            if (memcmp(m_dsdSymbol.getSyncDibitBack(19), m_syncNXDNRDCHFull, 19) == 0) // long sync (with preamble)
             {
+                m_nxdnInterSyncCount = 0;
 				m_state.carrier = 1;
                 m_dsdSymbol.setFSK(4);
 
@@ -936,9 +937,9 @@ int DSDDecoder::getFrameSync()
 				m_mbeRate = DSDMBERate3600x2450;
 				return (int) DSDSyncNXDNP; // done
             }
-            //else if (memcmp(m_dsdSymbol.getSyncDibitBack(10), m_syncNXDNRDCHFSWInv, 10) == 0)
-            else if (memcmp(m_dsdSymbol.getSyncDibitBack(19), m_syncNXDNRDCHFullInv, 19) == 0)
+            else if (memcmp(m_dsdSymbol.getSyncDibitBack(19), m_syncNXDNRDCHFullInv, 19) == 0) // long sync (with preamble) inverted
             {
+                m_nxdnInterSyncCount = 0;
 				m_state.carrier = 1;
                 m_dsdSymbol.setFSK(4, true);
 
@@ -964,6 +965,74 @@ int DSDDecoder::getFrameSync()
                 m_lastSyncType = DSDSyncNXDNN;
 				m_mbeRate = DSDMBERate3600x2450;
 				return (int) DSDSyncNXDNN; // done
+            }
+            else if (memcmp(m_dsdSymbol.getSyncDibitBack(10), m_syncNXDNRDCHFSW, 10) == 0) // short sync
+            {
+                if ((m_nxdnInterSyncCount > 0) && (m_nxdnInterSyncCount % 192 == 0))
+                {
+                    m_state.carrier = 1;
+                    m_dsdSymbol.setFSK(4);
+
+                    if (m_dataRate == DSDRate2400)
+                    {
+                        sprintf(m_state.ftype, "+NXDN48      ");
+
+                        if (m_opts.errorbars == 1)
+                        {
+                            printFrameSync(" +NXDN48   ", m_synctest_pos + 1);
+                        }
+                    }
+                    else
+                    {
+                        sprintf(m_state.ftype, "+NXDN96      ");
+
+                        if (m_opts.errorbars == 1)
+                        {
+                            printFrameSync(" +NXDN96   ", m_synctest_pos + 1);
+                        }
+                    }
+
+                    m_lastSyncType = DSDSyncNXDNP;
+                    m_mbeRate = DSDMBERate3600x2450;
+                    m_nxdnInterSyncCount = 0;
+                    return (int) DSDSyncNXDNP; // done
+                } else {
+                    m_nxdnInterSyncCount = 0;
+                }
+            }
+            else if (memcmp(m_dsdSymbol.getSyncDibitBack(10), m_syncNXDNRDCHFSWInv, 10) == 0) // short sync inverted
+            {
+                if ((m_nxdnInterSyncCount > 0) && (m_nxdnInterSyncCount % 192 == 0))
+                {
+                    m_state.carrier = 1;
+                    m_dsdSymbol.setFSK(4, true);
+
+                    if (m_dataRate == DSDRate2400)
+                    {
+                        sprintf(m_state.ftype, "-NXDN48      ");
+
+                        if (m_opts.errorbars == 1)
+                        {
+                            printFrameSync(" -NXDN48   ", m_synctest_pos + 1);
+                        }
+                    }
+                    else
+                    {
+                        sprintf(m_state.ftype, "-NXDN96      ");
+
+                        if (m_opts.errorbars == 1)
+                        {
+                            printFrameSync(" -NXDN96   ", m_synctest_pos + 1);
+                        }
+                    }
+
+                    m_lastSyncType = DSDSyncNXDNN;
+                    m_mbeRate = DSDMBERate3600x2450;
+                    m_nxdnInterSyncCount = 0;
+                    return (int) DSDSyncNXDNN; // done
+                } else {
+                    m_nxdnInterSyncCount = 0;
+                }
             }
         }
         if (m_opts.frame_dpmr == 1)
@@ -1054,6 +1123,7 @@ int DSDDecoder::getFrameSync()
         }
     }
 
+    m_nxdnInterSyncCount++;
     m_synctest_pos++;
 
     if (m_synctest_pos >= 1800)
@@ -1319,7 +1389,7 @@ void DSDDecoder::formatStatusText(char *statusText)
         // 1    2    2    3    3    4    4    5    5    6    6    7    7    8
         // 5....0....5....0....5....0....5....0....5....0....5....0....5....0..
         // NXD>RU
-        sprintf(&statusText[15], "NXD>%s", getNXDNDecoder().getRfChannel());
+        sprintf(&statusText[15], "NXD>%s", getNXDNDecoder().getRFChannelStr());
         break;
     default:
     	strcpy(&statusText[15], "XXX>");
