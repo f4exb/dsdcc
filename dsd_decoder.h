@@ -308,7 +308,8 @@ private:
         signalFormatDMR,
         signalFormatDStar,
         signalFormatDPMR,
-        signalFormatYSF
+        signalFormatYSF,
+        signalFormatNXDN
     } SignalFormat;
 
     int getFrameSync();

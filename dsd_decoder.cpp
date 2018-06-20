@@ -1386,10 +1386,45 @@ void DSDDecoder::formatStatusText(char *statusText)
         break;
     case DSDcc::DSDDecoder::DSDSyncNXDNN:
     case DSDcc::DSDDecoder::DSDSyncNXDNP:
-        // 1    2    2    3    3    4    4    5    5    6    6    7    7    8
-        // 5....0....5....0....5....0....5....0....5....0....5....0....5....0..
-        // NXD>RU
-        sprintf(&statusText[15], "NXD>%s", getNXDNDecoder().getRFChannelStr());
+        if (getNXDNDecoder().getRFChannel() == DSDNXDN::NXDNRCCH)
+        {
+            // 1    2    2    3    3    4    4    5    5    6    6    7    7    8
+            // 5....0....5....0....5....0....5....0....5....0....5....0....5....0..
+            // NXD>RC cc mm llllll ssss
+            sprintf(&statusText[15], "NXD>RC %02d %02X %06X %02X", 
+                getNXDNDecoder().getRAN(),
+                getNXDNDecoder().getMessageType(),
+                getNXDNDecoder().getLocationId(),
+                getNXDNDecoder().getServicesFlag());
+        }
+        else if ((getNXDNDecoder().getRFChannel() == DSDNXDN::NXDNRTCH)
+            || (getNXDNDecoder().getRFChannel() == DSDNXDN::NXDNRDCH))
+        {
+            if (getNXDNDecoder().isIdle()) {
+                snprintf(&statusText[15], 82, "NXD>%s IDLE", getNXDNDecoder().getRFChannelStr());
+            }
+            else
+            {
+                // 1    2    2    3    3    4    4    5    5    6    6    7    7    8
+                // 5....0....5....0....5....0....5....0....5....0....5....0....5....0..
+                // NXD>Rx cc mm sssss>gddddd
+                snprintf(&statusText[15], 82, "NXD>%s %02d %02X %05d>%c%05d",
+                        getNXDNDecoder().getRFChannelStr(),
+                        getNXDNDecoder().getRAN(),
+                        getNXDNDecoder().getMessageType(),
+                        getNXDNDecoder().getSourceId(),
+                        getNXDNDecoder().isGroupCall() ? 'G' : 'I',
+                        getNXDNDecoder().getDestinationId());
+            }
+        }
+        else
+        {
+            // 1    2    2    3    3    4    4    5    5    6    6    7    7    8
+            // 5....0....5....0....5....0....5....0....5....0....5....0....5....0..
+            // NXD>RU
+            snprintf(&statusText[15], 82, "NXD>RU");
+        }
+        m_signalFormat = signalFormatNXDN;
         break;
     default:
     	strcpy(&statusText[15], "XXX>");
