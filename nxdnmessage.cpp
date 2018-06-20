@@ -45,11 +45,19 @@ const unsigned char Message::NXDN_MESSAGE_TYPE_PROP_FORM       = 0x3FU;
 const unsigned char Message::NXDN_MESSAGE_TYPE_VCALL_ASSGN     = 0x04U;
 const unsigned char Message::NXDN_MESSAGE_TYPE_SRV_INFO        = 0x19U;
 const unsigned char Message::NXDN_MESSAGE_TYPE_SITE_INFO       = 0x18U;
+const unsigned char Message::NXDN_MESSAGE_TYPE_ADJ_SITE_INFO   = 0x1BU;
 const unsigned char Message::NXDN_MESSAGE_TYPE_GRP_REG_REQ_RESP= 0x24U;
 
 void Message::reset()
 {
     memset(m_data, 0, 22);
+}
+
+void Message::setMessageIndex(unsigned int index)
+{
+    if (index < 2) {
+        m_shift = index*9;
+    }
 }
 
 void Message::setFromSACCH(int index, const unsigned char *data)
@@ -78,31 +86,38 @@ void Message::setFromSACCH(int index, const unsigned char *data)
         m_data[7] = ((data[0]&0x3F)<<2) + (data[1]>>6);
         m_data[8] = ((data[1]&0x3F)<<2) + (data[2]>>6);
     }
+
+    m_shift = 0; // reset dual index
 }
 
 void Message::setFromFACCH1(const unsigned char *data)
 {
     memcpy(m_data, data, 10);
+    m_shift = 0; // reset dual index
 }
 
 void Message::setFromFACCH2(const unsigned char *data)
 {
     memcpy(m_data, data, 22);
+    m_shift = 0; // reset dual index
 }
 
 void Message::setFromCAC(const unsigned char *data)
 {
-    memcpy(m_data, data, 17);
+    memcpy(m_data, data, 18);
+    m_shift = 0; // reset dual index
 }
 
 void Message::setFromCACShort(const unsigned char *data)
 {
-    memcpy(m_data, data, 11);
+    memcpy(m_data, data, 12);
+    m_shift = 0; // reset dual index
 }
 
 void Message::setFromCACLong(const unsigned char *data)
 {
-    memcpy(m_data, data, 15);
+    memcpy(m_data, data, 16);
+    m_shift = 0; // reset dual index
 }
 
 bool Message::hasCallDetails() const
@@ -163,14 +178,14 @@ bool Message::hasGroupCallInfo() const
 
 unsigned char Message::getMessageType() const
 {
-    return m_data[0U] & 0x3FU;
+    return m_data[0U+m_shift] & 0x3FU;
 }
 
 bool Message::getSourceUnitId(unsigned short& id) const
 {
     if (hasCallDetails())
     {
-        id = (m_data[3U] << 8) | m_data[4U];
+        id = (m_data[3U+m_shift] << 8) | m_data[4U+m_shift];
         return true;
     }
     else
@@ -183,7 +198,7 @@ bool Message::getDestinationGroupId(unsigned short& id) const
 {
     if (hasCallDetails())
     {
-        id = (m_data[5U] << 8) | m_data[6U];
+        id = (m_data[5U+m_shift] << 8) | m_data[6U+m_shift];
         return true;
     }
     else
@@ -196,7 +211,7 @@ bool Message::isGroupCall(bool& sw) const
 {
     if (hasGroupCallInfo())
     {
-        sw = (m_data[2U] & 0x80U) != 0x80U;
+        sw = (m_data[2U+m_shift] & 0x80U) != 0x80U;
         return true;
     }
     else
@@ -211,11 +226,11 @@ bool Message::getLocationId(unsigned int& id) const
     switch(getMessageType())
     {
     case NXDN_MESSAGE_TYPE_SITE_INFO:
-        id = (m_data[1]<<16) | (m_data[2]<<8) | m_data[3];
+        id = (m_data[1U+m_shift]<<16) | (m_data[2U+m_shift]<<8) | m_data[3U+m_shift];
         ret = true;
         break;
     case NXDN_MESSAGE_TYPE_SRV_INFO:
-        id = (m_data[1]<<16) | (m_data[2]<<8) | m_data[3];
+        id = (m_data[1U+m_shift]<<16) | (m_data[2U+m_shift]<<8) | m_data[3U+m_shift];
         ret = true;
         break;
     default:
@@ -231,11 +246,11 @@ bool Message::getServiceInformation(unsigned short& sibits) const
     switch(getMessageType())
     {
     case NXDN_MESSAGE_TYPE_SITE_INFO:
-        sibits = (m_data[6]<<8) | m_data[7];
+        sibits = (m_data[6U+m_shift]<<8) | m_data[7U+m_shift];
         ret = true;
         break;
     case NXDN_MESSAGE_TYPE_SRV_INFO:
-        sibits = (m_data[4]<<8) | m_data[5];
+        sibits = (m_data[4U+m_shift]<<8) | m_data[5U+m_shift];
         ret = true;
         break;
     default:
@@ -243,6 +258,24 @@ bool Message::getServiceInformation(unsigned short& sibits) const
         break;
     }
     return ret;
+}
+
+bool Message::getAdjacentSitesInformation(AdjacentSiteInformation *adjacentSites, int nbSitesToGet) const
+{
+    if (getMessageType() == NXDN_MESSAGE_TYPE_ADJ_SITE_INFO)
+    {
+        for (int i=0; i<nbSitesToGet; i++)
+        {
+            unsigned int siteIndex = (m_data[4U+m_shift+5*i]>>2) & 0xF;
+            adjacentSites[siteIndex].m_siteNumber = siteIndex;
+            adjacentSites[siteIndex].m_channelNumber = m_data[5U+m_shift+5*i] + ((m_data[4U+m_shift+5*i]&0x3)<<8);
+            adjacentSites[siteIndex].m_locationId = (m_data[1U+m_shift+5*i]<<16) + (m_data[2U+m_shift+5*i]<<8) + m_data[3U+m_shift+5*i];
+        }
+
+        return true;
+    } else{
+        return false;
+    }
 }
 
 } // namespace

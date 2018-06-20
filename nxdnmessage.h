@@ -20,11 +20,19 @@
 namespace DSDcc
 {
 
+struct AdjacentSiteInformation
+{
+    unsigned char m_siteNumber;      // 1 to 16
+    unsigned int m_locationId;       // 24 bit
+    unsigned short m_channelNumber;  // 10 bit
+};
+
 /** A layer-3 message */
 struct Message
 {
 public:
     void reset();
+    void setMessageIndex(unsigned int index); //!< sets the message index in dual message case 
     void setFromSACCH(int index, const unsigned char *data);
     void setFromFACCH1(const unsigned char *data);
     void setFromFACCH2(const unsigned char *data);
@@ -38,6 +46,7 @@ public:
     bool isGroupCall(bool& sw) const;
     bool getLocationId(unsigned int& id) const;
     bool getServiceInformation(unsigned short& sibits) const;
+    bool getAdjacentSitesInformation(AdjacentSiteInformation *adjacentSites, int nbSitesToGet) const;
 
     static const unsigned char NXDN_MESSAGE_TYPE_VCALL;
     static const unsigned char NXDN_MESSAGE_TYPE_VCALL_IV;
@@ -64,12 +73,15 @@ public:
     static const unsigned char NXDN_MESSAGE_TYPE_VCALL_ASSGN;
     static const unsigned char NXDN_MESSAGE_TYPE_SRV_INFO;
     static const unsigned char NXDN_MESSAGE_TYPE_SITE_INFO;
+    static const unsigned char NXDN_MESSAGE_TYPE_ADJ_SITE_INFO;
     static const unsigned char NXDN_MESSAGE_TYPE_GRP_REG_REQ_RESP;
+
 
 private:
     bool hasCallDetails() const;
     bool hasGroupCallInfo() const;
-    unsigned char m_data[22];               //!< Maximum 22 bytes
+    unsigned char m_data[22];  //!< Maximum 22 bytes
+    unsigned int m_shift;      //!< index shift for dual messages
 };
 
 } // namespace

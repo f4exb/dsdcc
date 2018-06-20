@@ -236,6 +236,8 @@ private:
     void processVoiceTest(int symbolIndex);
     void processVoiceFrame(int symbolIndex, int dibit);
     void storeSymbolDV(int dibitindex, unsigned char dibit, bool invertDibit = false);
+    void resetAdjacentSites();
+    void printAdjacentSites();
 
 	DSDDecoder *m_dsdDecoder;
 	NXDNState   m_state;
@@ -266,6 +268,7 @@ private:
     FACCH1 m_facch1;
     UDCH m_udch;
     Message m_currentMessage;
+    AdjacentSiteInformation m_adjacentSites[16];
 
     char m_rfChannelStr[2+1];
 

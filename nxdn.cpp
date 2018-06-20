@@ -611,6 +611,32 @@ void DSDNXDN::processRCCH(int index, unsigned char dibit)
                 m_currentMessage.isGroupCall(m_group);
                 m_currentMessage.getLocationId(m_locationId);
                 m_currentMessage.getServiceInformation(m_services);
+
+                if (m_cac.hasDualMessageFormat())
+                {
+                    m_currentMessage.setMessageIndex(1);
+                    m_currentMessage.getSourceUnitId(m_sourceId);
+                    m_currentMessage.getDestinationGroupId(m_destinationId);
+                    m_currentMessage.isGroupCall(m_group);
+                    m_currentMessage.getLocationId(m_locationId);
+                    m_currentMessage.getServiceInformation(m_services);
+
+                    if (m_currentMessage.getAdjacentSitesInformation(m_adjacentSites, 1)) {
+                        printAdjacentSites();
+                    }
+
+                    m_currentMessage.setMessageIndex(0);
+
+                    if (m_currentMessage.getAdjacentSitesInformation(m_adjacentSites, 1)) {
+                        printAdjacentSites();
+                    }
+                }
+                else
+                {
+                    if (m_currentMessage.getAdjacentSitesInformation(m_adjacentSites, 3)) {
+                        printAdjacentSites();
+                    }
+                }
             }
         }
     }
@@ -762,6 +788,13 @@ void DSDNXDN::processRTDCH(int index, unsigned char dibit)
                 m_currentMessage.getSourceUnitId(m_sourceId);
                 m_currentMessage.getDestinationGroupId(m_destinationId);
                 m_currentMessage.isGroupCall(m_group);
+
+                if (m_steal == NXDNStealBoth) // This is a FACCH2
+                {
+                    if (m_currentMessage.getAdjacentSitesInformation(m_adjacentSites, 4)) {
+                        printAdjacentSites();
+                    }
+                }
             }
         }
     }
@@ -782,12 +815,17 @@ void DSDNXDN::processFACCH1(int index, unsigned char dibit)
     {
         m_facch1.unpuncture();
 
-        if (m_facch1.decode()) {
+        if (m_facch1.decode()) 
+        {
             m_currentMessage.setFromFACCH1(m_facch1.getData());
             m_messageType = m_currentMessage.getMessageType();
             m_currentMessage.getSourceUnitId(m_sourceId);
             m_currentMessage.getDestinationGroupId(m_destinationId);
             m_currentMessage.isGroupCall(m_group);
+
+            if (m_currentMessage.getAdjacentSitesInformation(m_adjacentSites, 1)) {
+                printAdjacentSites();
+            }
         }
 
         m_facch1.reset();
@@ -1209,6 +1247,32 @@ void DSDNXDN::storeSymbolDV(int dibitindex, unsigned char dibit, bool invertDibi
 
     m_dsdDecoder->m_mbeDVFrame1[dibitindex/4] |= (dibit << (6 - 2*(dibitindex % 4)));
 }
+
+void DSDNXDN::resetAdjacentSites()
+{
+    for (int i=0; i<16; i++)
+    {
+        m_adjacentSites[i].m_channelNumber = 0;
+        m_adjacentSites[i].m_locationId = 0;
+        m_adjacentSites[i].m_siteNumber = 0;
+    }
+}
+
+void DSDNXDN::printAdjacentSites()
+{
+    for (int i=0; i<16; i++)
+    {
+        if ( m_adjacentSites[i].m_siteNumber == 0) {
+            continue;
+        }
+
+        std::cerr << "DSDNXDN::printAdjacentSites:" 
+            << " site: " << m_adjacentSites[i].m_siteNumber
+            << " channel: " << m_adjacentSites[i].m_channelNumber
+            << " location: " << std::hex << m_adjacentSites[i].m_locationId << std::endl;
+    }
+}
+
 
 } // namespace DSDcc
 
