@@ -75,7 +75,7 @@ DSDDecoder::DSDDecoder() :
     resetFrameSync();
     noCarrier();
     m_squelchTimeoutCount = 0;
-    m_nxdnInterSyncCount = 0;
+    m_nxdnInterSyncCount = -1; // reset to quiet state
 }
 
 DSDDecoder::~DSDDecoder()
@@ -1123,7 +1123,10 @@ int DSDDecoder::getFrameSync()
         }
     }
 
-    m_nxdnInterSyncCount++;
+    if (m_nxdnInterSyncCount >= 0) { // increment only if a first match was encoutnered (therefore set to 0)
+        m_nxdnInterSyncCount++;
+    }
+
     m_synctest_pos++;
 
     if (m_synctest_pos >= 1800)
@@ -1157,6 +1160,8 @@ void DSDDecoder::resetFrameSync()
         m_dsdLogger.log("\nSymbol Timing:\n");
     }
 
+
+    m_nxdnInterSyncCount = -1;   // reset to quiet state
     m_fsmState = DSDLookForSync;
 }
 
