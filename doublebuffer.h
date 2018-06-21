@@ -47,6 +47,10 @@ public:
 
     DoubleBuffer& operator=(const DoubleBuffer& other)
     {
+        if (&other == this) {
+            return *this;
+        }
+
         m_size = other.m_size;
         m_index = other.m_index;
         m_buffer = new T[2*m_size];
