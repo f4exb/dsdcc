@@ -718,17 +718,18 @@ void DSDNXDN::processRTDCH(int index, unsigned char dibit)
         {
             m_sacch.unpuncture();
 
-            if (m_sacch.decode()) {
-                m_ran = m_sacch.getRAN();
-            }
-
-            if ((m_sacch.getCountdown() == 0) && (m_sacch.getDecodeCount() == 0))
+            if (m_sacch.decode())
             {
-                m_currentMessage = m_sacch.getMessage();
-                m_messageType = m_currentMessage.getMessageType();
-                m_currentMessage.getSourceUnitId(m_sourceId);
-                m_currentMessage.getDestinationGroupId(m_destinationId);
-                m_currentMessage.isGroupCall(m_group);
+                m_ran = m_sacch.getRAN();
+
+                if ((m_sacch.getCountdown() == 0) && (m_sacch.getDecodeCount() == 0))
+                {
+                    m_currentMessage = m_sacch.getMessage();
+                    m_messageType = m_currentMessage.getMessageType();
+                    m_currentMessage.getSourceUnitId(m_sourceId);
+                    m_currentMessage.getDestinationGroupId(m_destinationId);
+                    m_currentMessage.isGroupCall(m_group);
+                }
             }
         }
 
