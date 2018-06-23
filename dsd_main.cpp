@@ -183,9 +183,7 @@ int main(int argc, char **argv)
     FILE *formattext_fp = 0;
     float formattext_refresh = 0.1f;
     char formattext[128];
-    char serialDevice[16];
     std::string dvSerialDevice;
-    int dvGain_dB = 0;
     int slots = 1;
     Mixer mixer;
     float lat = 0.0f;
