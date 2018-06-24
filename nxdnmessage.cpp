@@ -48,6 +48,14 @@ const unsigned char Message::NXDN_MESSAGE_TYPE_SITE_INFO       = 0x18U;
 const unsigned char Message::NXDN_MESSAGE_TYPE_ADJ_SITE_INFO   = 0x1BU;
 const unsigned char Message::NXDN_MESSAGE_TYPE_GRP_REG_REQ_RESP= 0x24U;
 
+const unsigned char Message::NXDN_MESSAGE_TYPE_VCALL_REQ       = 0x01U;
+const unsigned char Message::NXDN_MESSAGE_TYPE_VCALL_RESP      = 0x01U;
+const unsigned char Message::NXDN_MESSAGE_TYPE_VCALL_REC_REQ   = 0X02U;
+const unsigned char Message::NXDN_MESSAGE_TYPE_VCALL_REC_RESP  = 0X02U;
+const unsigned char Message::NXDN_MESSAGE_TYPE_VCALL_CONN_REQ  = 0X03U;
+const unsigned char Message::NXDN_MESSAGE_TYPE_VCALL_CONN_RESP = 0X03U;
+const unsigned char Message::NXDN_MESSAGE_TYPE_VCALL_ASSGN_DUP = 0X05U;
+
 void Message::reset()
 {
     memset(m_data, 0, 22);
@@ -276,6 +284,30 @@ bool Message::getAdjacentSitesInformation(AdjacentSiteInformation *adjacentSites
     } else{
         return false;
     }
+}
+
+bool Message::isFullRate(bool& fullRate) const
+{
+    bool ret;
+    switch(getMessageType())
+    {
+    case NXDN_MESSAGE_TYPE_VCALL:
+//    case NXDN_MESSAGE_TYPE_VCALL_REQ: same value as above
+//    case NXDN_MESSAGE_TYPE_VCALL_RESP: same value as above
+    case NXDN_MESSAGE_TYPE_VCALL_REC_REQ:
+//    case NXDN_MESSAGE_TYPE_VCALL_REC_RESP: same value as above
+    case NXDN_MESSAGE_TYPE_VCALL_CONN_REQ:
+//    case NXDN_MESSAGE_TYPE_VCALL_CONN_RESP: same value as above
+    case NXDN_MESSAGE_TYPE_VCALL_ASSGN:
+    case NXDN_MESSAGE_TYPE_VCALL_ASSGN_DUP:
+        fullRate = m_data[2U+m_shift] & 1;
+        ret = true;
+        break;
+    default:
+        ret = false;
+        break;
+    }
+    return ret;
 }
 
 } // namespace

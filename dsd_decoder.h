@@ -261,9 +261,8 @@ public:
 
     int upsampling() const { return m_mbeDecoder1.getUpsamplingFactor(); }
 
-    DSDMBERate getMbeRate() const {
-        return m_mbeRate;
-    }
+    DSDMBERate getMbeRate() const { return m_mbeRate; }
+    void setMbeRate(DSDMBERate mbeRate) { m_mbeRate = mbeRate; }
 
     void useHPMbelib(bool useHP) {
         m_mbeDecoder1.useHP(useHP);

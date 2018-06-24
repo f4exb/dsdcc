@@ -1399,8 +1399,9 @@ void DSDDecoder::formatStatusText(char *statusText)
         {
             // 1    2    2    3    3    4    4    5    5    6    6    7    7    8
             // 5....0....5....0....5....0....5....0....5....0....5....0....5....0..
-            // NXD>RC cc mm llllll ssss
-            sprintf(&statusText[15], "NXD>RC %02d %02X %06X %02X",
+            // NXD>RC r cc mm llllll ssss
+            sprintf(&statusText[15], "NXD>RC %s %02d %02X %06X %02X",
+                getNXDNDecoder().isFullRate() ? "F" : "H",
                 getNXDNDecoder().getRAN(),
                 getNXDNDecoder().getMessageType(),
                 getNXDNDecoder().getLocationId(),
@@ -1416,8 +1417,9 @@ void DSDDecoder::formatStatusText(char *statusText)
             {
                 // 1    2    2    3    3    4    4    5    5    6    6    7    7    8
                 // 5....0....5....0....5....0....5....0....5....0....5....0....5....0..
-                // NXD>Rx cc mm sssss>gddddd
-                snprintf(&statusText[15], 82, "NXD>%s %02d %02X %05d>%c%05d",
+                // NXD>Rx r cc mm sssss>gddddd
+                snprintf(&statusText[15], 82, "NXD>%s %s %02d %02X %05d>%c%05d",
+                        getNXDNDecoder().isFullRate() ? "F" : "H",
                         getNXDNDecoder().getRFChannelStr(),
                         getNXDNDecoder().getRAN(),
                         getNXDNDecoder().getMessageType(),

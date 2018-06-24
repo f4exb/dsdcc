@@ -81,6 +81,7 @@ public:
     bool isGroupCall() const { return m_group; }
     unsigned int getLocationId() const { return m_locationId; }
     unsigned int getServicesFlag() const { return m_services; }
+    bool isFullRate() const;
 
     static const char *nxdnRFChannelTypeText[4];
 
@@ -234,7 +235,8 @@ private:
     void processFACCH1(int index, unsigned char dibit);
 
     void processVoiceTest(int symbolIndex);
-    void processVoiceFrame(int symbolIndex, int dibit);
+    void processVoiceFrameEHR(int symbolIndex, int dibit);
+    void processVoiceFrameEFR(int symbolIndex, int dibit);
     void storeSymbolDV(int dibitindex, unsigned char dibit, bool invertDibit = false);
     void resetAdjacentSites();
     void printAdjacentSites();
@@ -260,6 +262,7 @@ private:
     bool m_group;                   //!< Latest group indicator
     unsigned int m_locationId;      //!< Site location Id (trunked)
     unsigned short m_services;      //!< Site services available (trunked)
+    bool m_fullRate;                //!< Full rate vocoder (EFR) else half rate (EHR)
 
     CACOutbound m_cac;
     CACShort m_cacShort;

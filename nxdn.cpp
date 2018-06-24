@@ -269,6 +269,7 @@ DSDNXDN::DSDNXDN(DSDDecoder *dsdDecoder) :
     m_messageType = 0;
     m_locationId = 0;
     m_services = 0;
+    m_fullRate = false;
 
     m_rfChannelStr[0] = '\0';
 }
@@ -284,6 +285,8 @@ void DSDNXDN::init()
         std::cerr << "DSDNXDN::init: entering sync state" << std::endl;
         m_currentMessage.reset();
         m_inSync = true;
+        m_fullRate = false;
+        m_dsdDecoder->setMbeRate(DSDDecoder::DSDMBERate3600x2450);
     }
 
 	m_symbolIndex = 0;
@@ -612,6 +615,10 @@ void DSDNXDN::processRCCH(int index, unsigned char dibit)
                 m_currentMessage.getLocationId(m_locationId);
                 m_currentMessage.getServiceInformation(m_services);
 
+                if (m_currentMessage.isFullRate(m_fullRate)) {
+                    m_dsdDecoder->setMbeRate(isFullRate() ? DSDDecoder::DSDMBERate7200x4400 : DSDDecoder::DSDMBERate3600x2450);
+                }
+
                 if (m_cac.hasDualMessageFormat())
                 {
                     m_currentMessage.setMessageIndex(1);
@@ -620,6 +627,10 @@ void DSDNXDN::processRCCH(int index, unsigned char dibit)
                     m_currentMessage.isGroupCall(m_group);
                     m_currentMessage.getLocationId(m_locationId);
                     m_currentMessage.getServiceInformation(m_services);
+
+                    if (m_currentMessage.isFullRate(m_fullRate)) {
+                        m_dsdDecoder->setMbeRate(isFullRate() ? DSDDecoder::DSDMBERate7200x4400 : DSDDecoder::DSDMBERate3600x2450);
+                    }
 
                     if (m_currentMessage.getAdjacentSitesInformation(m_adjacentSites, 1)) {
                         printAdjacentSites();
@@ -665,6 +676,10 @@ void DSDNXDN::processRCCH(int index, unsigned char dibit)
                 m_currentMessage.isGroupCall(m_group);
                 m_currentMessage.getLocationId(m_locationId);
                 m_currentMessage.getServiceInformation(m_services);
+
+                if (m_currentMessage.isFullRate(m_fullRate)) {
+                    m_dsdDecoder->setMbeRate(isFullRate() ? DSDDecoder::DSDMBERate7200x4400 : DSDDecoder::DSDMBERate3600x2450);
+                }
             }
         }
     }
@@ -693,6 +708,10 @@ void DSDNXDN::processRCCH(int index, unsigned char dibit)
                 m_currentMessage.isGroupCall(m_group);
                 m_currentMessage.getLocationId(m_locationId);
                 m_currentMessage.getServiceInformation(m_services);
+
+                if (m_currentMessage.isFullRate(m_fullRate)) {
+                    m_dsdDecoder->setMbeRate(isFullRate() ? DSDDecoder::DSDMBERate7200x4400 : DSDDecoder::DSDMBERate3600x2450);
+                }
             }
         }
     }
@@ -729,6 +748,10 @@ void DSDNXDN::processRTDCH(int index, unsigned char dibit)
                     m_currentMessage.getSourceUnitId(m_sourceId);
                     m_currentMessage.getDestinationGroupId(m_destinationId);
                     m_currentMessage.isGroupCall(m_group);
+
+                    if (m_currentMessage.isFullRate(m_fullRate)) {
+                        m_dsdDecoder->setMbeRate(isFullRate() ? DSDDecoder::DSDMBERate7200x4400 : DSDDecoder::DSDMBERate3600x2450);
+                    }
                 }
             }
         }
@@ -737,23 +760,39 @@ void DSDNXDN::processRTDCH(int index, unsigned char dibit)
         {
             int vindex = index - 30; // rebase index at start of Voice/FACCH frames
 
-            if (m_steal == NXDNStealNone) // 4 voice frames
+            if (m_steal == NXDNStealNone) // 4 voice frames EHR - 2 voice frames EFR
             {
-                processVoiceFrame(vindex, dibit);
+                if (isFullRate()) {
+                    processVoiceFrameEFR(vindex, dibit);
+                } else {
+                    processVoiceFrameEHR(vindex, dibit);
+                }
             }
-            else if (m_steal == NXDNSteal1) // FACCH1 then 2 voice frames
+            else if (m_steal == NXDNSteal1) // FACCH1 then 2 voice frames EHR or 1 voice frame EFR
             {
                 if (vindex < 72) {
                     processFACCH1(vindex, dibit);
-                } else {
-                    processVoiceFrame(vindex-72, dibit);
+                }
+                else
+                {
+                    if (isFullRate()) {
+                        processVoiceFrameEFR(vindex-72, dibit);
+                    } else {
+                        processVoiceFrameEHR(vindex-72, dibit);
+                    }
                 }
             }
-            else if (m_steal == NXDNSteal2) // 2 voice frames then FACCH1
+            else if (m_steal == NXDNSteal2) // 2 voice frames EHR or 1 voice frame EFR then FACCH1
             {
-                if (vindex < 72) {
-                    processVoiceFrame(vindex, dibit);
-                } else {
+                if (vindex < 72)
+                {
+                    if (isFullRate()) {
+                        processVoiceFrameEFR(vindex, dibit);
+                    } else {
+                        processVoiceFrameEHR(vindex, dibit);
+                    }
+                }
+                else {
                     processFACCH1(vindex-72, dibit);
                 }
             }
@@ -790,6 +829,10 @@ void DSDNXDN::processRTDCH(int index, unsigned char dibit)
                 m_currentMessage.getDestinationGroupId(m_destinationId);
                 m_currentMessage.isGroupCall(m_group);
 
+                if (m_currentMessage.isFullRate(m_fullRate)) {
+                    m_dsdDecoder->setMbeRate(isFullRate() ? DSDDecoder::DSDMBERate7200x4400 : DSDDecoder::DSDMBERate3600x2450);
+                }
+
                 if (m_steal == NXDNStealBoth) // This is a FACCH2
                 {
                     if (m_currentMessage.getAdjacentSitesInformation(m_adjacentSites, 4)) {
@@ -816,13 +859,17 @@ void DSDNXDN::processFACCH1(int index, unsigned char dibit)
     {
         m_facch1.unpuncture();
 
-        if (m_facch1.decode()) 
+        if (m_facch1.decode())
         {
             m_currentMessage.setFromFACCH1(m_facch1.getData());
             m_messageType = m_currentMessage.getMessageType();
             m_currentMessage.getSourceUnitId(m_sourceId);
             m_currentMessage.getDestinationGroupId(m_destinationId);
             m_currentMessage.isGroupCall(m_group);
+
+            if (m_currentMessage.isFullRate(m_fullRate)) {
+                m_dsdDecoder->setMbeRate(isFullRate() ? DSDDecoder::DSDMBERate7200x4400 : DSDDecoder::DSDMBERate3600x2450);
+            }
 
             if (m_currentMessage.getAdjacentSitesInformation(m_adjacentSites, 1)) {
                 printAdjacentSites();
@@ -1190,10 +1237,10 @@ unsigned char DSDNXDN::UDCH::getStructure() const
 
 void DSDNXDN::processVoiceTest(int symbolIndex)
 {
-    processVoiceFrame(symbolIndex, m_voiceTestPattern[symbolIndex%36]);
+    processVoiceFrameEHR(symbolIndex, m_voiceTestPattern[symbolIndex%36]);
 }
 
-void DSDNXDN::processVoiceFrame(int symbolIndex, int dibit)
+void DSDNXDN::processVoiceFrameEHR(int symbolIndex, int dibit)
 {
     // if (symbolIndex % 36 == 0) {
     //     std::cerr << "DSDNXDN::processVoiceFrame: start: " << m_symbolIndex << " " << symbolIndex << std::endl;
@@ -1225,6 +1272,26 @@ void DSDNXDN::processVoiceFrame(int symbolIndex, int dibit)
     if (symbolIndex % 36 == 35)
     {
         m_dsdDecoder->m_mbeDecoder1.processFrame(0, m_dsdDecoder->ambe_fr, 0);
+        m_dsdDecoder->m_mbeDVReady1 = true; // Indicate that a DVSI frame is available
+
+        if (m_dsdDecoder->m_opts.errorbars == 1)
+        {
+            m_dsdDecoder->getLogger().log(".");
+        }
+    }
+}
+
+void DSDNXDN::processVoiceFrameEFR(int symbolIndex, int dibit)
+{
+    if ((symbolIndex == 0) && (m_dsdDecoder->m_opts.errorbars == 1))
+    {
+        m_dsdDecoder->getLogger().log("\nMBE: ");
+    }
+
+    storeSymbolDV(symbolIndex % 72, dibit);
+
+    if (symbolIndex % 72 == 71)
+    {
         m_dsdDecoder->m_mbeDVReady1 = true; // Indicate that a DVSI frame is available
 
         if (m_dsdDecoder->m_opts.errorbars == 1)
@@ -1267,11 +1334,16 @@ void DSDNXDN::printAdjacentSites()
             continue;
         }
 
-        std::cerr << "DSDNXDN::printAdjacentSites:" 
+        std::cerr << "DSDNXDN::printAdjacentSites:"
             << " site: " << m_adjacentSites[i].m_siteNumber
             << " channel: " << m_adjacentSites[i].m_channelNumber
             << " location: " << std::hex << m_adjacentSites[i].m_locationId << std::endl;
     }
+}
+
+bool DSDNXDN::isFullRate() const
+{
+    return (m_dsdDecoder->getDataRate() == DSDDecoder::DSDRate4800) &&  m_fullRate;
 }
 
 

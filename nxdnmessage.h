@@ -32,7 +32,7 @@ struct Message
 {
 public:
     void reset();
-    void setMessageIndex(unsigned int index); //!< sets the message index in dual message case 
+    void setMessageIndex(unsigned int index); //!< sets the message index in dual message case
     void setFromSACCH(int index, const unsigned char *data);
     void setFromFACCH1(const unsigned char *data);
     void setFromFACCH2(const unsigned char *data);
@@ -47,6 +47,7 @@ public:
     bool getLocationId(unsigned int& id) const;
     bool getServiceInformation(unsigned short& sibits) const;
     bool getAdjacentSitesInformation(AdjacentSiteInformation *adjacentSites, int nbSitesToGet) const;
+    bool isFullRate(bool& fullRate) const;
 
     static const unsigned char NXDN_MESSAGE_TYPE_VCALL;
     static const unsigned char NXDN_MESSAGE_TYPE_VCALL_IV;
@@ -76,6 +77,13 @@ public:
     static const unsigned char NXDN_MESSAGE_TYPE_ADJ_SITE_INFO;
     static const unsigned char NXDN_MESSAGE_TYPE_GRP_REG_REQ_RESP;
 
+    static const unsigned char NXDN_MESSAGE_TYPE_VCALL_REQ;
+    static const unsigned char NXDN_MESSAGE_TYPE_VCALL_RESP;
+    static const unsigned char NXDN_MESSAGE_TYPE_VCALL_REC_REQ;
+    static const unsigned char NXDN_MESSAGE_TYPE_VCALL_REC_RESP;
+    static const unsigned char NXDN_MESSAGE_TYPE_VCALL_CONN_REQ;
+    static const unsigned char NXDN_MESSAGE_TYPE_VCALL_CONN_RESP;
+    static const unsigned char NXDN_MESSAGE_TYPE_VCALL_ASSGN_DUP;
 
 private:
     bool hasCallDetails() const;
