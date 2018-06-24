@@ -249,17 +249,21 @@ void DSDDecoder::setAudioGain(float gain)
     else if (m_opts.audio_gain == 0.0f)
     {
         m_dsdLogger.log("Enabling audio out auto-gain\n");
-    	m_mbeDecoder1.setAudioGain(25);
-    	m_mbeDecoder1.setAutoGain(true);
+        m_mbeDecoder1.setAudioGain(25);
+        m_mbeDecoder1.setVolume(1.0f);
+        m_mbeDecoder1.setAutoGain(true);
         m_mbeDecoder2.setAudioGain(25);
+        m_mbeDecoder2.setVolume(1.0f);
         m_mbeDecoder2.setAutoGain(true);
     }
     else
     {
         m_dsdLogger.log("Setting audio out gain to %f\n", m_opts.audio_gain);
         m_mbeDecoder1.setAudioGain(m_opts.audio_gain);
+        m_mbeDecoder1.setVolume(m_opts.audio_gain);
         m_mbeDecoder1.setAutoGain(false);
         m_mbeDecoder2.setAudioGain(m_opts.audio_gain);
+        m_mbeDecoder2.setVolume(m_opts.audio_gain);
         m_mbeDecoder2.setAutoGain(false);
     }
 }
@@ -1396,7 +1400,7 @@ void DSDDecoder::formatStatusText(char *statusText)
             // 1    2    2    3    3    4    4    5    5    6    6    7    7    8
             // 5....0....5....0....5....0....5....0....5....0....5....0....5....0..
             // NXD>RC cc mm llllll ssss
-            sprintf(&statusText[15], "NXD>RC %02d %02X %06X %02X", 
+            sprintf(&statusText[15], "NXD>RC %02d %02X %06X %02X",
                 getNXDNDecoder().getRAN(),
                 getNXDNDecoder().getMessageType(),
                 getNXDNDecoder().getLocationId(),

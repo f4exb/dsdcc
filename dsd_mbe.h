@@ -49,6 +49,7 @@ public:
 
     void setAudioGain(float aout_gain) { m_aout_gain = aout_gain; }
     void setAutoGain(bool auto_gain) { m_auto_gain = auto_gain; }
+    void setVolume(float volume) { m_volume = volume; }
     void setStereo(bool stereo) { m_stereo = stereo; }
     void setChannels(unsigned char channels) { m_channels = channels % 4; }
     void setUpsamplingFactor(int upsample) { m_upsample = upsample; }
@@ -87,6 +88,7 @@ private:
     int   m_audio_out_idx2;
 
     float m_aout_gain;
+    float m_volume;
     bool m_auto_gain;
     int m_upsample;            //!< upsampling factor
     bool m_stereo;             //!< double each audio sample to produce L+R channels

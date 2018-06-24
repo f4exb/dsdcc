@@ -49,6 +49,7 @@ DSDMBEDecoder::DSDMBEDecoder(DSDDecoder *dsdDecoder) :
     m_audio_out_idx2 = 0;
 
     m_aout_gain = 25;
+    m_volume = 1.0f;
     m_auto_gain = true;
     m_stereo = false;
     m_channels = 3; // both channels by default if stereo is set
@@ -238,23 +239,23 @@ void DSDMBEDecoder::processAudio()
         }
 
         gaindelta /= (float) 160;
+
+        // adjust output gain
+        m_audio_out_temp_buf_p = m_audio_out_temp_buf;
+
+        for (n = 0; n < 160; n++)
+        {
+            *m_audio_out_temp_buf_p = (m_aout_gain
+                    + ((float) n * gaindelta)) * (*m_audio_out_temp_buf_p);
+            m_audio_out_temp_buf_p++;
+        }
+
+        m_aout_gain += ((float) 160 * gaindelta);
     }
     else
     {
         gaindelta = (float) 0;
     }
-
-	// adjust output gain
-	m_audio_out_temp_buf_p = m_audio_out_temp_buf;
-
-	for (n = 0; n < 160; n++)
-	{
-		*m_audio_out_temp_buf_p = (m_aout_gain
-				+ ((float) n * gaindelta)) * (*m_audio_out_temp_buf_p);
-		m_audio_out_temp_buf_p++;
-	}
-
-	m_aout_gain += ((float) 160 * gaindelta);
 
     // copy audio data to output buffer and upsample if necessary
     m_audio_out_temp_buf_p = m_audio_out_temp_buf;
@@ -369,7 +370,7 @@ void DSDMBEDecoder::upsample(int upsampling, float invalue)
 //    outbuf1--;
 //    c = *outbuf1;
     c = m_upsamplerLastValue;
-    d = m_upsamplingFilter.usesHP() ? m_upsamplingFilter.runHP(invalue) : invalue;
+    d = (m_upsamplingFilter.usesHP() ? m_upsamplingFilter.runHP(invalue) : invalue)*m_volume;
     // basic triangle interpolation
 //    outbuf1++;
     if (upsampling == 2)
