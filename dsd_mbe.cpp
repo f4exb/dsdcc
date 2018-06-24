@@ -369,84 +369,84 @@ void DSDMBEDecoder::upsample(int upsampling, float invalue)
 //    outbuf1--;
 //    c = *outbuf1;
     c = m_upsamplerLastValue;
-    d = invalue;
+    d = m_upsamplingFilter.usesHP() ? m_upsamplingFilter.runHP(invalue) : invalue;
     // basic triangle interpolation
 //    outbuf1++;
     if (upsampling == 2)
     {
-        *outbuf1 = m_upsamplingFilter.run((invalue * (float) 0.5) + (c * (float) 0.5));
+        *outbuf1 = m_upsamplingFilter.runLP((d * (float) 0.5) + (c * (float) 0.5));
         outbuf1++;
-        *outbuf1 = m_upsamplingFilter.run(d);
+        *outbuf1 = m_upsamplingFilter.runLP(d);
         m_upsamplerLastValue = d;
         outbuf1++;
     }
     else if (upsampling == 3)
     {
-        *outbuf1 = m_upsamplingFilter.run((invalue * (float) 0.332) + (c * (float) 0.668));
+        *outbuf1 = m_upsamplingFilter.runLP((d * (float) 0.332) + (c * (float) 0.668));
         outbuf1++;
-        *outbuf1 = m_upsamplingFilter.run((invalue * (float) 0.668) + (c * (float) 0.332));
+        *outbuf1 = m_upsamplingFilter.runLP((d * (float) 0.668) + (c * (float) 0.332));
         outbuf1++;
-        *outbuf1 = m_upsamplingFilter.run(d);
+        *outbuf1 = m_upsamplingFilter.runLP(d);
         m_upsamplerLastValue = d;
         outbuf1++;
     }
     else if (upsampling == 4)
     {
-        *outbuf1 = m_upsamplingFilter.run((invalue * (float) 0.25) + (c * (float) 0.75));
+        *outbuf1 = m_upsamplingFilter.runLP((d * (float) 0.25) + (c * (float) 0.75));
         outbuf1++;
-        *outbuf1 = m_upsamplingFilter.run((invalue * (float) 0.5) + (c * (float) 0.5));
+        *outbuf1 = m_upsamplingFilter.runLP((d * (float) 0.5) + (c * (float) 0.5));
         outbuf1++;
-        *outbuf1 = m_upsamplingFilter.run((invalue * (float) 0.75) + (c * (float) 0.25));
+        *outbuf1 = m_upsamplingFilter.runLP((d * (float) 0.75) + (c * (float) 0.25));
         outbuf1++;
-        *outbuf1 = m_upsamplingFilter.run(d);
+        *outbuf1 = m_upsamplingFilter.runLP(d);
         m_upsamplerLastValue = d;
         outbuf1++;
     }
     else if (upsampling == 5)
     {
-        *outbuf1 = m_upsamplingFilter.run((invalue * (float) 0.2) + (c * (float) 0.8));
+        *outbuf1 = m_upsamplingFilter.runLP((d * (float) 0.2) + (c * (float) 0.8));
         outbuf1++;
-        *outbuf1 = m_upsamplingFilter.run((invalue * (float) 0.4) + (c * (float) 0.6));
+        *outbuf1 = m_upsamplingFilter.runLP((d * (float) 0.4) + (c * (float) 0.6));
         outbuf1++;
-        *outbuf1 = m_upsamplingFilter.run((invalue * (float) 0.6) + (c * (float) 0.4));
+        *outbuf1 = m_upsamplingFilter.runLP((d * (float) 0.6) + (c * (float) 0.4));
         outbuf1++;
-        *outbuf1 = m_upsamplingFilter.run((invalue * (float) 0.8) + (c * (float) 0.2));
+        *outbuf1 = m_upsamplingFilter.runLP((d * (float) 0.8) + (c * (float) 0.2));
         outbuf1++;
-        *outbuf1 = m_upsamplingFilter.run(d);
+        *outbuf1 = m_upsamplingFilter.runLP(d);
         m_upsamplerLastValue = d;
         outbuf1++;
     }
     else if (upsampling == 6)
     {
-        *outbuf1 = m_upsamplingFilter.run((invalue * (float) 0.166) + (c * (float) 0.834));
+        *outbuf1 = m_upsamplingFilter.runLP((d * (float) 0.166) + (c * (float) 0.834));
         outbuf1++;
-        *outbuf1 = m_upsamplingFilter.run((invalue * (float) 0.332) + (c * (float) 0.668));
+        *outbuf1 = m_upsamplingFilter.runLP((d * (float) 0.332) + (c * (float) 0.668));
         outbuf1++;
-        *outbuf1 = m_upsamplingFilter.run((invalue * (float) 0.5) + (c * (float) 0.5));
+        *outbuf1 = m_upsamplingFilter.runLP((d * (float) 0.5) + (c * (float) 0.5));
         outbuf1++;
-        *outbuf1 = m_upsamplingFilter.run((invalue * (float) 0.668) + (c * (float) 0.332));
+        *outbuf1 = m_upsamplingFilter.runLP((d * (float) 0.668) + (c * (float) 0.332));
         outbuf1++;
-        *outbuf1 = m_upsamplingFilter.run((invalue * (float) 0.834) + (c * (float) 0.166));
+        *outbuf1 = m_upsamplingFilter.runLP((d * (float) 0.834) + (c * (float) 0.166));
         outbuf1++;
-        *outbuf1 = m_upsamplingFilter.run(d);
+        *outbuf1 = m_upsamplingFilter.runLP(d);
         m_upsamplerLastValue = d;
         outbuf1++;
     }
     else if (upsampling == 7)
     {
-        *outbuf1 = m_upsamplingFilter.run((invalue * (float) 0.142) + (c * (float) 0.857));
+        *outbuf1 = m_upsamplingFilter.runLP((d * (float) 0.142) + (c * (float) 0.857));
         outbuf1++;
-        *outbuf1 = m_upsamplingFilter.run((invalue * (float) 0.286) + (c * (float) 0.714));
+        *outbuf1 = m_upsamplingFilter.runLP((d * (float) 0.286) + (c * (float) 0.714));
         outbuf1++;
-        *outbuf1 = m_upsamplingFilter.run((invalue * (float) 0.429) + (c * (float) 0.571));
+        *outbuf1 = m_upsamplingFilter.runLP((d * (float) 0.429) + (c * (float) 0.571));
         outbuf1++;
-        *outbuf1 = m_upsamplingFilter.run((invalue * (float) 0.571) + (c * (float) 0.429));
+        *outbuf1 = m_upsamplingFilter.runLP((d * (float) 0.571) + (c * (float) 0.429));
         outbuf1++;
-        *outbuf1 = m_upsamplingFilter.run((invalue * (float) 0.714) + (c * (float) 0.286));
+        *outbuf1 = m_upsamplingFilter.runLP((d * (float) 0.714) + (c * (float) 0.286));
         outbuf1++;
-        *outbuf1 = m_upsamplingFilter.run((invalue * (float) 0.857) + (c * (float) 0.142));
+        *outbuf1 = m_upsamplingFilter.runLP((d * (float) 0.857) + (c * (float) 0.142));
         outbuf1++;
-        *outbuf1 = d;
+        *outbuf1 = m_upsamplingFilter.runLP(d);
         m_upsamplerLastValue = d;
         outbuf1++;
     }

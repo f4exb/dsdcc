@@ -246,8 +246,9 @@ void DSDSecondOrderRecursiveFilter::init()
 
 const float DSDMBEAudioInterpolatorFilter::m_lpa[3] = {1.0,           1.392667E+00, -5.474446E-01};
 const float DSDMBEAudioInterpolatorFilter::m_lpb[3] = {3.869430E-02,  7.738860E-02,  3.869430E-02};
-const float DSDMBEAudioInterpolatorFilter::m_hpa[3] = {1.000000e+00,  1.955578e+00, -9.565437e-01};
-const float DSDMBEAudioInterpolatorFilter::m_hpb[3] = {9.780305e-01, -1.956061e+00,  9.780305e-01};
+// f(-3dB) = 300 Hz @ 8000 Hz SR (w = 0.075):
+const float DSDMBEAudioInterpolatorFilter::m_hpa[3] = {1.000000e+00,  1.667871e+00, -7.156964e-01};
+const float DSDMBEAudioInterpolatorFilter::m_hpb[3] = {8.459039e-01, -1.691760e+00,  8.459039e-01};
 
 DSDMBEAudioInterpolatorFilter::DSDMBEAudioInterpolatorFilter() :
         m_filterLP(m_lpa, m_lpb),
@@ -262,6 +263,16 @@ DSDMBEAudioInterpolatorFilter::~DSDMBEAudioInterpolatorFilter()
 float DSDMBEAudioInterpolatorFilter::run(const float& sample)
 {
     return m_useHP ? m_filterLP.run(m_filterHP.run(sample)) : m_filterLP.run(sample);
+}
+
+float DSDMBEAudioInterpolatorFilter::runHP(const float& sample)
+{
+    return m_filterHP.run(sample);
+}
+
+float DSDMBEAudioInterpolatorFilter::runLP(const float& sample)
+{
+    return m_filterLP.run(sample);
 }
 
 } // namespace dsdcc
