@@ -64,10 +64,11 @@ const int DSDNXDN::rZ[36] = {
   13, 2, 12, 1, 11, 0
 };
 
-const char * DSDNXDN::nxdnRFChannelTypeText[4] = {
+const char * DSDNXDN::nxdnRFChannelTypeText[5] = {
         "RC", //!< RCCH
         "RT", //!< RTCH
         "RD", //!< RDCH
+        "Rt", //!< RTCH-C
         "RU"  //!< Unknown RF channel
 };
 
@@ -348,6 +349,7 @@ void DSDNXDN::processFrame()
             break;
         case NXDNRTCH:
         case NXDNRDCH:
+        case NXDNRTCHC:
             processRTDCH(m_symbolIndex - 8, dibit);
             break;
         case NXDNRFCHUnknown:
@@ -548,6 +550,7 @@ void DSDNXDN::processLICH()
             break;
         case NXDNRTCH:
         case NXDNRDCH:
+        case NXDNRTCHC:
             m_idle = false;
             if (m_lich.fnChannelCode == 0) {
                 m_frameStructure = NXDNFSSACCH;

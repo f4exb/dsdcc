@@ -41,6 +41,7 @@ public:
         NXDNRCCH,
         NXDNRTCH,
         NXDNRDCH,
+        NXDNRTCHC,
         NXDNRFCHUnknown
     } NXDNRFChannel;
 
@@ -83,7 +84,7 @@ public:
     unsigned int getServicesFlag() const { return m_services; }
     bool isFullRate() const;
 
-    static const char *nxdnRFChannelTypeText[4];
+    static const char *nxdnRFChannelTypeText[5];
 
 private:
     struct NXDNLICH
