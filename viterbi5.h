@@ -20,11 +20,12 @@
 #define VITERBI5_H_
 
 #include "viterbi.h"
+#include "export.h"
 
 namespace DSDcc
 {
 
-class Viterbi5 : public Viterbi
+class DSDCC_API Viterbi5 : public Viterbi
 {
 public:
     Viterbi5(int n, const unsigned int *polys, bool msbFirst = true);

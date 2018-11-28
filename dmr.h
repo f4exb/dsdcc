@@ -18,13 +18,14 @@
 #define DMR_H_
 
 #include "fec.h"
+#include "export.h"
 
 namespace DSDcc
 {
 
 class DSDDecoder;
 
-class DSDDMR
+class DSDCC_API DSDDMR
 {
 public:
     typedef enum

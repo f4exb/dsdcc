@@ -24,10 +24,12 @@
 
 #include <string>
 
+#include "export.h"
+
 namespace DSDcc
 {
 
-class LocatorInvalidException
+class DSDCC_API LocatorInvalidException
 {
   public:
     explicit LocatorInvalidException(std::string locator_str) : _locator_str(locator_str) {};
@@ -36,7 +38,7 @@ class LocatorInvalidException
     std::string _locator_str;
 };
 
-class Locator
+class DSDCC_API Locator
 {
   public:
     Locator();
@@ -67,7 +69,7 @@ class Locator
     float m_lon;
 };
 
-class LocPoint
+class DSDCC_API LocPoint
 {
   public:
     LocPoint() {};

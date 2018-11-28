@@ -25,13 +25,14 @@
 #include "fec.h"
 #include "crc.h"
 #include "pn.h"
+#include "export.h"
 
 namespace DSDcc
 {
 
 class DSDDecoder;
 
-class DSDYSF
+class DSDCC_API DSDYSF
 {
 public:
     typedef enum

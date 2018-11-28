@@ -18,6 +18,7 @@
 #define DSDCC_DSD_MBE_H_
 
 #include "dsd_filters.h"
+#include "export.h"
 
 namespace DSDcc
 {
@@ -25,7 +26,7 @@ namespace DSDcc
 class DSDDecoder;
 struct DSDmbelibParms;
 
-class DSDMBEDecoder
+class DSDCC_API DSDMBEDecoder
 {
 public:
     explicit DSDMBEDecoder(DSDDecoder *dsdDecoder);

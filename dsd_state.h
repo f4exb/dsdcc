@@ -22,11 +22,12 @@
 #include <string.h>
 
 #include "p25p1_heuristics.h"
+#include "export.h"
 
 namespace DSDcc
 {
 
-class DSDState
+class DSDCC_API DSDState
 {
 public:
     DSDState();

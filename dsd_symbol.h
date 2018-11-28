@@ -21,13 +21,14 @@
 #include "doublebuffer.h"
 #include "runningmaxmin.h"
 #include "phaselock.h"
+#include "export.h"
 
 namespace DSDcc
 {
 
 class DSDDecoder;
 
-class DSDSymbol
+class DSDCC_API DSDSymbol
 {
 public:
     explicit DSDSymbol(DSDDecoder *dsdDecoder);

@@ -94,10 +94,12 @@
 
 #define HEURISTICS_SIZE 200
 
+#include "export.h"
+
 namespace DSDcc
 {
 
-class DSDP25Heuristics
+class DSDCC_API DSDP25Heuristics
 {
 public:
     typedef struct

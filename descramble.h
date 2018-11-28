@@ -17,10 +17,12 @@
 #ifndef DSDCC_DESCRAMBLE_H_
 #define DSDCC_DESCRAMBLE_H_
 
+#include "export.h"
+
 namespace DSDcc
 {
 
-class Descramble
+class DSDCC_API Descramble
 {
 public:
     static void scramble (unsigned char *in, unsigned char *out);

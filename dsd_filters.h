@@ -21,11 +21,12 @@
 #define NXZEROS 134
 
 #include "iirfilter.h"
+#include "export.h"
 
 namespace DSDcc
 {
 
-class DSDFilters
+class DSDCC_API DSDFilters
 {
 public:
     DSDFilters();
@@ -53,7 +54,7 @@ private:
  * \Brief: This is a second order bandpass filter using recursive method. r is in range ]0..1[ the higher the steeper the filter.
  * inspired by:http://www.ece.umd.edu/~tretter/commlab/c6713slides/FSKSlides.pdf
  */
-class DSDSecondOrderRecursiveFilter
+class DSDCC_API DSDSecondOrderRecursiveFilter
 {
 public:
     DSDSecondOrderRecursiveFilter(float samplingFrequency, float centerFrequency, float r);
@@ -89,7 +90,7 @@ private:
  *
  */
 
-class DSDMBEAudioInterpolatorFilter
+class DSDCC_API DSDMBEAudioInterpolatorFilter
 {
 public:
     DSDMBEAudioInterpolatorFilter();

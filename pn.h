@@ -17,10 +17,12 @@
 #ifndef PN_H_
 #define PN_H_
 
+#include "export.h"
+
 namespace DSDcc
 {
 
-class PN_9_5
+class DSDCC_API PN_9_5
 {
 public:
     explicit PN_9_5(unsigned int seed);

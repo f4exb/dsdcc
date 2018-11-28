@@ -1,7 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////////
-// Copyright (C) 2016 Edouard Griffiths, F4EXB.                                  //
-//                                                                               //
-// This is a C++ adaptation of the ecc.h/ecc.c in mbelib                         //
+// Copyright (C) 2018 Edouard Griffiths, F4EXB.                                  //
 //                                                                               //
 // This program is free software; you can redistribute it and/or modify          //
 // it under the terms of the GNU General Public License as published by          //
@@ -16,44 +14,32 @@
 // along with this program. If not, see <http://www.gnu.org/licenses/>.          //
 ///////////////////////////////////////////////////////////////////////////////////
 
-#ifndef MBEFEC_H_
-#define MBEFEC_H_
+#ifndef __DSDCC_EXPORT_H
+#define __DSDCC_EXPORT_H
 
-#include "export.h"
+#if defined (__GNUC__) && (__GNUC__ >= 4)
+#  define __DSDCC_EXPORT   __attribute__((visibility("default")))
+#  define __DSDCC_IMPORT   __attribute__((visibility("default")))
 
-namespace DSDcc
-{
+#elif defined (_MSC_VER)
+#  define __DSDCC_EXPORT   __declspec(dllexport)
+#  define __DSDCC_IMPORT   __declspec(dllimport)
 
-/**
- * This is the Golay(23,11) used in AMBE FEC
+#else
+#  define __DSDCC_EXPORT
+#  define __DSDCC_IMPORT
+#endif
+
+/* The 'DSDCC_API' controls the import/export of 'sdrbase' symbols and classes.
  */
-class DSDCC_API GolayMBE
-{
-public:
-    static int  mbe_golay2312(unsigned char *in, unsigned char *out);
+#if !defined(dsdcc_STATIC)
+#  if defined dsdcc_EXPORTS
+#    define DSDCC_API __DSDCC_EXPORT
+#  else
+#    define DSDCC_API __DSDCC_IMPORT
+#  endif
+#else
+#  define DSDCC_API
+#endif
 
-private:
-    static void mbe_checkGolayBlock(long int *block);
-
-    static const int golayGenerator[12];
-    static const int golayMatrix[2048];
-};
-
-/**
- * This is the Hamming(15,11) used in AMBE FEC
- */
-class DSDCC_API HammingMBE
-{
-public:
-    static int mbe_hamming1511(unsigned char *in, unsigned char *out);
-    static int mbe_7100x4400hamming1511(unsigned char *in, unsigned char *out);
-
-private:
-    static const int hammingGenerator[4];
-    static const int imbe7100x4400hammingGenerator[4];
-    static const int hammingMatrix[16];
-};
-
-} // namespace DSDcc
-
-#endif /* MBEFEC_H_ */
+#endif // __DSDCC_EXPORT_H

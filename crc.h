@@ -19,10 +19,12 @@
 #ifndef CRC_H_
 #define CRC_H_
 
+#include "export.h"
+
 namespace DSDcc
 {
 
-class CRC
+class DSDCC_API CRC
 {
 public:
     CRC(unsigned long polynomial,
@@ -115,7 +117,7 @@ private:
  *     https://github.com/f4goh/DSTAR
  * Many thanks to Anthony, F4GOH!
  */
-class DStarCRC
+class DSDCC_API DStarCRC
 {
 public:
 	DStarCRC();

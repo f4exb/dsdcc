@@ -18,6 +18,7 @@
 #define DSD_MBELIB_H_
 
 #include <stdlib.h>
+#include "export.h"
 
 extern "C" {
 #include <mbelib.h>
@@ -26,7 +27,7 @@ extern "C" {
 namespace DSDcc
 {
 
-struct DSDmbelibParms
+struct DSDCC_API DSDmbelibParms
 {
     mbe_parms *m_cur_mp;
     mbe_parms *m_prev_mp;

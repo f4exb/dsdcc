@@ -26,9 +26,11 @@
 
 #include <stdint.h>
 
+#include "export.h"
+
 namespace DSDcc
 {
-class CNXDNCRC
+class DSDCC_API CNXDNCRC
 {
 public:
 	static bool checkCRC6(const unsigned char* in, unsigned int length);

@@ -24,10 +24,12 @@
 
 #include <stdint.h>
 
+#include "export.h"
+
 namespace DSDcc
 {
 
-class CNXDNConvolution {
+class DSDCC_API CNXDNConvolution {
 public:
 	CNXDNConvolution();
 	~CNXDNConvolution();

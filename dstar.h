@@ -21,13 +21,14 @@
 #include "viterbi3.h"
 #include "crc.h"
 #include "locator.h"
+#include "export.h"
 
 namespace DSDcc
 {
 
 class DSDDecoder;
 
-class DSDDstar
+class DSDCC_API DSDDstar
 {
 public:
 	explicit DSDDstar(DSDDecoder *dsdDecoder);

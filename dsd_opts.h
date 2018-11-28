@@ -17,10 +17,12 @@
 #ifndef DSDCC_DSD_OPTS_H_
 #define DSDCC_DSD_OPTS_H_
 
+#include "export.h"
+
 namespace DSDcc
 {
 
-class DSDOpts
+class DSDCC_API DSDOpts
 {
 public:
     DSDOpts();

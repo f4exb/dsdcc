@@ -17,10 +17,12 @@
 #include <chrono>
 #include <stdint.h>
 
+#include "export.h"
+
 namespace DSDcc
 {
 
-class TimeUtil
+class DSDCC_API TimeUtil
 {
 public:
     static uint64_t nowms(); //!< returns the current epoch in milliseconds

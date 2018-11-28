@@ -20,13 +20,14 @@
 #include "pn.h"
 #include "viterbi5.h"
 #include "nxdnmessage.h"
+#include "export.h"
 
 namespace DSDcc
 {
 
 class DSDDecoder;
 
-class DSDNXDN
+class DSDCC_API DSDNXDN
 {
 public:
     typedef enum

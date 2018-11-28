@@ -28,13 +28,14 @@
 #include "dstar.h"
 #include "nxdn.h"
 #include "locator.h"
+#include "export.h"
 
 #define DSD_SQUELCH_TIMEOUT_SAMPLES 960 // 200ms timeout after return to sync search
 
 namespace DSDcc
 {
 
-class DSDDecoder
+class DSDCC_API DSDDecoder
 {
     friend class DSDSymbol;
     friend class DSDMBEDecoder;

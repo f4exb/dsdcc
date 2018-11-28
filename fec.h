@@ -17,10 +17,12 @@
 #ifndef FEC_H_
 #define FEC_H_
 
+#include "export.h"
+
 namespace DSDcc
 {
 
-class Hamming_7_4
+class DSDCC_API Hamming_7_4
 {
 public:
 	Hamming_7_4();
@@ -36,7 +38,7 @@ private:
 	static const unsigned char m_H[7*3]; //!< Parity check matrix of bits
 };
 
-class Hamming_12_8
+class DSDCC_API Hamming_12_8
 {
 public:
     Hamming_12_8();
@@ -52,7 +54,7 @@ private:
     static const unsigned char m_H[12*4]; //!< Parity check matrix of bits
 };
 
-class Hamming_15_11
+class DSDCC_API Hamming_15_11
 {
 public:
     Hamming_15_11();
@@ -68,7 +70,7 @@ private:
     static const unsigned char m_H[15*4];  //!< Parity check matrix of bits
 };
 
-class Hamming_16_11_4
+class DSDCC_API Hamming_16_11_4
 {
 public:
     Hamming_16_11_4();
@@ -84,7 +86,7 @@ private:
     static const unsigned char m_H[16*5];  //!< Parity check matrix of bits
 };
 
-class Golay_20_8
+class DSDCC_API Golay_20_8
 {
 public:
 	Golay_20_8();
@@ -100,7 +102,7 @@ private:
     static const unsigned char m_H[20*12]; //!< Parity check matrix of bits
 };
 
-class Golay_23_12
+class DSDCC_API Golay_23_12
 {
 public:
     Golay_23_12();
@@ -116,7 +118,7 @@ private:
     static const unsigned char m_H[23*11]; //!< Parity check matrix of bits
 };
 
-class Golay_24_12
+class DSDCC_API Golay_24_12
 {
 public:
     Golay_24_12();
@@ -132,7 +134,7 @@ private:
     static const unsigned char m_H[24*12]; //!< Parity check matrix of bits
 };
 
-class QR_16_7_6
+class DSDCC_API QR_16_7_6
 {
 public:
 	QR_16_7_6();

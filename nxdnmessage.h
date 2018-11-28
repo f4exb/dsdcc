@@ -17,10 +17,12 @@
 #ifndef NXDNMESSAGE_H_
 #define NXDNMESSAGE_H_
 
+#include "export.h"
+
 namespace DSDcc
 {
 
-struct AdjacentSiteInformation
+struct DSDCC_API AdjacentSiteInformation
 {
     unsigned char m_siteNumber;      // 1 to 16
     unsigned int m_locationId;       // 24 bit
@@ -28,7 +30,7 @@ struct AdjacentSiteInformation
 };
 
 /** A layer-3 message */
-struct Message
+struct DSDCC_API Message
 {
 public:
     void reset();

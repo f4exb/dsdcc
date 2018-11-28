@@ -18,11 +18,13 @@
 #include <stdint.h>
 #include <vector>
 
+#include "export.h"
+
 namespace DSDcc
 {
 
 /** Phase-locked loop. */
-class PhaseLock
+class DSDCC_API PhaseLock
 {
 public:
     /**
@@ -92,7 +94,7 @@ private:
     uint64_t m_sample_cnt;
 };
 
-class SimplePhaseLock : public PhaseLock
+class DSDCC_API SimplePhaseLock : public PhaseLock
 {
 public:
     SimplePhaseLock(float freq, float bandwidth, float minsignal) :

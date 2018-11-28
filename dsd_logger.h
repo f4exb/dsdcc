@@ -20,10 +20,12 @@
 #include <stdio.h>
 #include <cstdarg>
 
+#include "export.h"
+
 namespace DSDcc
 {
 
-class DSDLogger
+class DSDCC_API DSDLogger
 {
 public:
     DSDLogger();
