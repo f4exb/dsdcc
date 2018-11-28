@@ -21,6 +21,7 @@
 
 #include <cctype> // for toupper
 #include <algorithm>
+#define _USE_MATH_DEFINES
 #include <math.h>
 #include "locator.h"
 

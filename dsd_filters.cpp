@@ -14,6 +14,7 @@
 // along with this program. If not, see <http://www.gnu.org/licenses/>.          //
 ///////////////////////////////////////////////////////////////////////////////////
 
+#define _USE_MATH_DEFINES
 #include <cmath>
 #include "dsd_filters.h"
 

@@ -16,7 +16,7 @@
 
 #include <stdlib.h>
 #include <assert.h>
-#include <sys/time.h>
+#include "timeutil.h"
 #include "dsd_decoder.h"
 
 namespace DSDcc
@@ -1253,9 +1253,11 @@ void DSDDecoder::printFrameInfo()
 
 void DSDDecoder::formatStatusText(char *statusText)
 {
-	struct timeval tp;
-	gettimeofday(&tp, 0);
-	sprintf(statusText, "%d.%03d:", (uint32_t) tp.tv_sec, (uint32_t) tp.tv_usec / 1000);
+    uint64_t tv_sec, tv_msec;
+    uint64_t nowms = TimeUtil::nowms();
+    tv_sec = nowms / 1000;
+    tv_msec = nowms % 1000;
+    sprintf(statusText, "%d.%03d:", (uint32_t) tv_sec, (uint32_t) tv_msec);
 
     switch (getSyncType())
     {

@@ -15,7 +15,9 @@
 // along with this program. If not, see <http://www.gnu.org/licenses/>.          //
 ///////////////////////////////////////////////////////////////////////////////////
 
+#define _USE_MATH_DEFINES
 #include <cmath>
+#include <algorithm>
 #include <stdio.h>
 #include <float.h>
 #include "phaselock.h"
@@ -196,7 +198,7 @@ void PhaseLock::process(const std::vector<float>& samples_in, std::vector<float>
         }
 
         // Detect pilot level (conservative).
-        pilot_level = std::min(pilot_level, phasor_i);
+        pilot_level = (std::min)(pilot_level, phasor_i);
 
         // Run phase error through loop filter and update frequency estimate.
         m_freq += m_loopfilter_b0 * phase_err
