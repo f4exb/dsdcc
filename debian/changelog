@@ -1,3 +1,10 @@
+dsdcc (1.8.4-1) unstable; urgency=medium
+
+  * NXDN: take RTCH-C frames into consideration
+  * MSVC compatibility
+
+ -- Edouard Griffiths, F4EXB <f4exb06@gmail.com>  Sat, 01 Dec 2018 20:15:15 +0100
+
 dsdcc (1.8.3-1) unstable; urgency=medium
 
   * NXDN: support full rate (EFR)
