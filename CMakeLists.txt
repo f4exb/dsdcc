@@ -18,6 +18,16 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules)
 
 project(dsdcc)
 
+set(MAJOR_VERSION 1)
+set(MINOR_VERSION 8)
+set(PATCH_VERSION 4)
+set(PACKAGE libdsdcc)
+set(VERSION_STRING ${MAJOR_VERSION}.${MINOR_VERSION}.${PATCH_VERSION})
+set(VERSION ${VERSION_STRING})
+
+include(GNUInstallDirs)
+set(LIB_INSTALL_DIR "${CMAKE_INSTALL_LIBDIR}") # "lib" or "lib64"
+
 if (BUILD_TYPE MATCHES RELEASE)
     set(CMAKE_BUILD_TYPE "Release")
 elseif (BUILD_TYPE MATCHES RELEASEWITHDBGINFO)
@@ -32,7 +42,7 @@ else()
 endif()
 
 find_package(LibMbe)
-find_package(SerialDV) 
+find_package(SerialDV)
 
 if (USE_MBELIB AND LIBMBE_FOUND)
     add_definitions(-DDSD_USE_MBELIB)
@@ -152,12 +162,14 @@ if (BUILD_DEBIAN)
     target_link_libraries(dsdcc serialdv)
     add_definitions(-DDSD_USE_MBELIB)
     include_directories(${LIBMBELIBSRC})
-    target_link_libraries(dsdcc mbelib)    
+    target_link_libraries(dsdcc mbelib)
 endif()
 
 add_executable(dsdccx
     dsd_main.cpp
 )
+
+set_target_properties(dsdccx PROPERTIES VERSION ${VERSION} SOVERSION ${MAJOR_VERSION})
 
 target_include_directories(dsdccx PUBLIC
     ${PROJECT_SOURCE_DIR}
@@ -166,6 +178,32 @@ target_include_directories(dsdccx PUBLIC
 
 target_link_libraries(dsdccx dsdcc)
 
+########################################################################
+# Create Pkg Config File
+########################################################################
+
+# use space-separation format for the pc file
+STRING(REPLACE ";" " " DSDCC_PC_REQUIRES "${DSDCC_PC_REQUIRES}")
+STRING(REPLACE ";" " " DSDCC_PC_CFLAGS "${DSDCC_PC_CFLAGS}")
+STRING(REPLACE ";" " " DSDCC_PC_LIBS "${DSDCC_PC_LIBS}")
+
+# unset these vars to avoid hard-coded paths to cross environment
+IF(CMAKE_CROSSCOMPILING)
+    UNSET(DSDCC_PC_CFLAGS)
+    UNSET(DSDCC_PC_LIBS)
+ENDIF(CMAKE_CROSSCOMPILING)
+
+CONFIGURE_FILE(
+    ${CMAKE_CURRENT_SOURCE_DIR}/cmake/libdsdcc.pc.in
+    ${CMAKE_CURRENT_BINARY_DIR}/cmake/libdsdcc.pc
+@ONLY)
+
+INSTALL(
+    FILES ${CMAKE_CURRENT_BINARY_DIR}/cmake/libdsdcc.pc
+    DESTINATION ${LIB_INSTALL_DIR}/pkgconfig
+)
+
+# Installation
 install(TARGETS dsdccx DESTINATION bin)
 install(TARGETS dsdcc DESTINATION lib${LIB_SUFFIX})
 install(FILES ${dsdcc_HEADERS} DESTINATION include/${PROJECT_NAME})
