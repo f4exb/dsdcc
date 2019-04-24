@@ -1338,7 +1338,7 @@ void DSDNXDN::printAdjacentSites()
         }
 
         std::cerr << "DSDNXDN::printAdjacentSites:"
-            << " site: " << m_adjacentSites[i].m_siteNumber
+            << " site: " << (unsigned int) m_adjacentSites[i].m_siteNumber
             << " channel: " << m_adjacentSites[i].m_channelNumber
             << " location: " << std::hex << m_adjacentSites[i].m_locationId << std::endl;
     }
