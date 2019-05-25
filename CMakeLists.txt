@@ -1,5 +1,16 @@
 cmake_minimum_required(VERSION 3.1.0)
 
+project(dsdcc)
+
+set(MAJOR_VERSION 1)
+set(MINOR_VERSION 8)
+set(PATCH_VERSION 5)
+set(PACKAGE libdsdcc)
+set(VERSION_STRING ${MAJOR_VERSION}.${MINOR_VERSION}.${PATCH_VERSION})
+set(VERSION ${VERSION_STRING})
+
+option(BUILD_TOOL "Build dsdccx tool" ON)
+
 # use c++11
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -19,18 +30,13 @@ SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 # Compiler flags.
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -fmax-errors=10 -O2 -ffast-math -ftree-vectorize ${EXTRA_FLAGS}")
+if(MSVC)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall ${EXTRA_FLAGS}")
+else()
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -fmax-errors=10 -O2 -ffast-math -ftree-vectorize ${EXTRA_FLAGS}")
+endif()
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules)
-
-project(dsdcc)
-
-set(MAJOR_VERSION 1)
-set(MINOR_VERSION 8)
-set(PATCH_VERSION 5)
-set(PACKAGE libdsdcc)
-set(VERSION_STRING ${MAJOR_VERSION}.${MINOR_VERSION}.${PATCH_VERSION})
-set(VERSION ${VERSION_STRING})
 
 include(GNUInstallDirs)
 set(LIB_INSTALL_DIR "${CMAKE_INSTALL_LIBDIR}") # "lib" or "lib64"
@@ -172,6 +178,7 @@ if (BUILD_DEBIAN)
     target_link_libraries(dsdcc mbelib)
 endif()
 
+if(BUILD_TOOL)
 add_executable(dsdccx
     dsd_main.cpp
 )
@@ -184,6 +191,7 @@ target_include_directories(dsdccx PUBLIC
 )
 
 target_link_libraries(dsdccx dsdcc)
+endif(BUILD_TOOL)
 
 ########################################################################
 # Create Pkg Config File
@@ -211,6 +219,8 @@ INSTALL(
 )
 
 # Installation
-install(TARGETS dsdccx DESTINATION bin)
+if(BUILD_TOOL)
+    install(TARGETS dsdccx DESTINATION bin)
+endif(BUILD_TOOL)
 install(TARGETS dsdcc DESTINATION lib${LIB_SUFFIX})
 install(FILES ${dsdcc_HEADERS} DESTINATION include/${PROJECT_NAME})
