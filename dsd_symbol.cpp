@@ -262,6 +262,12 @@ bool DSDSymbol::pushSample(short sample)
 
     if (m_sampleIndex == m_samplesPerSymbol - 1) // conclusion
     {
+        if (m_count == 0) // out of sync for example because of race condition
+        {
+            m_sampleIndex = 0; // return to the beginning of a symbol
+            return false;      // and wait for next sample
+        }
+
         m_symbol = m_sum / m_count;
         m_dsdDecoder->m_state.symbolcnt++;
 

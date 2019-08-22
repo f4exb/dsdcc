@@ -236,6 +236,11 @@ void DSDDecoder::setDecodeMode(DSDDecodeMode mode, bool on)
     default:
         break;
     }
+
+    resetFrameSync();
+    noCarrier();
+    m_squelchTimeoutCount = 0;
+    m_nxdnInterSyncCount = -1; // reset to quiet state
 }
 
 void DSDDecoder::setAudioGain(float gain)
