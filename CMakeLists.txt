@@ -158,6 +158,7 @@ endif()
 add_library(dsdcc SHARED
     ${dsdcc_SOURCES}
 )
+set_target_properties(dsdcc PROPERTIES VERSION ${VERSION} SOVERSION ${MAJOR_VERSION})
 
 if (USE_MBELIB AND LIBMBE_FOUND)
     target_link_libraries(dsdcc ${LIBMBE_LIBRARY})
@@ -182,8 +183,6 @@ if(BUILD_TOOL)
 add_executable(dsdccx
     dsd_main.cpp
 )
-
-set_target_properties(dsdccx PROPERTIES VERSION ${VERSION} SOVERSION ${MAJOR_VERSION})
 
 target_include_directories(dsdccx PUBLIC
     ${PROJECT_SOURCE_DIR}
@@ -222,5 +221,5 @@ INSTALL(
 if(BUILD_TOOL)
     install(TARGETS dsdccx DESTINATION bin)
 endif(BUILD_TOOL)
-install(TARGETS dsdcc DESTINATION lib${LIB_SUFFIX})
+install(TARGETS dsdcc DESTINATION ${LIB_INSTALL_DIR})
 install(FILES ${dsdcc_HEADERS} DESTINATION include/${PROJECT_NAME})
