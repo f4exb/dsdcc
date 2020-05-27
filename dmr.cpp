@@ -41,7 +41,8 @@ const int DSDDMR::m_embSigInterleave[128] = {
        14,  30,  46,  62,  78,  94, 110, 126,
        15,  31,  47,  63,  79,  95, 111, 127,
 };
-const char *DSDDMR::m_slotTypeText[13] = {
+//ETSI TS 102 361-1 9.3.6. Data Type
+const char *DSDDMR::m_slotTypeText[DMR_TYPES_COUNT] = {
         "PIH",
         "VLC",
         "TLC",
@@ -53,8 +54,7 @@ const char *DSDDMR::m_slotTypeText[13] = {
         "D34",
         "IDL",
         "D01",
-        "RES",
-        "UNK"
+        "USB"
 };
 
 /*
@@ -115,8 +115,8 @@ DSDDMR::DSDDMR(DSDDecoder *dsdDecoder) :
         m_voice1EmbSig_OK(false),
         m_voice2EmbSig_dibitsIndex(0),
         m_voice2EmbSig_OK(false),
-        m_voice1FrameCount(6),
-        m_voice2FrameCount(6)
+        m_voice1FrameCount(DMR_VOX_SUPERFRAME_LEN),
+        m_voice2FrameCount(DMR_VOX_SUPERFRAME_LEN)
 {
     m_slotText = m_dsdDecoder->m_state.slot0light;
     w = 0;
@@ -180,15 +180,15 @@ void DSDDMR::processData()
 
     processDataDibit(dibit);
 
-    if (m_symbolIndex == 144 - 1) // last dibit
+    if (m_symbolIndex == IN_DIBITS(DMR_TS_LEN) - 1) // last dibit
     {
         if (m_slot == DSDDMRSlot1)
         {
-            if (m_voice1FrameCount < 6) // continuation expected on slot + 2
+            if (m_voice1FrameCount < DMR_VOX_SUPERFRAME_LEN) // continuation expected on slot + 2
             {
                 std::cerr << "DSDDMR::processData: error: remaining voice in slot1" << std::endl;
 
-                if (m_voice2FrameCount < 6)
+                if (m_voice2FrameCount < DMR_VOX_SUPERFRAME_LEN)
                 {
                     m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDMRvoice; // voice continuation in slot 2
                     m_continuation = true;
@@ -201,7 +201,7 @@ void DSDDMR::processData()
             }
             else
             {
-                if (m_voice2FrameCount < 6)
+                if (m_voice2FrameCount < DMR_VOX_SUPERFRAME_LEN)
                 {
                     m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDMRvoice; // voice continuation in slot 2
                     m_continuation = true;
@@ -215,11 +215,11 @@ void DSDDMR::processData()
         }
         else if (m_slot == DSDDMRSlot2)
         {
-            if (m_voice2FrameCount < 6) // continuation expected on slot + 2
+            if (m_voice2FrameCount < DMR_VOX_SUPERFRAME_LEN) // continuation expected on slot + 2
             {
                 std::cerr << "DSDDMR::processData: error: remaining voice in slot2" << std::endl;
 
-                if (m_voice1FrameCount < 6)
+                if (m_voice1FrameCount < DMR_VOX_SUPERFRAME_LEN)
                 {
                     m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDMRvoice; // voice continuation in slot 1
                     m_continuation = true;
@@ -232,7 +232,7 @@ void DSDDMR::processData()
             }
             else
             {
-                if (m_voice1FrameCount < 6)
+                if (m_voice1FrameCount < DMR_VOX_SUPERFRAME_LEN)
                 {
                     m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDMRvoice; // voice continuation in slot 1
                     m_continuation = true;
@@ -261,7 +261,7 @@ void DSDDMR::processDataMS()
 
     processDataDibit(dibit);
 
-    if (m_symbolIndex == 144 - 1) // last dibit
+    if (m_symbolIndex == IN_DIBITS(DMR_TS_LEN) - 1) // last dibit
     {
         m_dsdDecoder->resetFrameSync(); // back to sync
         m_symbolIndex = 0;
@@ -278,8 +278,8 @@ void DSDDMR::processVoice()
     {
         m_slotText = m_dsdDecoder->m_state.slot0light;
         memcpy(m_dsdDecoder->m_state.slot0light, "/-- UNK", 7);
-        m_voice1FrameCount = 6;
-        m_voice2FrameCount = 6;
+        m_voice1FrameCount = DMR_VOX_SUPERFRAME_LEN;
+        m_voice2FrameCount = DMR_VOX_SUPERFRAME_LEN;
         m_dsdDecoder->resetFrameSync();
         return; // abort
     }
@@ -288,15 +288,15 @@ void DSDDMR::processVoice()
 
     processVoiceDibit(dibit);
 
-    if (m_symbolIndex == 144 - 1) // last dibit
+    if (m_symbolIndex == IN_DIBITS(DMR_TS_LEN) - 1) // last dibit
     {
         if (m_slot == DSDDMRSlot1)
         {
             m_voice1FrameCount++;
 
-            if (m_voice1FrameCount < 6) // continuation expected on slot + 2
+            if (m_voice1FrameCount < DMR_VOX_SUPERFRAME_LEN) // continuation expected on slot + 2
             {
-                if (m_voice2FrameCount < 6)
+                if (m_voice2FrameCount < DMR_VOX_SUPERFRAME_LEN)
                 {
                     m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDMRvoice; // voice continuation in slot 2
                     m_continuation = true;
@@ -311,7 +311,7 @@ void DSDDMR::processVoice()
             {
                 m_dsdDecoder->m_voice1On = false;
 
-                if (m_voice2FrameCount < 6)
+                if (m_voice2FrameCount < DMR_VOX_SUPERFRAME_LEN)
                 {
                     m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDMRvoice; // voice continuation in slot 2
                     m_continuation = true;
@@ -327,9 +327,9 @@ void DSDDMR::processVoice()
         {
             m_voice2FrameCount++;
 
-            if (m_voice2FrameCount < 6) // continuation expected on slot + 2
+            if (m_voice2FrameCount < DMR_VOX_SUPERFRAME_LEN) // continuation expected on slot + 2
             {
-                if (m_voice1FrameCount < 6)
+                if (m_voice1FrameCount < DMR_VOX_SUPERFRAME_LEN)
                 {
                     m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDMRvoice; // voice continuation in slot 1
                     m_continuation = true;
@@ -344,7 +344,7 @@ void DSDDMR::processVoice()
             {
                 m_dsdDecoder->m_voice2On = false;
 
-                if (m_voice1FrameCount < 6)
+                if (m_voice1FrameCount < DMR_VOX_SUPERFRAME_LEN)
                 {
                     m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDMRvoice; // voice continuation in slot 1
                     m_continuation = true;
@@ -369,16 +369,19 @@ void DSDDMR::processVoice()
 
 void DSDDMR::processSyncOrSkip()
 {
-    if (m_symbolIndex > 24) // accumulate enough symbols to look for a sync
+    const int sync_db_size = IN_DIBITS(DMR_SYNC_LEN);
+    if (m_symbolIndex > sync_db_size) // accumulate enough symbols to look for a sync
     {
-        if (memcmp(m_dsdDecoder->m_dsdSymbol.getSyncDibitBack(24), DSDDecoder::m_syncDMRDataBS, 24) == 0)
+        if (memcmp(m_dsdDecoder->m_dsdSymbol.getSyncDibitBack(sync_db_size),
+            DSDDecoder::m_syncDMRDataBS, sync_db_size) == 0)
         {
 //		    std::cerr << "DSDDMR::processSyncOrSkip: data sync" << std::endl;
             processDataFirstHalf(90);
             m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDMRdata;
             return;
         }
-        else if (memcmp(m_dsdDecoder->m_dsdSymbol.getSyncDibitBack(24), DSDDecoder::m_syncDMRVoiceBS, 24) == 0)
+        else if (memcmp(m_dsdDecoder->m_dsdSymbol.getSyncDibitBack(sync_db_size),
+            DSDDecoder::m_syncDMRVoiceBS, sync_db_size) == 0)
         {
 //		    std::cerr << "DSDDMR::processSyncOrSkip: voice sync" << std::endl;
             processVoiceFirstHalf(90);
@@ -387,7 +390,7 @@ void DSDDMR::processSyncOrSkip()
         }
     }
 
-    if (m_symbolIndex == 144 - 1) // last dibit
+    if (m_symbolIndex == IN_DIBITS(DMR_TS_LEN) - 1) // last dibit
     {
         // return to voice super frame
         m_slot = (DSDDMRSlot) (((int) m_slot + 1) % 2); // to keep the slot in the next slot period fake a slot reversal
@@ -409,12 +412,12 @@ void DSDDMR::processVoiceMS()
 
     processVoiceDibit(dibit);
 
-    if (m_symbolIndex == 144 - 1) // last dibit
+    if (m_symbolIndex == IN_DIBITS(DMR_TS_LEN) - 1) // last dibit
     {
         m_voice1FrameCount++;
 //        std::cerr << "DSDDMR::processVoiceMS: " << m_symbolIndex << " : " << m_voice1FrameCount << std::endl;
 
-        if (m_voice1FrameCount < 6) // continuation expected on slot + 2
+        if (m_voice1FrameCount < DMR_VOX_SUPERFRAME_LEN) // continuation expected on slot + 2
         {
             m_dsdDecoder->m_dsdSymbol.setNoSignal(true);
             m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDMRSkipMS; // skip next slot
@@ -436,7 +439,7 @@ void DSDDMR::processVoiceMS()
 void DSDDMR::processSkipMS()
 {
 
-    if (m_symbolIndex == 144 - 1) // last dibit
+    if (m_symbolIndex == IN_DIBITS(DMR_TS_LEN) - 1) // last dibit
     {
 //        std::cerr << "DSDDMR::processSkipMS: " << m_symbolIndex << std::endl;
         // return to voice super frame
@@ -501,8 +504,8 @@ void DSDDMR::processVoiceFirstHalf(unsigned int shiftBack)
     }
     else // invalid
     {
-        m_voice1FrameCount = 6;
-        m_voice2FrameCount = 6;
+        m_voice1FrameCount = DMR_VOX_SUPERFRAME_LEN;
+        m_voice2FrameCount = DMR_VOX_SUPERFRAME_LEN;
         m_dsdDecoder->m_voice1On = false;
         m_dsdDecoder->m_voice2On = false;
         m_voice1EmbSig_OK = false;
@@ -531,16 +534,18 @@ void DSDDMR::processVoiceFirstHalfMS()
 
 void DSDDMR::processDataDibit(unsigned char dibit)
 {
+    int nextPartOff = IN_DIBITS(DMR_CACH_LEN);
+
     // CACH
 
-    if (m_symbolIndex < 12)
+    if (m_symbolIndex < nextPartOff)
     {
         if (m_burstType == DSDDMRBaseStation)
         {
             m_cachBits[m_cachInterleave[2*m_symbolIndex]]   = (dibit >> 1) & 1;
             m_cachBits[m_cachInterleave[2*m_symbolIndex+1]] = dibit & 1;
 
-            if(m_symbolIndex == 12-1)
+            if(m_symbolIndex == nextPartOff-1)
             {
                 decodeCACH(m_cachBits);
 
@@ -550,61 +555,72 @@ void DSDDMR::processDataDibit(unsigned char dibit)
     //                    << " VC2: " << m_voice2FrameCount << std::endl;
             }
         }
+        return;
     }
 
     // data first half
-
-    else if (m_symbolIndex < 12 + 49)
+    nextPartOff += IN_DIBITS(DMR_DATA_PART_LEN);
+    if (m_symbolIndex < nextPartOff)
     {
         // TODO
+        return;
     }
 
     // Slot Type first half
-
-    else if (m_symbolIndex < 12 + 49 + 5)
+    nextPartOff += IN_DIBITS(DMR_SLOT_TYPE_PART_LEN);
+    if (m_symbolIndex < nextPartOff)
     {
-        m_slotTypePDU_dibits[m_symbolIndex - (12 + 49)] = dibit;
+        m_slotTypePDU_dibits[m_symbolIndex - IN_DIBITS(DMR_CACH_LEN + DMR_DATA_PART_LEN)] = dibit;
+        return;
     }
 
     // Sync or embedded signalling
-
-    else if (m_symbolIndex < 12 + 49 + 5 + 24)
+    nextPartOff += IN_DIBITS(DMR_SYNC_LEN);
+    if (m_symbolIndex < nextPartOff)
     {
         // TODO
+        return;
     }
 
     // Slot Type second half
-
-    else if (m_symbolIndex < 90 + 5)
+    nextPartOff += IN_DIBITS(DMR_SLOT_TYPE_PART_LEN);
+    if (m_symbolIndex < nextPartOff)
     {
-        m_slotTypePDU_dibits[5 + m_symbolIndex - 90] = dibit;
+        int slotTypePDUOff = IN_DIBITS(DMR_SLOT_TYPE_PART_LEN) +
+            m_symbolIndex - IN_DIBITS(DMR_CACH_LEN + DMR_DATA_PART_LEN +
+                                      DMR_SLOT_TYPE_PART_LEN + DMR_SYNC_LEN);
+        m_slotTypePDU_dibits[slotTypePDUOff] = dibit;
 
-        if (m_symbolIndex == 90 + 5 - 1)
+        if (m_symbolIndex == nextPartOff - 1)
         {
             processSlotTypePDU();
         }
+        return;
     }
 
     // data second half
-
-    else if (m_symbolIndex < 90 + 5 + 49)
+    nextPartOff += IN_DIBITS(DMR_DATA_PART_LEN);
+    if (m_symbolIndex < nextPartOff)
     {
         // TODO
+        return;
     }
 }
 
 void DSDDMR::processVoiceDibit(unsigned char dibit)
 {
+    int nextPartOff = IN_DIBITS(DMR_CACH_LEN);
+    int CurOff = 0;
     // CACH
 
-    if (m_symbolIndex < 12)
+    if (m_symbolIndex < nextPartOff)
     {
         if (m_burstType == DSDDMRBaseStation)
         {
             m_cachBits[m_cachInterleave[2*m_symbolIndex]]   = (dibit >> 1) & 1;
             m_cachBits[m_cachInterleave[2*m_symbolIndex+1]] = dibit & 1;
 
-            if(m_symbolIndex == 12-1)
+            if(m_symbolIndex == nextPartOff-1)
             {
                 decodeCACH(m_cachBits);
 
@@ -623,13 +639,15 @@ void DSDDMR::processVoiceDibit(unsigned char dibit)
     //                    << " VC2: " << m_voice2FrameCount << std::endl;
             }
         }
+        return;
     }
 
     // voice frame 1
-
-    else if (m_symbolIndex < 12 + 36)
+    CurOff = nextPartOff;
+    nextPartOff += IN_DIBITS(DMR_VOCODER_FRAME_LEN);
+    if (m_symbolIndex < nextPartOff)
     {
-        int mbeIndex = m_symbolIndex - 12;
+        int mbeIndex = m_symbolIndex - IN_DIBITS(DMR_CACH_LEN);
 
         if (mbeIndex == 0)
         {
@@ -658,7 +676,7 @@ void DSDDMR::processVoiceDibit(unsigned char dibit)
             storeSymbolDV(m_dsdDecoder->m_mbeDVFrame2, mbeIndex, dibit); // store dibit for DVSI hardware decoder
         }
 
-        if (mbeIndex == 36 - 1)
+        if (mbeIndex == IN_DIBITS(DMR_VOCODER_FRAME_LEN) - 1)
         {
             if (m_slot == DSDDMRSlot1)
             {
@@ -671,13 +689,15 @@ void DSDDMR::processVoiceDibit(unsigned char dibit)
                 m_dsdDecoder->m_mbeDVReady2 = true; // Indicate that a DVSI frame is available
             }
         }
+        return;
     }
 
     // voice frame 2 first half
-
-    else if (m_symbolIndex < 12 + 36 + 18)
+    CurOff = nextPartOff;
+    nextPartOff += IN_DIBITS(DMR_VOCODER_FRAME_LEN / 2);
+    if (m_symbolIndex < nextPartOff)
     {
-        int mbeIndex = m_symbolIndex - (12 + 36);
+        int mbeIndex = m_symbolIndex - CurOff;
 
         if (mbeIndex == 0)
         {
@@ -697,31 +717,37 @@ void DSDDMR::processVoiceDibit(unsigned char dibit)
         z++;
 
         storeSymbolDV(m_mbeDVFrame, mbeIndex, dibit); // store dibit for DVSI hardware decoder
+        return;
     }
 
     // EMB first half
-
-    else if (m_symbolIndex < 12 + 36 + 18 + 4)
+    CurOff = nextPartOff;
+    nextPartOff += IN_DIBITS(DMR_EMB_PART_LEN);
+    if (m_symbolIndex < nextPartOff)
     {
-        m_emb_dibits[m_symbolIndex - (12 + 36 + 18)] = dibit;
+        m_emb_dibits[m_symbolIndex - CurOff] = dibit;
+        return;
     }
 
     // Embedded signaling
-
-    else if (m_symbolIndex < 12 + 36 + 18 + 4 + 16)
+    CurOff = nextPartOff;
+    nextPartOff += IN_DIBITS(DMR_ES_LEN);
+    if (m_symbolIndex < nextPartOff)
     {
-        m_voiceEmbSig_dibits[m_symbolIndex - (12 + 36 + 18 + 4)] = dibit;
+        m_voiceEmbSig_dibits[m_symbolIndex - CurOff] = dibit;
+        return;
     }
 
     // EMB second half
-
-    else if (m_symbolIndex < 12 + 36 + 18 + 4 + 16 + 4) // = 90
+    CurOff = nextPartOff;
+    nextPartOff += IN_DIBITS(DMR_EMB_PART_LEN);
+    if (m_symbolIndex < nextPartOff)
     {
-        m_emb_dibits[m_symbolIndex + 4 - (12 + 36 + 18 + 4 + 16)] = dibit;
+        m_emb_dibits[m_symbolIndex + IN_DIBITS(DMR_EMB_PART_LEN) - CurOff] = dibit;
 
-        if (m_symbolIndex == 12 + 36 + 18 + 4 + 16 + 4 - 1)
+        if (m_symbolIndex == nextPartOff - 1)
         {
-            if ((m_slot == DSDDMRSlot1) && (m_voice1FrameCount > 0) && (m_voice1FrameCount < 6))
+            if ((m_slot == DSDDMRSlot1) && (m_voice1FrameCount > 0) && (m_voice1FrameCount < DMR_VOX_SUPERFRAME_LEN))
             {
                 if (processEMB())
                 {
@@ -735,7 +761,7 @@ void DSDDMR::processVoiceDibit(unsigned char dibit)
                     }
                 }
             }
-            else if ((m_slot == DSDDMRSlot2) && (m_voice2FrameCount > 0) && (m_voice2FrameCount < 6))
+            else if ((m_slot == DSDDMRSlot2) && (m_voice2FrameCount > 0) && (m_voice2FrameCount < DMR_VOX_SUPERFRAME_LEN))
             {
                 if (processEMB())
                 {
@@ -750,13 +776,15 @@ void DSDDMR::processVoiceDibit(unsigned char dibit)
                 }
             }
         }
+        return;
     }
 
     // voice frame 2 second half
-
-    else if (m_symbolIndex < 12 + 36 + 18 + 24 + 18)
+    CurOff = nextPartOff;
+    nextPartOff += IN_DIBITS(DMR_VOCODER_FRAME_LEN / 2);
+    if (m_symbolIndex < nextPartOff)
     {
-        int mbeIndex = m_symbolIndex - (12 + 36 + 24);
+        int mbeIndex = m_symbolIndex - (CurOff - IN_DIBITS(DMR_VOCODER_FRAME_LEN / 2));
 
         m_dsdDecoder->ambe_fr[*w][*x] = (1 & (dibit >> 1)); // bit 1
         m_dsdDecoder->ambe_fr[*y][*z] = (1 & dibit);        // bit 0
@@ -767,7 +795,7 @@ void DSDDMR::processVoiceDibit(unsigned char dibit)
 
         storeSymbolDV(m_mbeDVFrame, mbeIndex, dibit); // store dibit for DVSI hardware decoder
 
-        if (mbeIndex == 36 - 1)
+        if (mbeIndex == IN_DIBITS(DMR_VOCODER_FRAME_LEN) - 1)
         {
             if (m_slot == DSDDMRSlot1)
             {
@@ -782,13 +810,15 @@ void DSDDMR::processVoiceDibit(unsigned char dibit)
                 m_dsdDecoder->m_mbeDVReady2 = true; // Indicate that a DVSI frame is available
             }
         }
+        return;
     }
 
     // voice frame 3
-
-    else if (m_symbolIndex < 12 + 36 + 18 + 24 + 18 + 36)
+    CurOff = nextPartOff;
+    nextPartOff += IN_DIBITS(DMR_VOCODER_FRAME_LEN);
+    if (m_symbolIndex < nextPartOff)
     {
-        int mbeIndex = m_symbolIndex - (12 + 36 + 18 + 24 + 18);
+        int mbeIndex = m_symbolIndex - CurOff;
 
         if (mbeIndex == 0)
         {
@@ -817,7 +847,7 @@ void DSDDMR::processVoiceDibit(unsigned char dibit)
             storeSymbolDV(m_dsdDecoder->m_mbeDVFrame2, mbeIndex, dibit); // store dibit for DVSI hardware decoder
         }
 
-        if (mbeIndex == 36 - 1)
+        if (mbeIndex == IN_DIBITS(DMR_VOCODER_FRAME_LEN) - 1)
         {
             if (m_slot == DSDDMRSlot1)
             {
@@ -830,6 +860,7 @@ void DSDDMR::processVoiceDibit(unsigned char dibit)
                 m_dsdDecoder->m_mbeDVReady2 = true; // Indicate that a DVSI frame is available
             }
         }
+        return;
     }
 }
 
@@ -883,9 +914,9 @@ void DSDDMR::decodeCACH(unsigned char *cachBits)
 
 void DSDDMR::processSlotTypePDU()
 {
-    unsigned char slotTypeBits[20];
+    unsigned char slotTypeBits[DMR_SLOT_TYPE_PART_LEN * 2];
 
-    for (int i = 0; i < 10; i++)
+    for (int i = 0; i < DMR_SLOT_TYPE_PART_LEN; i++)
     {
         slotTypeBits[2*i]     = (m_slotTypePDU_dibits[i] >> 1) & 1;
         slotTypeBits[2*i + 1] = m_slotTypePDU_dibits[i] & 1;
@@ -898,7 +929,7 @@ void DSDDMR::processSlotTypePDU()
 
         unsigned int dataType = (slotTypeBits[4] << 3) + (slotTypeBits[5] << 2) + (slotTypeBits[6] << 1) + slotTypeBits[7];
 
-        if (dataType > 10)
+        if (dataType > DMR_TYPES_COUNT)
         {
             m_dataType = DSDDMRDataReserved;
             memcpy(&m_slotText[4], "RES", 3);
@@ -920,9 +951,9 @@ void DSDDMR::processSlotTypePDU()
 
 bool DSDDMR::processEMB()
 {
-    unsigned char embBits[16];
+    unsigned char embBits[DMR_EMB_PART_LEN * 2];
 
-    for (int i = 0; i < 8; i++)
+    for (int i = 0; i < DMR_EMB_PART_LEN; i++)
     {
         embBits[2*i]     = (m_emb_dibits[i] >> 1) & 1;
         embBits[2*i + 1] = m_emb_dibits[i] & 1;
@@ -951,7 +982,7 @@ bool DSDDMR::processVoiceEmbeddedSignalling(int& voiceEmbSig_dibitsIndex,
     {
         unsigned char parityCheck = 0;
 
-        for (int i = 0; i < 16; i++)
+        for (int i = 0; i < IN_DIBITS(DMR_ES_LEN); i++)
         {
             if (voiceEmbSig_dibitsIndex > 63) { // prevent segfault
                 break;

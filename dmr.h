@@ -20,6 +20,25 @@
 #include "fec.h"
 #include "export.h"
 
+#define DMR_TYPES_COUNT 12
+#define DMR_SLOT_TYPE_PARITY_LEN 12
+
+#define DMR_TS_LEN 288              //!< Length of 30ms frame in bits
+#define DMR_CACH_LEN 24
+#define DMR_SYNC_LEN 48
+
+#define DMR_EMB_PART_LEN 8
+#define DMR_ES_LEN 32               //!< Embedded signaling length
+#define DMR_SLOT_TYPE_PART_LEN 10
+
+#define DMR_VOCODER_FRAME_LEN 72    //!< Size in bits of Vocoder frame (20ms)
+#define DMR_VOX_PART_LEN 108
+#define DMR_DATA_PART_LEN 98
+
+#define DMR_VOX_SUPERFRAME_LEN 6    //!< Count of frames in Superframe
+#define IN_DIBITS(x) ((x)/2)        //!< Convert size to dibit units count
+
+
 namespace DSDcc
 {
 
@@ -58,6 +77,7 @@ public:
         DSDDMRDataRate_3_4_Data,    // 8
         DSDDMRDataIdle,             // 9
         DSDDMRDataRate_1,           // 10
+        DSDDMRDataUnifiedSingleBlock, // 11
         DSDDMRDataReserved,
         DSDDMRDataUnknown
     } DSDDMRDataTYpe;
@@ -147,7 +167,7 @@ private:
 
     static const int m_cachInterleave[24];
     static const int m_embSigInterleave[128];
-    static const char *m_slotTypeText[13];
+    static const char *m_slotTypeText[DMR_TYPES_COUNT];
 
     static const int rW[36];
     static const int rX[36];

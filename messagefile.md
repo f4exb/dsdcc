@@ -43,6 +43,7 @@ There is one line per polling occurence with a fixed format depending on the pro
     - D12: 1/2 rate data block
     - D34: 3/4 rate data block
     - DB1: Full rate data block
+    - USB: Unified Single Block Data
     - RES: Reserved data block
     - UNK: unknown data type or could not be decoded
   - **8**: Source address (24 bits) as defined in the DMR ETSI standard
