@@ -132,6 +132,11 @@ void DSDDecoder::muteEncryptedP25(bool on)
     m_opts.unmute_encrypted_p25 = (on ? 0 : 1);
 }
 
+void DSDDecoder::setDMRBasicPrivacyKey(unsigned char key)
+{
+    m_opts.dmr_bp_key = key;
+}
+
 void DSDDecoder::setDecodeMode(DSDDecodeMode mode, bool on)
 {
     switch(mode)

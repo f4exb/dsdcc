@@ -153,6 +153,7 @@ void usage()
     fprintf(stderr, "                This is useful when status messages (see -M option) contain geographical data\n");
     fprintf(stderr, "                Practically this is only applicable to D-Star\n");
     fprintf(stderr, "  -x            Disable symbol PLL lock\n");
+    fprintf(stderr, "  -k <num>      Number of Basic Privacy key for DMR [1..255]\n");
     fprintf(stderr, "\n");
     exit(0);
 }
@@ -199,7 +200,7 @@ int main(int argc, char **argv)
     signal(SIGINT, sigfun);
 
     while ((c = getopt(argc, argv,
-            "hHep:qtv:i:o:g:nR:f:u:U:lL:D:d:T:M:m:P:Q:x")) != -1)
+            "hHep:qtv:i:o:g:nR:f:u:U:lL:D:d:T:M:m:P:Q:xk:")) != -1)
     {
         opterr = 0;
         switch (c)
@@ -374,6 +375,11 @@ int main(int argc, char **argv)
             break;
         case 'x':
             dsdDecoder.setSymbolPLLLock(false);
+            break;
+        case 'k':
+            int key_number;
+            sscanf(optarg, "%u", &key_number);
+            dsdDecoder.setDMRBasicPrivacyKey(key_number);
             break;
         default:
             usage();

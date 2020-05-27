@@ -98,6 +98,35 @@ const int DSDDMR::rZ[36] = {
   13, 2, 12, 1, 11, 0
 };
 
+// MotoTRBO algo only. Hytera don`t use hardcoded keys
+const unsigned short DSDDMR::BasicPrivacyKeys[DMR_BP_KEYS_COUNT] = {
+  0x1F00, 0xE300, 0xFC00, 0x2503, 0x3A03, 0xC603, 0xD903, 0x4A05, 0x5505, 0xA905,
+  0xB605, 0x6F06, 0x7006, 0x8C06, 0x9306, 0x2618, 0x3918, 0xC518, 0xDA18, 0x031B,
+  0x1C1B, 0xE01B, 0xFF1B, 0x6C1D, 0x731D, 0x8F1D, 0x901D, 0x491E, 0x561E, 0xAA1E,
+  0xB51E, 0x4B28, 0x5428, 0xA828, 0xB728, 0x6E2B, 0x712B, 0x8D2B, 0x922B, 0x012D,
+  0x1E2D, 0xE22D, 0xFD2D, 0x242E, 0x3B2E, 0xC72E, 0xD82E, 0x6D30, 0x7230, 0x8E30,
+  0x9130, 0x4833, 0x5733, 0xAB33, 0xB433, 0x2735, 0x3835, 0xC435, 0xDB35, 0x0236,
+  0x1D36, 0xE136, 0xFE36, 0x2B49, 0x3449, 0xC849, 0xD749, 0x0E4A, 0x114A, 0xED4A,
+  0xF24A, 0x614C, 0xAE4C, 0x824C, 0x9D4C, 0x444F, 0x5B4F, 0xA74F, 0xB84F, 0x0D51,
+  0x1251, 0xEE51, 0xF151, 0x2852, 0x3752, 0xCB52, 0xD452, 0x4754, 0x5854, 0xA454,
+  0xBB54, 0x6257, 0x7D57, 0x8157, 0x9E57, 0x6061, 0x7F61, 0x8361, 0x9C61, 0x4562,
+  0x5A62, 0xA662, 0xB962, 0x2A64, 0x3564, 0xC964, 0xD664, 0x0F67, 0x1067, 0xEC67,
+  0xF367, 0x4679, 0x5979, 0xA579, 0xBA79, 0x637A, 0x7C7A, 0x807A, 0x9F7A, 0x0C7C,
+  0x137C, 0xEF7C, 0xF07C, 0x297F, 0x367F, 0xCA7F, 0xD57F, 0x4D89, 0x5289, 0xAE89,
+  0xB189, 0x688A, 0x778A, 0x8B8A, 0x948A, 0x078C, 0x188C, 0xE48C, 0xFB8C, 0x228F,
+  0x3D8F, 0xC18F, 0xDE8F, 0x6B91, 0x7491, 0x8891, 0x9791, 0x4E92, 0x5192, 0xAD92,
+  0xB292, 0x2194, 0x3E94, 0xC294, 0xDD94, 0x0497, 0x1B97, 0xE797, 0xF897, 0x06A1,
+  0x19A1, 0xE5A1, 0xFAA1, 0x23A2, 0x3CA2, 0xC0A2, 0xDFA2, 0x4CA4, 0x53A4, 0xAFA4,
+  0xB0A4, 0x69A7, 0x76A7, 0x8AA7, 0x95A7, 0x20B9, 0x3FB9, 0xC3B9, 0xDCB9, 0x05BA,
+  0x1ABA, 0xE6BA, 0xF9BA, 0x6ABC, 0x75BC, 0x89BC, 0x96BC, 0x4FBF, 0x50BF, 0xACBF,
+  0xB3BF, 0x66C0, 0x79C0, 0x85C0, 0x9AC0, 0x43C3, 0x5CC3, 0xA0C3, 0xBFC3, 0x2CC5,
+  0x33C5, 0xCFC5, 0x0DC0, 0x09C6, 0x16C6, 0xEAC6, 0xF5C6, 0x84D0, 0x85DF, 0x8AD3,
+  0x8BDC, 0xB6D5, 0xB7DA, 0xB8D6, 0xB9D9, 0x0DDA, 0xD1D5, 0xDED9, 0xDFD6, 0xE2DF,
+  0xE3D0, 0xECDC, 0xEDD3, 0x2DE8, 0x32E8, 0xCEE8, 0xD1E8, 0x08EB, 0x17EB, 0xEBEB,
+  0xF4EB, 0x67ED, 0x78ED, 0x84ED, 0x9BED, 0x42EE, 0x5DEE, 0xA1EE, 0xBEEE, 0x0BF0,
+  0x14F0, 0xE8F0, 0xF7F0, 0x2EF3, 0x31F3, 0xCDF3, 0xD2F3, 0x41F5, 0x5EF5, 0xA2F5,
+  0xBDF5, 0x64F6, 0x7BF6, 0x87F6, 0x98F6
+};
 // ========================================================================================
 
 DSDDMR::DSDDMR(DSDDecoder *dsdDecoder) :
@@ -108,7 +137,7 @@ DSDDMR::DSDDMR(DSDDecoder *dsdDecoder) :
         m_slot(DSDDMRSlotUndefined),
         m_continuation(false),
         m_cachOK(false),
-        m_lcss(0),
+        m_lcss(SingleLC_FirstCSBK),
         m_colorCode(0),
         m_dataType(DSDDMRDataUnknown),
         m_voice1EmbSig_dibitsIndex(0),
@@ -607,6 +636,20 @@ void DSDDMR::processDataDibit(unsigned char dibit)
     }
 }
 
+void DSDDMR::BasicPrivacyXOR(unsigned char *dibit, int index)
+{
+    if (m_dsdDecoder->m_opts.dmr_bp_key == 0)
+        return; // Basic Privacy not used
+
+    unsigned char key_number = m_dsdDecoder->m_opts.dmr_bp_key - 1;
+    unsigned short key = BasicPrivacyKeys[key_number];
+
+    const int key_bits = 16;
+    int off = key_bits - ((index % 8) + 1) * 2;
+    unsigned char out = *dibit ^ ((key >> off) & 3);
+    *dibit = out;
+}
+
 void DSDDMR::processVoiceDibit(unsigned char dibit)
 {
     int nextPartOff = IN_DIBITS(DMR_CACH_LEN);
@@ -657,11 +700,13 @@ void DSDDMR::processVoiceDibit(unsigned char dibit)
             z = rZ;
 
             if (m_slot == DSDDMRSlot1) {
-                memset((void *) m_dsdDecoder->m_mbeDVFrame1, 0, 9); // initialize DVSI frame 1
+                memset((void *) m_dsdDecoder->m_mbeDVFrame1, 0, IN_BYTES(DMR_VOCODER_FRAME_LEN)); // initialize DVSI frame 1
             } else {
-                memset((void *) m_dsdDecoder->m_mbeDVFrame2, 0, 9); // initialize DVSI frame 2
+                memset((void *) m_dsdDecoder->m_mbeDVFrame2, 0, IN_BYTES(DMR_VOCODER_FRAME_LEN)); // initialize DVSI frame 2
             }
         }
+
+        BasicPrivacyXOR(&dibit, mbeIndex);
 
         m_dsdDecoder->ambe_fr[*w][*x] = (1 & (dibit >> 1)); // bit 1
         m_dsdDecoder->ambe_fr[*y][*z] = (1 & dibit);        // bit 0
@@ -706,8 +751,10 @@ void DSDDMR::processVoiceDibit(unsigned char dibit)
             y = rY;
             z = rZ;
 
-            memset((void *) m_mbeDVFrame, 0, 9); // initialize DVSI frame
+            memset((void *) m_mbeDVFrame, 0, IN_BYTES(DMR_VOCODER_FRAME_LEN)); // initialize DVSI frame
         }
+
+        BasicPrivacyXOR(&dibit, mbeIndex);
 
         m_dsdDecoder->ambe_fr[*w][*x] = (1 & (dibit >> 1)); // bit 1
         m_dsdDecoder->ambe_fr[*y][*z] = (1 & dibit);        // bit 0
@@ -786,6 +833,8 @@ void DSDDMR::processVoiceDibit(unsigned char dibit)
     {
         int mbeIndex = m_symbolIndex - (CurOff - IN_DIBITS(DMR_VOCODER_FRAME_LEN / 2));
 
+        BasicPrivacyXOR(&dibit, mbeIndex);
+
         m_dsdDecoder->ambe_fr[*w][*x] = (1 & (dibit >> 1)); // bit 1
         m_dsdDecoder->ambe_fr[*y][*z] = (1 & dibit);        // bit 0
         w++;
@@ -800,13 +849,13 @@ void DSDDMR::processVoiceDibit(unsigned char dibit)
             if (m_slot == DSDDMRSlot1)
             {
                 m_dsdDecoder->m_mbeDecoder1.processFrame(0, m_dsdDecoder->ambe_fr, 0);
-                memcpy(m_dsdDecoder->m_mbeDVFrame1, m_mbeDVFrame, 9);
+                memcpy(m_dsdDecoder->m_mbeDVFrame1, m_mbeDVFrame, IN_BYTES(DMR_VOCODER_FRAME_LEN));
                 m_dsdDecoder->m_mbeDVReady1 = true; // Indicate that a DVSI frame is available
             }
             else if (m_slot == DSDDMRSlot2)
             {
                 m_dsdDecoder->m_mbeDecoder2.processFrame(0, m_dsdDecoder->ambe_fr, 0);
-                memcpy(m_dsdDecoder->m_mbeDVFrame2, m_mbeDVFrame, 9);
+                memcpy(m_dsdDecoder->m_mbeDVFrame2, m_mbeDVFrame, IN_BYTES(DMR_VOCODER_FRAME_LEN));
                 m_dsdDecoder->m_mbeDVReady2 = true; // Indicate that a DVSI frame is available
             }
         }
@@ -820,6 +869,8 @@ void DSDDMR::processVoiceDibit(unsigned char dibit)
     {
         int mbeIndex = m_symbolIndex - CurOff;
 
+        BasicPrivacyXOR(&dibit, mbeIndex);
+
         if (mbeIndex == 0)
         {
             w = rW;
@@ -828,9 +879,9 @@ void DSDDMR::processVoiceDibit(unsigned char dibit)
             z = rZ;
 
             if (m_slot == DSDDMRSlot1) {
-                memset((void *) m_dsdDecoder->m_mbeDVFrame1, 0, 9); // initialize DVSI frame 1
+                memset((void *) m_dsdDecoder->m_mbeDVFrame1, 0, IN_BYTES(DMR_VOCODER_FRAME_LEN)); // initialize DVSI frame 1
             } else {
-                memset((void *) m_dsdDecoder->m_mbeDVFrame2, 0, 9); // initialize DVSI frame 2
+                memset((void *) m_dsdDecoder->m_mbeDVFrame2, 0, IN_BYTES(DMR_VOCODER_FRAME_LEN)); // initialize DVSI frame 2
             }
         }
 
@@ -978,7 +1029,7 @@ bool DSDDMR::processVoiceEmbeddedSignalling(int& voiceEmbSig_dibitsIndex,
         bool& voiceEmbSig_OK,
         DMRAddresses& addresses)
 {
-    if (m_lcss != 0) // skip RC
+    if (m_lcss != SingleLC_FirstCSBK) // skip RC
     {
         unsigned char parityCheck = 0;
 

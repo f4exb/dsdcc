@@ -257,6 +257,7 @@ public:
     void setDataRate(DSDRate dataRate);
     void setMyPoint(float lat, float lon) { m_myPoint.setLatLon(lat, lon); }
     void setSymbolPLLLock(bool pllLock) { m_dsdSymbol.setPLLLock(pllLock); }
+    void setDMRBasicPrivacyKey(unsigned char key);
 
     // parameter getters:
 

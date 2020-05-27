@@ -32,6 +32,7 @@ public:
     int errorbars;
     int symboltiming;
     int verbose;
+    unsigned char dmr_bp_key;
     int p25enc;
     int p25lc;
     int p25status;

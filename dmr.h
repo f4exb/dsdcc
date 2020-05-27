@@ -37,7 +37,16 @@
 
 #define DMR_VOX_SUPERFRAME_LEN 6    //!< Count of frames in Superframe
 #define IN_DIBITS(x) ((x)/2)        //!< Convert size to dibit units count
+#define IN_BYTES(x) ((x)/8)
+#define DMR_BP_KEYS_COUNT 255   //!< Basic Privacy Keys count
 
+typedef enum
+{
+    SingleLC_FirstCSBK,      // 0
+    FirstLC,                 // 1
+    LastLC_CSBK,             // 2
+    ContLC_CSBK              // 3
+} DMRLcss;
 
 namespace DSDcc
 {
@@ -130,6 +139,8 @@ private:
     void processVoiceFirstHalfMS();
     void processDataFirstHalfMS();
 
+    void BasicPrivacyXOR(unsigned char *dibit, int pos);
+
     DSDDecoder *m_dsdDecoder;
     int  m_symbolIndex;                   //!< current symbol index in non HD sequence
     int  m_cachSymbolIndex;               //!< count of symbols since last positive CACH identification
@@ -173,6 +184,7 @@ private:
     static const int rX[36];
     static const int rY[36];
     static const int rZ[36];
+    static const unsigned short BasicPrivacyKeys[DMR_BP_KEYS_COUNT];
 };
 
 } // namespace DSDcc
