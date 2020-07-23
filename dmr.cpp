@@ -638,16 +638,25 @@ void DSDDMR::processDataDibit(unsigned char dibit)
 
 void DSDDMR::BasicPrivacyXOR(unsigned char *dibit, int index)
 {
-    if (m_dsdDecoder->m_opts.dmr_bp_key == 0)
+    if (m_dsdDecoder->m_opts.dmr_bp_key == 0) {
         return; // Basic Privacy not used
+    }
 
     unsigned char key_number = m_dsdDecoder->m_opts.dmr_bp_key - 1;
     unsigned short key = BasicPrivacyKeys[key_number];
-
     const int key_bits = 16;
-    int off = key_bits - ((index % 8) + 1) * 2;
-    unsigned char out = *dibit ^ ((key >> off) & 3);
-    *dibit = out;
+
+    if (index < 24) // 48 first bits (data)
+    {
+        int off = key_bits - ((index % 8) + 1) * 2;
+        unsigned char out = *dibit ^ ((key >> off) & 3);
+        *dibit = out;
+    }
+    else if (index == 24) // 49th bit (MSB) (data)
+    {
+        unsigned char msb = (*dibit >> 1) ^ (key >> 15);
+        *dibit = (msb << 1) + (*dibit & 1);
+    }
 }
 
 void DSDDMR::processVoiceDibit(unsigned char dibit)
