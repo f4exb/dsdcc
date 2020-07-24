@@ -16,6 +16,7 @@
 
 #include <stdlib.h>
 #include <assert.h>
+#include <algorithm>
 #include "timeutil.h"
 #include "dsd_decoder.h"
 
@@ -666,6 +667,7 @@ int DSDDecoder::getFrameSync()
     else // Sync identification starts here
     {
         m_dmrBurstType = DSDDMR::DSDDMRBurstNone;
+        unsigned char tmp[64];
 
         if (m_opts.frame_p25p1 == 1)
         {
@@ -922,7 +924,7 @@ int DSDDecoder::getFrameSync()
         }
         if ((m_opts.frame_nxdn96 == 1) || (m_opts.frame_nxdn48 == 1))
         {
-            if (memcmp(m_dsdSymbol.getSyncDibitBack(19), m_syncNXDNRDCHFull, 19) == 0) // long sync (with preamble)
+            if (countDiff(m_dsdSymbol.getSyncDibitBack(19), m_syncNXDNRDCHFull, tmp, 19) <= 1) // long sync (with preamble)
             {
                 m_nxdnInterSyncCount = 0;
 				m_state.carrier = 1;
@@ -951,7 +953,7 @@ int DSDDecoder::getFrameSync()
 				m_mbeRate = DSDMBERate3600x2450;
 				return (int) DSDSyncNXDNP; // done
             }
-            else if (memcmp(m_dsdSymbol.getSyncDibitBack(19), m_syncNXDNRDCHFullInv, 19) == 0) // long sync (with preamble) inverted
+            else if (countDiff(m_dsdSymbol.getSyncDibitBack(19), m_syncNXDNRDCHFullInv, tmp, 19) <= 1) // long sync (with preamble) inverted
             {
                 m_nxdnInterSyncCount = 0;
 				m_state.carrier = 1;
@@ -980,7 +982,7 @@ int DSDDecoder::getFrameSync()
 				m_mbeRate = DSDMBERate3600x2450;
 				return (int) DSDSyncNXDNN; // done
             }
-            else if (memcmp(m_dsdSymbol.getSyncDibitBack(10), m_syncNXDNRDCHFSW, 10) == 0) // short sync
+            else if (countDiff(m_dsdSymbol.getSyncDibitBack(10), m_syncNXDNRDCHFSW, tmp, 10) <= 1) // short sync
             {
                 if ((m_nxdnInterSyncCount > 0) && (m_nxdnInterSyncCount % 192 == 0))
                 {
@@ -1014,7 +1016,7 @@ int DSDDecoder::getFrameSync()
                     m_nxdnInterSyncCount = 0;
                 }
             }
-            else if (memcmp(m_dsdSymbol.getSyncDibitBack(10), m_syncNXDNRDCHFSWInv, 10) == 0) // short sync inverted
+            else if (countDiff(m_dsdSymbol.getSyncDibitBack(10), m_syncNXDNRDCHFSWInv, tmp, 10) <= 1) // short sync inverted
             {
                 if ((m_nxdnInterSyncCount > 0) && (m_nxdnInterSyncCount % 192 == 0))
                 {
@@ -1466,6 +1468,12 @@ int DSDDecoder::comp(const void *a, const void *b)
         return -1;
     else
         return 1;
+}
+
+int DSDDecoder::countDiff(const unsigned char *a, const unsigned char *b, unsigned char *t, unsigned int len)
+{
+    std::transform(a, a + len, b, t, std::bit_xor<unsigned char>());
+    return std::count_if(t, t + len, [](unsigned char& c) { return c != 0; });
 }
 
 } // namespace dsdcc

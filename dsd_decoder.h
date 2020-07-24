@@ -320,6 +320,7 @@ private:
     void printFrameInfo();
     void processFrameInit();
     static int comp(const void *a, const void *b);
+    static int countDiff(const unsigned char *a, const unsigned char *b, unsigned char *t, unsigned int len);
 
     DSDOpts m_opts;
     DSDState m_state;
