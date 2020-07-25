@@ -18,6 +18,7 @@
 #include <string.h>
 #include "dmr.h"
 #include "dsd_decoder.h"
+#include "dsd_sync.h"
 
 namespace DSDcc
 {
@@ -399,18 +400,21 @@ void DSDDMR::processVoice()
 void DSDDMR::processSyncOrSkip()
 {
     const int sync_db_size = IN_DIBITS(DMR_SYNC_LEN);
+    const DSDSync::SyncPattern patterns[2] = { DSDSync::SyncDMRDataBS, DSDSync::SyncDMRVoiceBS };
+
     if (m_symbolIndex > sync_db_size) // accumulate enough symbols to look for a sync
     {
-        if (memcmp(m_dsdDecoder->m_dsdSymbol.getSyncDibitBack(sync_db_size),
-            DSDDecoder::m_syncDMRDataBS, sync_db_size) == 0)
+        DSDSync syncEngine;
+        syncEngine.matchSome(m_dsdDecoder->m_dsdSymbol.getSyncDibitBack(sync_db_size), sync_db_size, patterns, 2);
+
+        if (syncEngine.isMatching(DSDSync::SyncDMRDataBS))
         {
 //		    std::cerr << "DSDDMR::processSyncOrSkip: data sync" << std::endl;
             processDataFirstHalf(90);
             m_dsdDecoder->m_fsmState = DSDDecoder::DSDprocessDMRdata;
             return;
         }
-        else if (memcmp(m_dsdDecoder->m_dsdSymbol.getSyncDibitBack(sync_db_size),
-            DSDDecoder::m_syncDMRVoiceBS, sync_db_size) == 0)
+        else if (syncEngine.isMatching(DSDSync::SyncDMRVoiceBS))
         {
 //		    std::cerr << "DSDDMR::processSyncOrSkip: voice sync" << std::endl;
             processVoiceFirstHalf(90);

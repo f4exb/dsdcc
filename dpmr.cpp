@@ -18,6 +18,7 @@
 #include <iostream>
 #include "dpmr.h"
 #include "dsd_decoder.h"
+#include "dsd_sync.h"
 
 namespace DSDcc
 {
@@ -281,13 +282,16 @@ void DSDdPMR::processPostFrame()
         if (m_symbolIndex == 12) // sync complete
         {
             m_dsdDecoder->getLogger().log("DSDdPMR::processPostFrame\n"); // DEBUG
+            DSDSync syncEngine;
+            const DSDSync::SyncPattern patterns[2] = { DSDSync::SyncDPMRFS2, DSDSync::SyncDPMRFS3 };
+            syncEngine.matchSome(m_syncDoubleBuffer, 12, patterns, 2);
 
-            if (memcmp((const void *) m_syncDoubleBuffer, (const void *) DSDDecoder::m_syncDPMRFS2, 12) == 0) // start of superframes
+            if (syncEngine.isMatching(DSDSync::SyncDPMRFS2)) // start of superframes
             {
                 m_state = DPMRSuperFrame;
                 m_symbolIndex = 0;
             }
-            else if (memcmp((const void *) m_syncDoubleBuffer, (const void *) DSDDecoder::m_syncDPMRFS3, 12) == 0) // end frame
+            else if (syncEngine.isMatching(DSDSync::SyncDPMRFS3)) // end frame
             {
                 m_state = DPMREnd;
                 m_symbolIndex = 0;
@@ -346,7 +350,11 @@ void DSDdPMR::processExtSearch()
 	// compare around expected spot
     if ((m_syncCycle < 1) || (m_syncCycle > 14))
     {
-        if (memcmp((const void *) &m_syncDoubleBuffer[m_symbolIndex], (const void *) DSDDecoder::m_syncDPMRFS2, 12) == 0)
+        DSDSync syncEngine;
+        const DSDSync::SyncPattern patterns[1] = { DSDSync::SyncDPMRFS2 };
+        syncEngine.matchSome(m_syncDoubleBuffer, 12, patterns, 1);
+
+        if (syncEngine.isMatching(DSDSync::SyncDPMRFS2))
         {
             m_dsdDecoder->getLogger().log("DSDdPMR::processExtSearch: stop extensive sync search (sync found)\n"); // DEBUG
             m_state = DPMRSuperFrame;
@@ -509,12 +517,16 @@ void DSDdPMR::processFS2(int symbolIndex, int dibit)
 
     if (symbolIndex == 11) // last symbol
     {
-        if (memcmp((const void *) m_syncDoubleBuffer, (const void *) DSDDecoder::m_syncDPMRFS2, 12) == 0) // start of superframes
+        DSDSync syncEngine;
+        const DSDSync::SyncPattern patterns[2] = { DSDSync::SyncDPMRFS2, DSDSync::SyncDPMRFS3 };
+        syncEngine.matchSome(m_syncDoubleBuffer, 12, patterns, 2);
+
+        if (syncEngine.isMatching(DSDSync::SyncDPMRFS2)) // start of superframes
         {
             // nothing
             m_frameType = DPMRPayloadFrame;
         }
-        else if (memcmp((const void *) m_syncDoubleBuffer, (const void *) DSDDecoder::m_syncDPMRFS3, 12) == 0) // end frame
+        else if (syncEngine.isMatching(DSDSync::SyncDPMRFS3)) // end frame
         {
             m_state = DPMREnd;
             m_symbolIndex = 0;

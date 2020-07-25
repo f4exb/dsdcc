@@ -271,37 +271,6 @@ public:
         m_mbeDecoder2.useHP(useHP);
     }
 
-    /*
-     * Frame sync patterns
-     */
-    static const unsigned char m_syncDMRDataBS[24];
-    static const unsigned char m_syncDMRVoiceBS[24];
-    static const unsigned char m_syncDMRDataMS[24];
-    static const unsigned char m_syncDMRVoiceMS[24];
-    static const unsigned char m_syncDPMRFS1[24];
-    static const unsigned char m_syncDPMRFS4[24];
-    static const unsigned char m_syncDPMRFS2[12];
-    static const unsigned char m_syncDPMRFS3[12];
-    static const unsigned char m_syncNXDNRDCHFull[19];
-    static const unsigned char m_syncNXDNRDCHFullInv[19];
-    static const unsigned char m_syncNXDNRDCHFSW[10];
-    static const unsigned char m_syncNXDNRDCHFSWInv[10];
-    static const unsigned char m_syncDStarHeader[24];
-    static const unsigned char m_syncDStarHeaderInv[24];
-    static const unsigned char m_syncDStar[24];
-    static const unsigned char m_syncDStarInv[24];
-    static const unsigned char m_syncYSF[20];
-    static const unsigned char m_syncP25P1[24];
-    static const unsigned char m_syncP25P1Inv[24];
-    static const unsigned char m_syncX2TDMADataBS[24];
-    static const unsigned char m_syncX2TDMAVoiceBS[24];
-    static const unsigned char m_syncX2TDMADataMS[24];
-    static const unsigned char m_syncX2TDMAVoiceMS[24];
-    static const unsigned char m_syncProVoice[32];
-    static const unsigned char m_syncProVoiceInv[32];
-    static const unsigned char m_syncProVoiceEA[32];
-    static const unsigned char m_syncProVoiceEAInv[32];
-
 private:
     typedef enum
     {

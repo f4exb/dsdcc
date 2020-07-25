@@ -75,6 +75,7 @@ set(dsdcc_SOURCES
     dsd_opts.cpp
     dsd_state.cpp
     dsd_symbol.cpp
+    dsd_sync.cpp
     dstar.cpp
     ysf.cpp
     dpmr.cpp
@@ -106,6 +107,7 @@ set(dsdcc_HEADERS
     dsd_opts.h
     dsd_state.h
     dsd_symbol.h
+    dsd_sync.h
     dstar.h
     ysf.h
     dpmr.h

@@ -19,6 +19,7 @@
 #include "nxdnconvolution.h"
 #include "nxdncrc.h"
 #include "dsd_decoder.h"
+#include "dsd_sync.h"
 
 namespace DSDcc
 {
@@ -408,11 +409,12 @@ void DSDNXDN::processFSW()
     int match_earl2 = 0; // count of FSW symbols matches early by 2 symbols
 
     const unsigned char *fsw;
+    int fswLength;
 
     if (m_dsdDecoder->getSyncType() == DSDDecoder::DSDSyncNXDNP) {
-        fsw = DSDDecoder::m_syncNXDNRDCHFSW;
+        fsw = DSDSync::getPattern(DSDSync::SyncNXDNRDCHFSW, fswLength);
     } else if (m_dsdDecoder->getSyncType() == DSDDecoder::DSDSyncNXDNN) {
-        fsw = DSDDecoder::m_syncNXDNRDCHFSWInv;
+        fsw = DSDSync::getPattern(DSDSync::SyncNXDNRDCHFSWInv, fswLength);
     } else
     {
         std::cerr << "DSDNXDN::processFSW: sync inconsistent (end)" << std::endl;

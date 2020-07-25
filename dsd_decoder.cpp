@@ -17,43 +17,13 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <algorithm>
+
 #include "timeutil.h"
+#include "dsd_sync.h"
 #include "dsd_decoder.h"
 
 namespace DSDcc
 {
-
-// Sync wods - Symbol mapping: 01(1):+3, 00(0):+1, 10(2):-1, 11(3):-3
-const unsigned char DSDDecoder::m_syncDMRDataBS[24]       = {3, 1, 3, 3, 3, 3, 1, 1, 1, 3, 3, 1, 1, 3, 1, 1, 3, 1, 3, 3, 1, 1, 3, 1}; // DF F5 7D 75 DF 5D
-const unsigned char DSDDecoder::m_syncDMRVoiceBS[24]      = {1, 3, 1, 1, 1, 1, 3, 3, 3, 1, 1, 3, 3, 1, 3, 3, 1, 3, 1, 1, 3, 3, 1, 3}; // 75 5F D7 DF 75 F7
-const unsigned char DSDDecoder::m_syncDMRDataMS[24]       = {3, 1, 1, 1, 3, 1, 1, 3, 3, 3, 1, 3, 1, 3, 3, 3, 3, 1, 1, 3, 1, 1, 1, 3}; // D5 D7 F7 7F D7 57
-const unsigned char DSDDecoder::m_syncDMRVoiceMS[24]      = {1, 3, 3, 3, 1, 3, 3, 1, 1, 1, 3, 1, 3, 1, 1, 1, 1, 3, 3, 1, 3, 3, 3, 1}; // 7F 7D 5D D5 7D FD
-const unsigned char DSDDecoder::m_syncDPMRFS1[24]         = {1, 1, 1, 3, 3, 3, 3, 3, 1, 1, 3, 3, 1, 3, 1, 1, 3, 1, 1, 1, 1, 3, 1, 3}; // 57 FF 5F 75 D5 77 - non packet data header
-const unsigned char DSDDecoder::m_syncDPMRFS4[24]         = {3, 3, 3, 1, 1, 1, 1, 1, 3, 3, 1, 1, 3, 1, 3, 3, 1, 3, 3, 3, 3, 1, 3, 1}; // FD 55 F5 DF 7F DD - packet data header
-const unsigned char DSDDecoder::m_syncDPMRFS2[12]         = {1, 1, 3, 3, 3, 3, 1, 3, 1, 3, 3, 1};                                     // 5F F7 7D          - superframe sync (each 2 384 bit frames)
-const unsigned char DSDDecoder::m_syncDPMRFS3[12]         = {1, 3, 3, 1, 3, 1, 3, 3, 3, 3, 1, 1};                                     // 7D DF F5           end frame sync
-const unsigned char DSDDecoder::m_syncNXDNRDCHFull[19]    = {3, 1, 3, 1, 1, 3, 3, 3, 1, 3, 1, 3, 1, 3, 3, 1, 1, 3, 1};
-const unsigned char DSDDecoder::m_syncNXDNRDCHFullInv[19] = {1, 3, 1, 3, 3, 1, 1, 1, 3, 1, 3, 1, 3, 1, 1, 3, 3, 1, 3};
-//const unsigned char DSDDecoder::m_syncNXDNRDCHFull[20]    = {1, 3, 1, 3, 1, 1, 3, 3, 3, 1, 3, 1, 3, 1, 3, 3, 1, 1, 3, 1};
-//const unsigned char DSDDecoder::m_syncNXDNRDCHFullInv[20] = {3, 1, 3, 1, 3, 3, 1, 1, 1, 3, 1, 3, 1, 3, 1, 1, 3, 3, 1, 3};
-const unsigned char DSDDecoder::m_syncNXDNRDCHFSW[10]     = {3, 1, 3, 1, 3, 3, 1, 1, 3, 1};
-const unsigned char DSDDecoder::m_syncNXDNRDCHFSWInv[10]  = {1, 3, 1, 3, 1, 1, 3, 3, 1, 3};
-const unsigned char DSDDecoder::m_syncDStarHeader[24]     = {1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 3, 3, 1, 3, 3, 1, 1, 3, 1, 3, 1, 1, 1, 1};
-const unsigned char DSDDecoder::m_syncDStarHeaderInv[24]  = {3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 1, 1, 3, 1, 1, 3, 3, 1, 3, 1, 3, 3, 3, 3};
-const unsigned char DSDDecoder::m_syncDStar[24]           = {3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 3, 1, 3, 1, 1, 1, 3, 3, 1, 3, 1, 1, 1};
-const unsigned char DSDDecoder::m_syncDStarInv[24]        = {1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 1, 3, 1, 3, 3, 3, 1, 1, 3, 1, 3, 3, 3};
-const unsigned char DSDDecoder::m_syncYSF[20]             = {3, 1, 1, 1, 1, 3, 1, 1, 3, 1, 3, 1, 1, 3, 1, 3, 1, 1, 3, 1}; // D4 71 C9 63 4D => D5 75 DD 77 5D
-const unsigned char DSDDecoder::m_syncP25P1[24]           = {1, 1, 1, 1, 1, 3, 1, 1, 3, 3, 1, 1, 3, 3, 3, 3, 1, 3, 1, 3, 3, 3, 3, 3};
-const unsigned char DSDDecoder::m_syncP25P1Inv[24]        = {3, 3, 3, 3, 3, 1, 3, 3, 1, 1, 3, 3, 1, 1, 1, 1, 3, 1, 3, 1, 1, 1, 1, 1};
-const unsigned char DSDDecoder::m_syncX2TDMADataBS[24]    = {3, 3, 1, 3, 1, 3, 1, 1, 1, 1, 1, 3, 1, 3, 1, 1, 1, 3, 3, 3, 1, 1, 3, 3};
-const unsigned char DSDDecoder::m_syncX2TDMAVoiceBS[24]   = {1, 1, 3, 1, 3, 1, 3, 3, 3, 3, 3, 1, 3, 1, 3, 3, 3, 1, 1, 1, 3, 3, 1, 1};
-const unsigned char DSDDecoder::m_syncX2TDMADataMS[24]    = {3, 1, 3, 1, 1, 3, 3, 3, 3, 1, 1, 1, 1, 1, 1, 1, 3, 3, 3, 3 ,3 ,3 ,1 ,3};
-const unsigned char DSDDecoder::m_syncX2TDMAVoiceMS[24]   = {1, 3, 1, 3, 3, 1, 1, 1, 1, 3 ,3, 3, 3, 3, 3, 3, 1, 1, 1, 1 ,1 ,1 ,3 ,1};
-const unsigned char DSDDecoder::m_syncProVoice[32]        = {1, 3, 1, 3, 1, 3, 3, 3, 1, 1, 1, 3, 1, 1, 3, 1, 1, 1, 3, 3, 1, 1, 3, 3, 1, 1, 3, 3, 1, 1, 3, 3};
-const unsigned char DSDDecoder::m_syncProVoiceInv[32]     = {3, 1, 3, 1, 3, 1, 1, 1, 3, 3, 3, 1, 3, 3, 1, 3, 3, 3, 1, 1, 3, 3, 1, 1, 3, 3, 1, 1, 3, 3, 1, 1};
-const unsigned char DSDDecoder::m_syncProVoiceEA[32]      = {3, 1, 1, 3, 1, 3, 1, 1, 3, 3, 1, 3, 3, 1, 1, 1, 1, 1, 3, 3, 1, 3, 1, 3, 1, 1, 3 ,1 ,1 ,1, 3 ,3};
-const unsigned char DSDDecoder::m_syncProVoiceEAInv[32]   = {1, 3, 3, 1, 3, 1, 3, 3, 1, 1, 3, 1, 1 ,3 ,3, 3, 3 ,3, 1, 1 ,3, 1, 3, 1, 3, 3, 1, 3, 3, 3, 1, 1};
-
 
 DSDDecoder::DSDDecoder() :
         m_fsmState(DSDLookForSync),
@@ -666,12 +636,13 @@ int DSDDecoder::getFrameSync()
     }
     else // Sync identification starts here
     {
+        DSDSync syncEngine;
         m_dmrBurstType = DSDDMR::DSDDMRBurstNone;
-        unsigned char tmp[64];
+        syncEngine.matchAll(m_dsdSymbol.getSyncDibitBack(DSDSync::m_history));
 
         if (m_opts.frame_p25p1 == 1)
         {
-            if (memcmp(m_dsdSymbol.getSyncDibitBack(24), m_syncP25P1, 24) == 0)
+            if (syncEngine.isMatching(DSDSync::SyncP25P1))
             {
                 m_state.carrier = 1;
                 m_dsdSymbol.setFSK(4);
@@ -687,7 +658,7 @@ int DSDDecoder::getFrameSync()
                 m_mbeRate = DSDMBERate3600x2450;
                 return (int) DSDSyncP25p1P;
             }
-            if (memcmp(m_dsdSymbol.getSyncDibitBack(24), m_syncP25P1Inv, 24) == 0)
+            if (syncEngine.isMatching(DSDSync::SyncP25P1Inv))
             {
                 m_state.carrier = 1;
                 m_dsdSymbol.setFSK(4, true);
@@ -706,7 +677,7 @@ int DSDDecoder::getFrameSync()
         }
         if (m_opts.frame_x2tdma == 1)
         {
-            if (memcmp(m_dsdSymbol.getSyncDibitBack(24), m_syncX2TDMADataBS, 24) == 0)
+            if (syncEngine.isMatching(DSDSync::SyncX2TDMADataBS))
             {
                 m_state.carrier = 1;
                 m_dsdSymbol.setFSK(4);
@@ -724,7 +695,7 @@ int DSDDecoder::getFrameSync()
                 return (int) DSDSyncX2TDMADataP; // done
             }
 
-            if (memcmp(m_dsdSymbol.getSyncDibitBack(24), m_syncX2TDMADataMS, 24) == 0)
+            if (syncEngine.isMatching(DSDSync::SyncX2TDMADataMS))
             {
                 m_state.carrier = 1;
                 m_dsdSymbol.setFSK(4);
@@ -742,7 +713,7 @@ int DSDDecoder::getFrameSync()
                 return (int) DSDSyncX2TDMADataP; // done
             }
 
-            if (memcmp(m_dsdSymbol.getSyncDibitBack(24), m_syncX2TDMAVoiceBS, 24) == 0)
+            if (syncEngine.isMatching(DSDSync::SyncX2TDMAVoiceBS))
             {
                 m_state.carrier = 1;
                 m_dsdSymbol.setFSK(4);
@@ -760,7 +731,7 @@ int DSDDecoder::getFrameSync()
                 return (int) DSDSyncX2TDMAVoiceP; // done
             }
 
-            if (memcmp(m_dsdSymbol.getSyncDibitBack(24), m_syncX2TDMAVoiceMS, 24) == 0)
+            if (syncEngine.isMatching(DSDSync::SyncX2TDMAVoiceMS))
             {
                 m_state.carrier = 1;
                 m_dsdSymbol.setFSK(4);
@@ -780,7 +751,7 @@ int DSDDecoder::getFrameSync()
         }
         if (m_opts.frame_ysf == 1)
         {
-            if (memcmp(m_dsdSymbol.getSyncDibitBack(20), m_syncYSF, 20) == 0)
+            if (syncEngine.isMatching(DSDSync::SyncYSF))
             {
                 m_state.carrier = 1;
                 m_dsdSymbol.setFSK(4);
@@ -799,7 +770,7 @@ int DSDDecoder::getFrameSync()
         }
         if (m_opts.frame_dmr == 1)
         {
-        	if (memcmp(m_dsdSymbol.getSyncDibitBack(24), m_syncDMRDataBS, 24) == 0)
+            if (syncEngine.isMatching(DSDSync::SyncDMRDataBS))
         	{
                 m_state.carrier = 1;
                 m_dsdSymbol.setFSK(4);
@@ -820,7 +791,7 @@ int DSDDecoder::getFrameSync()
 				return (int) DSDSyncDMRDataP; // done
         	}
 
-            if (memcmp(m_dsdSymbol.getSyncDibitBack(24), m_syncDMRDataMS, 24) == 0)
+            if (syncEngine.isMatching(DSDSync::SyncDMRDataMS))
             {
                 m_state.carrier = 1;
                 m_dsdSymbol.setFSK(4);
@@ -841,7 +812,7 @@ int DSDDecoder::getFrameSync()
                 return (int) DSDSyncDMRDataMS; // done
             }
 
-        	if (memcmp(m_dsdSymbol.getSyncDibitBack(24), m_syncDMRVoiceBS, 24) == 0)
+            if (syncEngine.isMatching(DSDSync::SyncDMRVoiceBS))
         	{
                 m_state.carrier = 1;
                 m_dsdSymbol.setFSK(4);
@@ -862,7 +833,7 @@ int DSDDecoder::getFrameSync()
 				return (int) DSDSyncDMRVoiceP; // done
         	}
 
-            if (memcmp(m_dsdSymbol.getSyncDibitBack(24), m_syncDMRVoiceMS, 24) == 0)
+            if (syncEngine.isMatching(DSDSync::SyncDMRVoiceMS))
             {
                 m_state.carrier = 1;
                 m_dsdSymbol.setFSK(4);
@@ -885,8 +856,7 @@ int DSDDecoder::getFrameSync()
         }
         if (m_opts.frame_provoice == 1)
         {
-            if ((memcmp(m_dsdSymbol.getSyncDibitBack(32), m_syncProVoice, 32) == 0)
-             || (memcmp(m_dsdSymbol.getSyncDibitBack(32), m_syncProVoiceEA, 32) == 0))
+            if (syncEngine.isMatching(DSDSync::SyncProVoice) || syncEngine.isMatching(DSDSync::SyncProVoiceEA))
             {
                 m_state.carrier = 1;
                 m_dsdSymbol.setFSK(4);
@@ -902,8 +872,7 @@ int DSDDecoder::getFrameSync()
                 m_mbeRate = DSDMBERate3600x2450;
                 return (int) DSDSyncProVoiceP; // done
             }
-            else if ((memcmp(m_dsdSymbol.getSyncDibitBack(32), m_syncProVoiceInv, 32) == 0)
-                || (memcmp(m_dsdSymbol.getSyncDibitBack(32), m_syncProVoiceEAInv, 32) == 0))
+            else if (syncEngine.isMatching(DSDSync::SyncProVoiceInv) || syncEngine.isMatching(DSDSync::SyncProVoiceEAInv))
             {
                 m_state.carrier = 1;
                 m_state.offset = m_synctest_pos;
@@ -924,7 +893,7 @@ int DSDDecoder::getFrameSync()
         }
         if ((m_opts.frame_nxdn96 == 1) || (m_opts.frame_nxdn48 == 1))
         {
-            if (countDiff(m_dsdSymbol.getSyncDibitBack(19), m_syncNXDNRDCHFull, tmp, 19) <= 1) // long sync (with preamble)
+            if (syncEngine.isMatching(DSDSync::SyncNXDNRDCHFull)) // long sync (with preamble)
             {
                 m_nxdnInterSyncCount = 0;
 				m_state.carrier = 1;
@@ -953,7 +922,7 @@ int DSDDecoder::getFrameSync()
 				m_mbeRate = DSDMBERate3600x2450;
 				return (int) DSDSyncNXDNP; // done
             }
-            else if (countDiff(m_dsdSymbol.getSyncDibitBack(19), m_syncNXDNRDCHFullInv, tmp, 19) <= 1) // long sync (with preamble) inverted
+            else if (syncEngine.isMatching(DSDSync::SyncNXDNRDCHFullInv)) // long sync (with preamble) inverted
             {
                 m_nxdnInterSyncCount = 0;
 				m_state.carrier = 1;
@@ -982,7 +951,7 @@ int DSDDecoder::getFrameSync()
 				m_mbeRate = DSDMBERate3600x2450;
 				return (int) DSDSyncNXDNN; // done
             }
-            else if (countDiff(m_dsdSymbol.getSyncDibitBack(10), m_syncNXDNRDCHFSW, tmp, 10) <= 1) // short sync
+            else if (syncEngine.isMatching(DSDSync::SyncNXDNRDCHFSW)) // short sync
             {
                 if ((m_nxdnInterSyncCount > 0) && (m_nxdnInterSyncCount % 192 == 0))
                 {
@@ -1016,7 +985,7 @@ int DSDDecoder::getFrameSync()
                     m_nxdnInterSyncCount = 0;
                 }
             }
-            else if (countDiff(m_dsdSymbol.getSyncDibitBack(10), m_syncNXDNRDCHFSWInv, tmp, 10) <= 1) // short sync inverted
+            else if (syncEngine.isMatching(DSDSync::SyncNXDNRDCHFSWInv)) // short sync inverted
             {
                 if ((m_nxdnInterSyncCount > 0) && (m_nxdnInterSyncCount % 192 == 0))
                 {
@@ -1053,7 +1022,7 @@ int DSDDecoder::getFrameSync()
         }
         if (m_opts.frame_dpmr == 1)
         {
-            if(memcmp(m_dsdSymbol.getSyncDibitBack(24), m_syncDPMRFS1, 24) == 0) // dPMR classic (not packet)
+            if (syncEngine.isMatching(DSDSync::SyncDPMRFS1)) // dPMR classic (not packet)
             {
                 m_state.carrier = 1;
                 m_dsdSymbol.setFSK(4);
@@ -1072,7 +1041,7 @@ int DSDDecoder::getFrameSync()
         }
         if (m_opts.frame_dstar == 1)
         {
-            if (memcmp(m_dsdSymbol.getSyncDibitBack(24), m_syncDStar, 24) == 0)
+            if (syncEngine.isMatching(DSDSync::SyncDStar))
             {
                 m_state.carrier = 1;
                 m_dsdSymbol.setFSK(2);
@@ -1088,7 +1057,7 @@ int DSDDecoder::getFrameSync()
                 m_mbeRate = DSDMBERate3600x2400;
                 return (int) DSDSyncDStarP;
             }
-            if (memcmp(m_dsdSymbol.getSyncDibitBack(24), m_syncDStarInv, 24) == 0)
+            if (syncEngine.isMatching(DSDSync::SyncDStarInv))
             {
                 m_state.carrier = 1;
                 m_dsdSymbol.setFSK(2, true);
@@ -1104,7 +1073,7 @@ int DSDDecoder::getFrameSync()
                 m_mbeRate = DSDMBERate3600x2400;
                 return (int) DSDSyncDStarN; // done
             }
-            if (memcmp(m_dsdSymbol.getSyncDibitBack(24), m_syncDStarHeader, 24) == 0)
+            if (syncEngine.isMatching(DSDSync::SyncDStarHeader))
             {
                 m_state.carrier = 1;
                 m_dsdSymbol.setFSK(2);
@@ -1120,7 +1089,7 @@ int DSDDecoder::getFrameSync()
                 m_mbeRate = DSDMBERate3600x2400;
                 return (int) DSDSyncDStarHeaderP; // done
             }
-            if (memcmp(m_dsdSymbol.getSyncDibitBack(24), m_syncDStarHeaderInv, 24) == 0)
+            if (syncEngine.isMatching(DSDSync::SyncDStarHeaderInv))
             {
                 m_state.carrier = 1;
                 m_dsdSymbol.setFSK(2, true);
@@ -1468,12 +1437,6 @@ int DSDDecoder::comp(const void *a, const void *b)
         return -1;
     else
         return 1;
-}
-
-int DSDDecoder::countDiff(const unsigned char *a, const unsigned char *b, unsigned char *t, unsigned int len)
-{
-    std::transform(a, a + len, b, t, std::bit_xor<unsigned char>());
-    return std::count_if(t, t + len, [](unsigned char& c) { return c != 0; });
 }
 
 } // namespace dsdcc

@@ -18,6 +18,7 @@
 #include <math.h>
 
 #include "dsd_decoder.h"
+#include "dsd_sync.h"
 #include "descramble.h"
 #include "dstar.h"
 
@@ -457,7 +458,11 @@ void DSDDstar::processSync()
 
     if (m_symbolIndex >= 12)
     {
-        if (memcmp(m_dsdDecoder->m_dsdSymbol.getNonInvertedSyncDibitBack(24), DSDDecoder::m_syncDStar, 24) == 0) // sync
+        DSDSync syncEngine;
+        const DSDSync::SyncPattern patterns[1] = { DSDSync::SyncDStar };
+        syncEngine.matchSome(m_dsdDecoder->m_dsdSymbol.getNonInvertedSyncDibitBack(24), 24, patterns, 1);
+
+        if (syncEngine.isMatching(DSDSync::SyncDStar)) // sync
         {
 //            std::cerr << "DSDDstar::processSync: SYNC" << std::endl;
 
