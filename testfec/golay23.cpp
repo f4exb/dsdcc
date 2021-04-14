@@ -43,9 +43,9 @@ void decode(DSDcc::Golay_23_12& Golay_23_12, unsigned char *codeword)
 
 int main(int argc, char *argv[])
 {
-    unsigned char msg[12]  = {1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0};
+    unsigned char msg[12] = {1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1}; //   {1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0};
     unsigned char er0[23] = {0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    unsigned char codeword[23];
+    unsigned char codeword[23] ,xcodeword[23];
 
     DSDcc::Golay_23_12 golay_23_12;
     golay_23_12.encode(msg, codeword);
@@ -57,19 +57,54 @@ int main(int argc, char *argv[])
     decode(golay_23_12, er0);
 
     std::cout << std::endl << "Flip one bit (4)" << std::endl;
-    codeword[4] ^=  1;
-    decode(golay_23_12, codeword);
+    std::copy(codeword, codeword + 23, xcodeword);
+    xcodeword[4] ^=  1;
+    decode(golay_23_12, xcodeword);
+
+    std::cout << std::endl << "Flip one bit (15) in parity" << std::endl;
+    std::copy(codeword, codeword + 23, xcodeword);
+    xcodeword[15] ^=  1;
+    decode(golay_23_12, xcodeword);
 
     std::cout << std::endl << "Flip two bits (1,5)" << std::endl;
-    codeword[1] ^= 1;
-    codeword[5] ^= 1;
-    decode(golay_23_12, codeword);
+    std::copy(codeword, codeword + 23, xcodeword);
+    xcodeword[1] ^= 1;
+    xcodeword[5] ^= 1;
+    decode(golay_23_12, xcodeword);
+
+    std::cout << std::endl << "Flip two bits (1,15) - one in parity" << std::endl;
+    std::copy(codeword, codeword + 23, xcodeword);
+    xcodeword[1] ^= 1;
+    xcodeword[15] ^= 1;
+    decode(golay_23_12, xcodeword);
 
     std::cout << std::endl << "Flip three bits (1,5,9)" << std::endl;
-    codeword[1] ^= 1;
-    codeword[5] ^= 1;
-    codeword[9] ^= 1;
-    decode(golay_23_12, codeword);
+    std::copy(codeword, codeword + 23, xcodeword);
+    xcodeword[1] ^= 1;
+    xcodeword[5] ^= 1;
+    xcodeword[9] ^= 1;
+    decode(golay_23_12, xcodeword);
+
+    std::cout << std::endl << "Flip three bits (1,5,15) - 1 in parity" << std::endl;
+    std::copy(codeword, codeword + 23, xcodeword);
+    xcodeword[1] ^= 1;
+    xcodeword[5] ^= 1;
+    xcodeword[15] ^= 1;
+    decode(golay_23_12, xcodeword);
+
+    std::cout << std::endl << "Flip three bits (1,15,21) - 2 in parity" << std::endl;
+    std::copy(codeword, codeword + 23, xcodeword);
+    xcodeword[1] ^= 1;
+    xcodeword[15] ^= 1;
+    xcodeword[21] ^= 1;
+    decode(golay_23_12, xcodeword);
+
+    std::cout << std::endl << "Flip three bits (15,18,21) - all parity" << std::endl;
+    std::copy(codeword, codeword + 23, xcodeword);
+    xcodeword[15] ^= 1;
+    xcodeword[18] ^= 1;
+    xcodeword[21] ^= 1;
+    decode(golay_23_12, xcodeword);
 
     return 0;
 }

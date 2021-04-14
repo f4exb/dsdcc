@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
 {
     unsigned char msg[11]  = {1, 0, 0, 1, 1, 1, 0, 1, 1, 0, 1};
     unsigned char er0[16] = {0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    unsigned char codeword[16];
+    unsigned char codeword[16], xcodeword[16];
 
     DSDcc::Hamming_16_11_4 hamming_16_11_4;
     hamming_16_11_4.encode(msg, codeword);
@@ -59,10 +59,20 @@ int main(int argc, char *argv[])
     decode(hamming_16_11_4, er0);
 
     std::cout << std::endl << "Flip one bit (2)" << std::endl;
+    std::copy(codeword, codeword + 16, xcodeword);
     codeword[2] ^=  1;
     decode(hamming_16_11_4, codeword);
 
+    for (int i = 0; i < 5; i++)
+    {
+        std::cout << std::endl << "Flip one parity bit: " << 11+i << std::endl;
+        std::copy(codeword, codeword + 16, xcodeword);
+        codeword[11+i] ^=  1;
+        decode(hamming_16_11_4, codeword);
+    }
+
     std::cout << std::endl << "Flip two bits (2,5)" << std::endl;
+    std::copy(codeword, codeword + 16, xcodeword);
     codeword[2] ^=  1;
     codeword[5] ^=  1;
     decode(hamming_16_11_4, codeword);

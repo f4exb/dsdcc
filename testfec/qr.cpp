@@ -101,7 +101,7 @@ void listAll(DSDcc::QR_16_7_6& qr_16_7_6, unsigned int *codewordValues)
 int main(int argc, char *argv[])
 {
     unsigned char msg[7] = {0, 1, 1, 0, 1, 0, 1};
-    unsigned char codeword[16];
+    unsigned char codeword[16], xcodeword[16];
     DSDcc::QR_16_7_6 qr_16_7_6;
     static const unsigned int validCodewordValues[128] = {
     		0,627,1253,1686,2505,3002,3372,3935,4578,5009,5383,6004,6187,
@@ -122,13 +122,32 @@ int main(int argc, char *argv[])
     decode(qr_16_7_6, codeword);
 
     std::cout << "Flip one bit (4)" << std::endl;
-    codeword[4] ^=  1;
-    decode(qr_16_7_6, codeword);
+	std::copy(codeword, codeword + 16, xcodeword);
+    xcodeword[4] ^= 1;
+    decode(qr_16_7_6, xcodeword);
+
+	for (int i = 0; i < 9; i++)
+	{
+		std::cout << "Flip one parity bit " << 7+i << std::endl;
+		std::copy(codeword, codeword + 16, xcodeword);
+		xcodeword[7+i] ^= 1;
+		decode(qr_16_7_6, xcodeword);
+	}
 
     std::cout << "Flip two bits (1,5)" << std::endl;
-    codeword[1] ^= 1;
-    codeword[5] ^= 1;
-    decode(qr_16_7_6, codeword);
+	std::copy(codeword, codeword + 16, xcodeword);
+    xcodeword[1] ^= 1;
+    xcodeword[5] ^= 1;
+    decode(qr_16_7_6, xcodeword);
+
+	for (int i = 0; i < 9; i++)
+	{
+		std::cout << "Flip two bits (1) and one parity bit " << 7+i << std::endl;
+		std::copy(codeword, codeword + 16, xcodeword);
+	    xcodeword[1] ^= 1;
+		xcodeword[7+i] ^= 1;
+		decode(qr_16_7_6, xcodeword);
+	}
 
     std::cout << "Verify valid codewords values" << std::endl;
     unsigned int calculatedValidCodewordValues[128];

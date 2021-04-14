@@ -43,9 +43,9 @@ void decode(DSDcc::Hamming_7_4& hamming_7_4, unsigned char *codeword)
 
 int main(int argc, char *argv[])
 {
-    unsigned char msg[4]  = {1, 0, 0, 1};
+    unsigned char msg[4] = {1, 0, 0, 1};
     unsigned char er0[7] = {0, 0, 1, 0, 0, 0, 0};
-    unsigned char codeword[7];
+    unsigned char codeword[7], xcodeword[7];
 
     DSDcc::Hamming_7_4 hamming_7_4;
     hamming_7_4.encode(msg, codeword);
@@ -57,8 +57,17 @@ int main(int argc, char *argv[])
     decode(hamming_7_4, er0);
 
     std::cout << std::endl << "Flip one bit (2)" << std::endl;
-    codeword[2] ^=  1;
-    decode(hamming_7_4, codeword);
+    std::copy(codeword, codeword + 7, xcodeword);
+    xcodeword[2] ^=  1;
+    decode(hamming_7_4, xcodeword);
+
+    for (int i = 0; i < 3; i++)
+    {
+        std::cout << std::endl << "Flip one parity bit " << 4+i << std::endl;
+        std::copy(codeword, codeword + 7, xcodeword);
+        xcodeword[4+i] ^=  1;
+        decode(hamming_7_4, xcodeword);
+    }
 
     std::cout << std::endl << "Valid checksums" << std::endl;
 

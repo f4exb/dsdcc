@@ -14,6 +14,7 @@
 // along with this program. If not, see <http://www.gnu.org/licenses/>.          //
 ///////////////////////////////////////////////////////////////////////////////////
 
+#include <iostream>
 #include <string.h>
 #include "fec.h"
 
@@ -33,16 +34,6 @@ const unsigned char Hamming_7_4::m_H[7*3] = {
         1, 1, 0, 1,   0, 0, 1
 //      0  1  2  3 <- correctable bit positions
 };
-
-void Hamming_7_4::init()
-{
-    // correctable bit positions given syndrome bits as index (see above)
-    memset(m_corr, 0xFF, 8); // initialize with all invalid positions
-    m_corr[0b101] = 0;
-    m_corr[0b111] = 1;
-    m_corr[0b110] = 2;
-    m_corr[0b011] = 3;
-}
 
 // ========================================================================================
 
@@ -64,20 +55,6 @@ const unsigned char Hamming_12_8::m_H[12*4] = {
         0, 1, 0, 1, 1, 0, 0, 1,   0, 0, 0, 1
 //      0  1  2  3  4  5  6  7 <- correctable bit positions
 };
-
-void Hamming_12_8::init()
-{
-    // correctable bit positions given syndrome bits as index (see above)
-    memset(m_corr, 0xFF, 16); // initialize with all invalid positions
-    m_corr[0b1110] = 0;
-    m_corr[0b0111] = 1;
-    m_corr[0b1010] = 2;
-    m_corr[0b0101] = 3;
-    m_corr[0b1011] = 4;
-    m_corr[0b1100] = 5;
-    m_corr[0b0110] = 6;
-    m_corr[0b0011] = 7;
-}
 
 // ========================================================================================
 
@@ -104,23 +81,6 @@ const unsigned char Hamming_15_11::m_H[15*4] = {
 //      0  1  2  3  4  5  6  7  8  9 10  <- correctable bit positions
 };
 
-void Hamming_15_11::init()
-{
-    // correctable bit positions given syndrome bits as index (see above)
-    memset(m_corr, 0xFF, 16); // initialize with all invalid positions
-    m_corr[0b1001] = 0;
-    m_corr[0b1101] = 1;
-    m_corr[0b1111] = 2;
-    m_corr[0b1110] = 3;
-    m_corr[0b0111] = 4;
-    m_corr[0b1010] = 5;
-    m_corr[0b0101] = 6;
-    m_corr[0b1011] = 7;
-    m_corr[0b1100] = 8;
-    m_corr[0b0110] = 9;
-    m_corr[0b0011] = 10;
-}
-
 // ========================================================================================
 
 const unsigned char Hamming_16_11_4::m_G[16*11] = {
@@ -144,23 +104,6 @@ const unsigned char Hamming_16_11_4::m_H[16*5] = {
         1, 1, 1, 0, 1, 0, 1, 1, 0, 0, 1,   0, 0, 0, 1, 0,
         1, 0, 1, 0, 0, 1, 1, 0, 1, 1, 1,   0, 0, 0, 0, 1
 };
-
-void Hamming_16_11_4::init()
-{
-    // correctable bit positions given syndrome bits as index (see above)
-    memset(m_corr, 0xFF, 32); // initialize with all invalid positions
-    m_corr[0b10011] = 0;
-    m_corr[0b11010] = 1;
-    m_corr[0b11111] = 2;
-    m_corr[0b11100] = 3;
-    m_corr[0b01110] = 4;
-    m_corr[0b10101] = 5;
-    m_corr[0b01011] = 6;
-    m_corr[0b10110] = 7;
-    m_corr[0b11001] = 8;
-    m_corr[0b01101] = 9;
-    m_corr[0b00111] = 10;
-}
 
 // ========================================================================================
 
@@ -287,6 +230,19 @@ Hamming_7_4::~Hamming_7_4()
 {
 }
 
+void Hamming_7_4::init()
+{
+    // correctable bit positions given syndrome bits as index (see above)
+    memset(m_corr, 0xFF, 8); // initialize with all invalid positions
+    m_corr[0b101] = 0;
+    m_corr[0b111] = 1;
+    m_corr[0b110] = 2;
+    m_corr[0b011] = 3;
+    m_corr[0b100] = 4;
+    m_corr[0b010] = 5;
+    m_corr[0b001] = 6;
+}
+
 // Not very efficient but encode is used for unit testing only
 void Hamming_7_4::encode(unsigned char *origBits, unsigned char *encodedBits)
 {
@@ -345,6 +301,24 @@ Hamming_12_8::Hamming_12_8()
 
 Hamming_12_8::~Hamming_12_8()
 {
+}
+
+void Hamming_12_8::init()
+{
+    // correctable bit positions given syndrome bits as index (see above)
+    memset(m_corr, 0xFF, 16); // initialize with all invalid positions
+    m_corr[0b1110] = 0;
+    m_corr[0b0111] = 1;
+    m_corr[0b1010] = 2;
+    m_corr[0b0101] = 3;
+    m_corr[0b1011] = 4;
+    m_corr[0b1100] = 5;
+    m_corr[0b0110] = 6;
+    m_corr[0b0011] = 7;
+    m_corr[0b1000] = 8;
+    m_corr[0b0100] = 9;
+    m_corr[0b0010] = 10;
+    m_corr[0b0001] = 11;
 }
 
 // Not very efficient but encode is used for unit testing only
@@ -422,6 +396,28 @@ Hamming_16_11_4::Hamming_16_11_4()
 
 Hamming_16_11_4::~Hamming_16_11_4()
 {
+}
+
+void Hamming_16_11_4::init()
+{
+    // correctable bit positions given syndrome bits as index (see above)
+    memset(m_corr, 0xFF, 32); // initialize with all invalid positions
+    m_corr[0b10011] = 0;
+    m_corr[0b11010] = 1;
+    m_corr[0b11111] = 2;
+    m_corr[0b11100] = 3;
+    m_corr[0b01110] = 4;
+    m_corr[0b10101] = 5;
+    m_corr[0b01011] = 6;
+    m_corr[0b10110] = 7;
+    m_corr[0b11001] = 8;
+    m_corr[0b01101] = 9;
+    m_corr[0b00111] = 10;
+    m_corr[0b10000] = 11;
+    m_corr[0b01000] = 12;
+    m_corr[0b00100] = 13;
+    m_corr[0b00010] = 14;
+    m_corr[0b00001] = 15;
 }
 
 // Not very efficient but encode is used for unit testing only
@@ -507,6 +503,27 @@ Hamming_15_11::Hamming_15_11()
 
 Hamming_15_11::~Hamming_15_11()
 {
+}
+
+void Hamming_15_11::init()
+{
+    // correctable bit positions given syndrome bits as index (see above)
+    memset(m_corr, 0xFF, 16); // initialize with all invalid positions
+    m_corr[0b1001] = 0;
+    m_corr[0b1101] = 1;
+    m_corr[0b1111] = 2;
+    m_corr[0b1110] = 3;
+    m_corr[0b0111] = 4;
+    m_corr[0b1010] = 5;
+    m_corr[0b0101] = 6;
+    m_corr[0b1011] = 7;
+    m_corr[0b1100] = 8;
+    m_corr[0b0110] = 9;
+    m_corr[0b0011] = 10;
+    m_corr[0b1000] = 11;
+    m_corr[0b0100] = 12;
+    m_corr[0b0010] = 13;
+    m_corr[0b0001] = 14;
 }
 
 // Not very efficient but encode is used for unit testing only
@@ -626,6 +643,15 @@ void Golay_20_8::init()
 
             m_corr[syndromeI][0] = i1;
             m_corr[syndromeI][1] = i2;
+
+            // 1 possible bit flip left in the parity part
+            for (int ip = 0; ip < 12; ip++)
+            {
+                int syndromeIP = syndromeI ^ (1 << (11-ip));
+                m_corr[syndromeIP][0] = i1;
+                m_corr[syndromeIP][1] = i2;
+                m_corr[syndromeIP][2] = 12 + ip;
+            }
         }
 
         // single bit patterns
@@ -634,9 +660,47 @@ void Golay_20_8::init()
         for (int ir = 0; ir < 12; ir++)
         {
             syndromeI += m_H[20*ir + i1] << (11-ir);
+
         }
 
         m_corr[syndromeI][0] = i1;
+
+        for (int ip1 = 0; ip1 < 12; ip1++) // 1 more bit flip in parity
+        {
+            int syndromeIP1 = syndromeI ^ (1 << (11-ip1));
+            m_corr[syndromeIP1][0] = i1;
+            m_corr[syndromeIP1][1] = 12 + ip1;
+
+            for (int ip2 = ip1+1; ip2 < 12; ip2++) // 1 more bit flip in parity
+            {
+                int syndromeIP2 = syndromeIP1 ^ (1 << (11-ip2));
+                m_corr[syndromeIP2][0] = i1;
+                m_corr[syndromeIP2][1] = 12 + ip1;
+                m_corr[syndromeIP2][2] = 12 + ip2;
+            }
+        }
+    }
+
+    // no bit patterns (in message) -> all in parity
+    for (int ip1 = 0; ip1 < 12; ip1++) // 1 bit flip in parity
+    {
+        int syndromeIP1 =  (1 << (11-ip1));
+        m_corr[syndromeIP1][0] = 12 + ip1;
+
+        for (int ip2 = ip1+1; ip2 < 12; ip2++) // 1 more bit flip in parity
+        {
+            int syndromeIP2 = syndromeIP1 ^ (1 << (11-ip2));
+            m_corr[syndromeIP2][0] = 12 + ip1;
+            m_corr[syndromeIP2][1] = 12 + ip2;
+
+            for (int ip3 = ip2+1; ip3 < 12; ip3++) // 1 more bit flip in parity
+            {
+                int syndromeIP3 = syndromeIP2 ^ (1 << (11-ip3));
+                m_corr[syndromeIP3][0] = 12 + ip1;
+                m_corr[syndromeIP3][1] = 12 + ip2;
+                m_corr[syndromeIP3][2] = 12 + ip3;
+            }
+        }
     }
 }
 
@@ -736,8 +800,7 @@ void Golay_23_12::init()
                 // 3 bit patterns
                 int syndromeI = 0;
 
-                for (int ir = 0; ir < 11; ir++)
-                {
+                for (int ir = 0; ir < 11; ir++) {
                     syndromeI += ((m_H[23*ir + i1] +  m_H[23*ir + i2] +  m_H[23*ir + i3]) % 2) << (10-ir);
                 }
 
@@ -749,24 +812,68 @@ void Golay_23_12::init()
             // 2 bit patterns
             int syndromeI = 0;
 
-            for (int ir = 0; ir < 11; ir++)
-            {
+            for (int ir = 0; ir < 11; ir++) {
                 syndromeI += ((m_H[23*ir + i1] +  m_H[23*ir + i2]) % 2) << (10-ir);
             }
 
             m_corr[syndromeI][0] = i1;
             m_corr[syndromeI][1] = i2;
+
+            // 1 possible bit flip left in the parity part
+            for (int ip = 0; ip < 11; ip++)
+            {
+                int syndromeIP = syndromeI ^ (1 << (10-ip));
+                m_corr[syndromeIP][0] = i1;
+                m_corr[syndromeIP][1] = i2;
+                m_corr[syndromeIP][2] = 12 + ip;
+            }
         }
 
         // single bit patterns
         int syndromeI = 0;
 
-        for (int ir = 0; ir < 11; ir++)
-        {
+        for (int ir = 0; ir < 11; ir++) {
             syndromeI += m_H[23*ir + i1] << (10-ir);
         }
 
         m_corr[syndromeI][0] = i1;
+
+        for (int ip1 = 0; ip1 < 11; ip1++) // 1 more bit flip in parity
+        {
+            int syndromeIP1 = syndromeI ^ (1 << (10-ip1));
+            m_corr[syndromeIP1][0] = i1;
+            m_corr[syndromeIP1][1] = 12 + ip1;
+
+            for (int ip2 = ip1+1; ip2 < 11; ip2++) // 1 more bit flip in parity
+            {
+                int syndromeIP2 = syndromeIP1 ^ (1 << (10-ip2));
+                m_corr[syndromeIP2][0] = i1;
+                m_corr[syndromeIP2][1] = 12 + ip1;
+                m_corr[syndromeIP2][2] = 12 + ip2;
+            }
+        }
+    }
+
+    // no bit patterns (in message) -> all in parity
+    for (int ip1 = 0; ip1 < 11; ip1++) // 1 bit flip in parity
+    {
+        int syndromeIP1 =  (1 << (10-ip1));
+        m_corr[syndromeIP1][0] = 12 + ip1;
+
+        for (int ip2 = ip1+1; ip2 < 11; ip2++) // 1 more bit flip in parity
+        {
+            int syndromeIP2 = syndromeIP1 ^ (1 << (10-ip2));
+            m_corr[syndromeIP2][0] = 12 + ip1;
+            m_corr[syndromeIP2][1] = 12 + ip2;
+
+            for (int ip3 = ip2+1; ip3 < 11; ip3++) // 1 more bit flip in parity
+            {
+                int syndromeIP3 = syndromeIP2 ^ (1 << (10-ip3));
+                m_corr[syndromeIP3][0] = 12 + ip1;
+                m_corr[syndromeIP3][1] = 12 + ip2;
+                m_corr[syndromeIP3][2] = 12 + ip3;
+            }
+        }
     }
 }
 
@@ -889,6 +996,15 @@ void Golay_24_12::init()
 
             m_corr[syndromeI][0] = i1;
             m_corr[syndromeI][1] = i2;
+
+            // 1 possible bit flip left in the parity part
+            for (int ip = 0; ip < 12; ip++)
+            {
+                int syndromeIP = syndromeI ^ (1 << (11-ip));
+                m_corr[syndromeIP][0] = i1;
+                m_corr[syndromeIP][1] = i2;
+                m_corr[syndromeIP][2] = 12 + ip;
+            }
         }
 
         // single bit patterns
@@ -900,6 +1016,43 @@ void Golay_24_12::init()
         }
 
         m_corr[syndromeI][0] = i1;
+
+        for (int ip1 = 0; ip1 < 12; ip1++) // 1 more bit flip in parity
+        {
+            int syndromeIP1 = syndromeI ^ (1 << (11-ip1));
+            m_corr[syndromeIP1][0] = i1;
+            m_corr[syndromeIP1][1] = 12 + ip1;
+
+            for (int ip2 = ip1+1; ip2 < 12; ip2++) // 1 more bit flip in parity
+            {
+                int syndromeIP2 = syndromeIP1 ^ (1 << (11-ip2));
+                m_corr[syndromeIP2][0] = i1;
+                m_corr[syndromeIP2][1] = 12 + ip1;
+                m_corr[syndromeIP2][2] = 12 + ip2;
+            }
+        }
+    }
+
+    // no bit patterns (in message) -> all in parity
+    for (int ip1 = 0; ip1 < 12; ip1++) // 1 bit flip in parity
+    {
+        int syndromeIP1 =  (1 << (11-ip1));
+        m_corr[syndromeIP1][0] = 12 + ip1;
+
+        for (int ip2 = ip1+1; ip2 < 12; ip2++) // 1 more bit flip in parity
+        {
+            int syndromeIP2 = syndromeIP1 ^ (1 << (11-ip2));
+            m_corr[syndromeIP2][0] = 12 + ip1;
+            m_corr[syndromeIP2][1] = 12 + ip2;
+
+            for (int ip3 = ip2+1; ip3 < 12; ip3++) // 1 more bit flip in parity
+            {
+                int syndromeIP3 = syndromeIP2 ^ (1 << (11-ip3));
+                m_corr[syndromeIP3][0] = 12 + ip1;
+                m_corr[syndromeIP3][1] = 12 + ip2;
+                m_corr[syndromeIP3][2] = 12 + ip3;
+            }
+        }
     }
 }
 
@@ -1001,8 +1154,7 @@ void QR_16_7_6::init()
             // 2 bit patterns
             int syndromeI = 0;
 
-            for (int ir = 0; ir < 9; ir++)
-            {
+            for (int ir = 0; ir < 9; ir++) {
                 syndromeI += ((m_H[16*ir + i1] +  m_H[16*ir + i2]) % 2) << (8-ir);
             }
 
@@ -1013,12 +1165,33 @@ void QR_16_7_6::init()
         // single bit patterns
         int syndromeI = 0;
 
-        for (int ir = 0; ir < 9; ir++)
-        {
+        for (int ir = 0; ir < 9; ir++) {
             syndromeI += m_H[16*ir + i1] << (8-ir);
         }
 
         m_corr[syndromeI][0] = i1;
+
+        // 1 possible bit flip left in the parity part
+        for (int ip = 0; ip < 9; ip++)
+        {
+            int syndromeIP = syndromeI ^ (1 << (8-ip));
+            m_corr[syndromeIP][0] = i1;
+            m_corr[syndromeIP][1] = 7 + ip;
+        }
+    }
+
+    // no bit patterns (in message) -> all in parity
+    for (int ip1 = 0; ip1 < 9; ip1++) // 1 bit flip in parity
+    {
+        int syndromeIP1 = (1 << (8-ip1));
+        m_corr[syndromeIP1][0] = 7 + ip1;
+
+        for (int ip2 = ip1+1; ip2 < 9; ip2++) // 1 more bit flip in parity
+        {
+            int syndromeIP2 = syndromeIP1 ^ (1 << (8-ip2));
+            m_corr[syndromeIP2][0] = 7 + ip1;
+            m_corr[syndromeIP2][1] = 7 + ip2;
+        }
     }
 }
 
@@ -1064,6 +1237,8 @@ bool QR_16_7_6::decode(unsigned char *rxBits)
                     + (rxBits[14] * m_H[16*is + 14])
                     + (rxBits[15] * m_H[16*is + 15])) % 2) << (8-is);
     }
+
+    std::cout << "QR_16_7_6::decode: syndromeI: " << std::hex << syndromeI << std::endl;
 
     if (syndromeI > 0)
     {
