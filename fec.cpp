@@ -791,11 +791,11 @@ void Golay_23_12::init()
 {
     memset (m_corr, 0xFF, 3*2048);
 
-    for (int i1 = 0; i1 < 11; i1++)
+    for (int i1 = 0; i1 < 12; i1++)
     {
-        for (int i2 = i1+1; i2 < 11; i2++)
+        for (int i2 = i1+1; i2 < 12; i2++)
         {
-            for (int i3 = i2+1; i3 < 11; i3++)
+            for (int i3 = i2+1; i3 < 12; i3++)
             {
                 // 3 bit patterns
                 int syndromeI = 0;
