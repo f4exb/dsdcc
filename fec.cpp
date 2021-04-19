@@ -1238,8 +1238,6 @@ bool QR_16_7_6::decode(unsigned char *rxBits)
                     + (rxBits[15] * m_H[16*is + 15])) % 2) << (8-is);
     }
 
-    std::cout << "QR_16_7_6::decode: syndromeI: " << std::hex << syndromeI << std::endl;
-
     if (syndromeI > 0)
     {
         int i = 0;
