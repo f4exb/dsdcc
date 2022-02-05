@@ -13,7 +13,7 @@ version=4
 #http://example.com/downloads.html \
 #  files/dsdcc-([\d\.]+)\.tar\.gz debian uupdate
 
-# Uncommment to examine a FTP server
+# Uncomment to examine a FTP server
 #ftp://ftp.example.com/pub/dsdcc-(.*)\.tar\.gz debian uupdate
 
 # SourceForge hosted projects

@@ -67,7 +67,7 @@ void Viterbi5::decodeFromBits(
 void Viterbi5::decodeFromSymbols(
         unsigned char *dataBits,      //!< Decoded output data bits
         const unsigned char *symbols, //!< Input symbols
-        unsigned int nbSymbols,       //!< Number of imput symbols
+        unsigned int nbSymbols,       //!< Number of input symbols
         unsigned int startstate)      //!< Encoder starting state
 
 {

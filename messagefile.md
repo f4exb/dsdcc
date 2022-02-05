@@ -8,7 +8,7 @@ The polling period will match an actual time interval only during live operation
 
 <h2>File format</h2>
 
-There is one line per polling occurence with a fixed format depending on the protocol. For all protocols the line starts with a timestamp and a protocol identifier. Details by protocol are given next.
+There is one line per polling occurrence with a fixed format depending on the protocol. For all protocols the line starts with a timestamp and a protocol identifier. Details by protocol are given next.
 
 <h3>DMR</h3>
 
@@ -67,7 +67,7 @@ There is one line per polling occurence with a fixed format depending on the pro
   - **3**: dPMR frame type:
     - --: Undefined
     - HD: Header of FS1 type
-    - PY: Payload frame of a sitll undetermined type
+    - PY: Payload frame of a still undetermined type
     - VO: Voice frame
     - VD: Voice and data frame
     - D1: Data without FEC frame

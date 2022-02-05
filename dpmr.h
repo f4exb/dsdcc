@@ -36,7 +36,7 @@ public:
 		DPMRPayloadFrame,    //!< payload superframe with undetermined type
         DPMRVoiceframe,      //!< voice superframe (no SLD)
         DPMRDataVoiceframe,  //!< data and voice superframe (type 2)
-        DPMRData1frame,      //!< data superframe wihout FEC
+        DPMRData1frame,      //!< data superframe without FEC
         DPMRData2frame,      //!< data superframe with FEC
 		DPMREndFrame,        //!< end frame
     } DPMRFrameType;
