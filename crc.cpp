@@ -314,7 +314,7 @@ void DStarCRC::compute_crc(unsigned char *array, int size_buffer)
 	for (int n = 0; n < (size_buffer - 2); n++)
 	{
 		for (int m = 0; m < 8; m++)
-		{    //each bit must be calculated separatly
+		{    //each bit must be calculated separately
 			fcsbit(bitRead(array[n], m));
 		}
 	}

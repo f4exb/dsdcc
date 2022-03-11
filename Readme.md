@@ -81,7 +81,7 @@ Since version 1.6 dsdccx has the capability of sending regularly the traffic sta
 ---
 
 
-<h1>Developpers notes</h1>
+<h1>Developers notes</h1>
 
 <h2>Structure overview</h2>
 

@@ -149,7 +149,7 @@ void usage()
 #endif
     fprintf(stderr, "  -H            Use high-pass filter on audio when using mbelib\n");
     fprintf(stderr, "  -P <float>    Own latitude in decimal degrees. Latitude is positive to the North. Default 0\n");
-    fprintf(stderr, "  -Q <float>    Own longitue in decimal degrees. Longitude is positive to the East. Default 0\n");
+    fprintf(stderr, "  -Q <float>    Own longitude in decimal degrees. Longitude is positive to the East. Default 0\n");
     fprintf(stderr, "                This is useful when status messages (see -M option) contain geographical data\n");
     fprintf(stderr, "                Practically this is only applicable to D-Star\n");
     fprintf(stderr, "  -x            Disable symbol PLL lock\n");

@@ -332,7 +332,7 @@ void DSDDstar::processSlowData(bool firstFrame)
 
         if (firstFrame)
         {
-            // unconditionnaly reset counters for elements that are always contained in the same 20 frame sequence
+            // unconditionally reset counters for elements that are always contained in the same 20 frame sequence
             m_slowData.radioHeaderIndex = 0;
 
             // initializations based on data type

@@ -221,7 +221,7 @@ void Viterbi::encodeToBits(
 void Viterbi::decodeFromBits(
         unsigned char *dataBits,      //!< Decoded output data bits
         const unsigned char *bits,    //!< Input bits
-        unsigned int nbBits,          //!< Number of imput bits
+        unsigned int nbBits,          //!< Number of input bits
         unsigned int startstate)      //!< Encoder starting state
 
 {
@@ -251,7 +251,7 @@ void Viterbi::decodeFromBits(
 void Viterbi::decodeFromSymbols(
         unsigned char *dataBits,      //!< Decoded output data bits
         const unsigned char *symbols, //!< Input symbols
-        unsigned int nbSymbols,       //!< Number of imput symbols
+        unsigned int nbSymbols,       //!< Number of input symbols
         unsigned int startstate)      //!< Encoder starting state
 
 {
