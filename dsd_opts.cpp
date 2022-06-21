@@ -25,6 +25,7 @@ DSDOpts::DSDOpts()
     errorbars = 1;
     symboltiming = 0;
     verbose = 2;
+    dmr_bp_key = 0;
     p25enc = 0;
     p25lc = 0;
     p25status = 0;
