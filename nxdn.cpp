@@ -257,7 +257,7 @@ DSDNXDN::DSDNXDN(DSDDecoder *dsdDecoder) :
         y(0),
         z(0)
 {
-    memset(m_syncBuffer, 0, 11);
+    memset(m_syncBuffer, 0, 10);
     memset(m_lichBuffer, 0, 8);
 
     m_rfChannel = NXDNRFCHUnknown;
