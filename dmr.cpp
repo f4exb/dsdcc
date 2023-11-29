@@ -993,7 +993,7 @@ void DSDDMR::processSlotTypePDU()
 
         unsigned int dataType = (slotTypeBits[4] << 3) + (slotTypeBits[5] << 2) + (slotTypeBits[6] << 1) + slotTypeBits[7];
 
-        if (dataType > DMR_TYPES_COUNT)
+        if (dataType >= DMR_TYPES_COUNT)
         {
             m_dataType = DSDDMRDataReserved;
             memcpy(&m_slotText[4], "RES", 3);
