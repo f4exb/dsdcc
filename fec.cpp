@@ -650,7 +650,7 @@ void Golay_20_8::init()
                 int syndromeIP = syndromeI ^ (1 << (11-ip));
                 m_corr[syndromeIP][0] = i1;
                 m_corr[syndromeIP][1] = i2;
-                m_corr[syndromeIP][2] = 12 + ip;
+                m_corr[syndromeIP][2] = 8 + ip;
             }
         }
 
@@ -669,14 +669,14 @@ void Golay_20_8::init()
         {
             int syndromeIP1 = syndromeI ^ (1 << (11-ip1));
             m_corr[syndromeIP1][0] = i1;
-            m_corr[syndromeIP1][1] = 12 + ip1;
+            m_corr[syndromeIP1][1] = 8 + ip1;
 
             for (int ip2 = ip1+1; ip2 < 12; ip2++) // 1 more bit flip in parity
             {
                 int syndromeIP2 = syndromeIP1 ^ (1 << (11-ip2));
                 m_corr[syndromeIP2][0] = i1;
-                m_corr[syndromeIP2][1] = 12 + ip1;
-                m_corr[syndromeIP2][2] = 12 + ip2;
+                m_corr[syndromeIP2][1] = 8 + ip1;
+                m_corr[syndromeIP2][2] = 8 + ip2;
             }
         }
     }
@@ -685,20 +685,20 @@ void Golay_20_8::init()
     for (int ip1 = 0; ip1 < 12; ip1++) // 1 bit flip in parity
     {
         int syndromeIP1 =  (1 << (11-ip1));
-        m_corr[syndromeIP1][0] = 12 + ip1;
+        m_corr[syndromeIP1][0] = 8 + ip1;
 
         for (int ip2 = ip1+1; ip2 < 12; ip2++) // 1 more bit flip in parity
         {
             int syndromeIP2 = syndromeIP1 ^ (1 << (11-ip2));
-            m_corr[syndromeIP2][0] = 12 + ip1;
-            m_corr[syndromeIP2][1] = 12 + ip2;
+            m_corr[syndromeIP2][0] = 8 + ip1;
+            m_corr[syndromeIP2][1] = 8 + ip2;
 
             for (int ip3 = ip2+1; ip3 < 12; ip3++) // 1 more bit flip in parity
             {
                 int syndromeIP3 = syndromeIP2 ^ (1 << (11-ip3));
-                m_corr[syndromeIP3][0] = 12 + ip1;
-                m_corr[syndromeIP3][1] = 12 + ip2;
-                m_corr[syndromeIP3][2] = 12 + ip3;
+                m_corr[syndromeIP3][0] = 8 + ip1;
+                m_corr[syndromeIP3][1] = 8 + ip2;
+                m_corr[syndromeIP3][2] = 8 + ip3;
             }
         }
     }

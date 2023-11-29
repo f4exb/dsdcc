@@ -28,7 +28,7 @@ hamming16: fec.o hamming16.cpp
 	g++ -o hamming16 fec.o hamming16.cpp
 
 golay20: fec.o golay20.cpp
-	g++ -o golay20 fec.o golay20.cpp
+	g++ $(CXXLFAGS) -o golay20 fec.o golay20.cpp
 
 golay23: fec.o golay23.cpp
 	g++ -o golay23 fec.o golay23.cpp
@@ -65,4 +65,3 @@ descramble.o: ../descramble.h ../descramble.cpp
 
 clean:
 	rm -f *.o qr golay20 golay23 golay24 hamming7 hamming12 hamming15 hamming16 viterbi viterbi35 crc
-	
