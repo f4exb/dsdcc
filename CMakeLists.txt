@@ -54,13 +54,12 @@ else()
     set(CMAKE_BUILD_TYPE "Release")
 endif()
 
-find_package(LibMbe)
-find_package(SerialDV)
-
-if (USE_MBELIB AND LIBMBE_FOUND)
+if (USE_MBELIB)
+    find_package(LibMbe REQUIRED)
     add_definitions(-DDSD_USE_MBELIB)
 endif()
 
+find_package(SerialDV)
 if (LIBSERIALDV_FOUND)
     add_definitions(-DDSD_USE_SERIALDV)
 endif()
@@ -133,7 +132,7 @@ set(dsdcc_HEADERS
     export.h
 )
 
-if (USE_MBELIB AND LIBMBE_FOUND)
+if (USE_MBELIB)
     set(dsdcc_HEADERS
         ${dsdcc_HEADERS}
         dsd_mbelib.h
@@ -145,7 +144,7 @@ include_directories(
     ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-if (USE_MBELIB AND LIBMBE_FOUND)
+if (USE_MBELIB)
     include_directories(
         ${LIBMBE_INCLUDE_DIR}
     )
@@ -162,7 +161,7 @@ add_library(dsdcc SHARED
 )
 set_target_properties(dsdcc PROPERTIES VERSION ${VERSION} SOVERSION ${MAJOR_VERSION})
 
-if (USE_MBELIB AND LIBMBE_FOUND)
+if (USE_MBELIB)
     target_link_libraries(dsdcc ${LIBMBE_LIBRARY})
 endif()
 
